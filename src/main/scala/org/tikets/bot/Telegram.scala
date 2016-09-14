@@ -4,7 +4,7 @@ import akka.actor.Actor
 import akka.actor.Actor.Receive
 
 
-object Client {
+object Telegram {
 
 
   final case class AskSelectStation(names: List[String])
@@ -16,6 +16,6 @@ object Client {
 /**
   * Created by bsnisar on 14.09.16.
   */
-class Client extends Actor {
+class Telegram extends Actor {
   override def receive: Receive = ???
 }

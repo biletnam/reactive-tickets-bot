@@ -18,7 +18,10 @@ object Stations {
     * Result of names that was found.
     * @param matches matches.
     */
-  final case class MatchStationNames(matches: List[String], code: Any) extends Cmd
+  final case class MatchStationNames(matches: List[Station], code: Any) extends Cmd
+
+
+  case class Station(name: String, id: String)
 }
 
 class Stations extends Actor {

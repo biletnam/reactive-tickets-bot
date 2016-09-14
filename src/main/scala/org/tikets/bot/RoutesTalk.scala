@@ -3,9 +3,11 @@ package org.tikets.bot
 
 import akka.actor.ActorRef
 import akka.persistence.PersistentActor
-import org.tikets.bot.RoutesEvents.{StationChoice, StationChoiceFrom}
-import org.tikets.misc.{Destination, From, To}
+import org.tikets.bot.Events._
+import org.tikets.bot.Stations.Station
 import org.tikets.msg.{Msg, Phrase}
+import org.tikets.qt.{QtStationArrive, QtStationDeparture, Question}
+import org.tikets.uz.Routes
 
 
 object RoutesTalk {
@@ -13,22 +15,26 @@ object RoutesTalk {
   case object WaitingAnswer extends StateMark
 }
 
-object RoutesEvents {
+object Events {
+  sealed trait Destination
+  case object From extends Destination
+  case object To extends Destination
+
+
   sealed trait Evt
-  final case class StationChoiceFrom(matches: List[String]) extends Evt
-  final case class StationChoiceTo(matches: List[String]) extends Evt
 
-
-  final case class StationChoice(matches: List[String], dest: Destination) extends Evt
-  final case class StationSelectionTo(index: Int) extends Evt
-  final case class StationSelectionFrom(index: Int) extends Evt
+  final case class StationChoice(matches: Map[String, Station], dest: Destination) extends Evt
+  final case class StationSelection(index: String) extends Evt
 }
 
 /**
   * Talk.
-  * @author bsnisar
+  *
+  * @param persistenceId id of conversation
+  * @param stations stations ref
+  * @author Bogdan_Snisar
   */
-class RoutesTalk(val persistenceId: String, val stations: ActorRef) extends PersistentActor  {
+class RoutesTalk(val persistenceId: String, val stations: ActorRef, var routesReq: Routes) extends PersistentActor  {
 
   /**
     * Action of client message.
@@ -36,18 +42,13 @@ class RoutesTalk(val persistenceId: String, val stations: ActorRef) extends Pers
   private var msgReaction : Function[Phrase, Unit] = onIdle
 
 
+  private var state: Evt = null
+
   override def receiveCommand: Receive = {
     case msg: Msg => msgReaction(msg.phrase)
-    case Stations.MatchStationNames(names, true) =>
-      persist(StationChoice(names, From)) { from =>
-        askClient()
-        updateState()
-      }
-    case Stations.MatchStationNames(names, false) =>
-      persist(StationChoice(names, To)) { from =>
-        askClient()
-        updateState()
-      }
+    case Stations.MatchStationNames(names, true) => askStationSelection(names, From)
+    case Stations.MatchStationNames(names, false) => askStationSelection(names, To)
+
   }
 
   override def receiveRecover: Receive = ???
@@ -74,12 +75,29 @@ class RoutesTalk(val persistenceId: String, val stations: ActorRef) extends Pers
 
   }
 
+  /**
+    * Ask client for choice.
+    * @param stations stations that match request
+    * @param dest destination
+    */
+  private def askStationSelection(stations: List[Station], dest: Destination) = {
+    var choices = Map.empty[String, Station]
+    for ((station, stationIdx) <- stations.zipWithIndex) {
+      choices = choices + (s"/$stationIdx" -> station)
+    }
 
-  private def askClient() = {
+    persist(StationChoice(choices, dest)) { choice =>
+      updateState(choice)
+      askForChoice()
+    }
 
   }
 
-  private def updateState() = {
+  private def updateState(evt: Evt) = {
+    state = evt
+  }
+
+  private def askForChoice() = {
 
   }
 }
