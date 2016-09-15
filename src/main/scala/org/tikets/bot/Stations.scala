@@ -5,6 +5,13 @@ import akka.actor.Actor.Receive
 import org.tikets.bot.Stations.FindStationsReq
 import org.tikets.misc.Cmd
 
+class Stations extends Actor {
+
+  override def receive: Receive = {
+    case FindStationsReq(name) => println(name)
+  }
+}
+
 /**
   * Stations partial object.
   *
@@ -21,7 +28,7 @@ object Stations {
     * Result of names that was found.
     * @param matches matches.
     */
-  final case class StationHits(matches: List[Station], code: Any) extends Cmd
+  final case class StationHits(matches: List[Station])
 
   /**
     * Station reply.
@@ -29,11 +36,4 @@ object Stations {
     * @param id station id
     */
   case class Station(name: String, id: String)
-}
-
-class Stations extends Actor {
-
-  override def receive: Receive = {
-    case FindStationsReq(name) => println(name)
-  }
 }

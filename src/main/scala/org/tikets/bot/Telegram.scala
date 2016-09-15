@@ -6,10 +6,7 @@ import akka.actor.Actor.Receive
 
 object Telegram {
 
-
-  final case class AskSelectStation(names: List[String])
-
-
+  final case class SelectStation(names: List[String])
 
 }
 

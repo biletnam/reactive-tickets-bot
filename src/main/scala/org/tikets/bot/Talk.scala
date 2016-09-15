@@ -1,50 +1,36 @@
 package org.tikets.bot
 
+import akka.actor.{ActorRef, FSM}
 import akka.persistence.PersistentActor
 import org.tikets.RoutePoint
 import org.tikets.bot.Stations.Station
-import org.tikets.bot.Talk.TalkState
-import org.tikets.msg.Msg
+import org.tikets.bot.Talk._
+import scala.concurrent.duration._
+import org.tikets.msg.{Msg, RouteFromStation}
+
+
+
+class Talk(stations: ActorRef, telegram: ActorRef) extends FSM[TalkState, RouteReq] {
+
+  when(Idle) {
+    case Event(RouteFromStation(name), _) =>
+      stations ! Stations.FindStationsReq(name)
+      goto(AskStationFrom)
+  }
+
+  when(AskStationFrom) {
+    case Event(Stations.StationHits(names), data) =>
+      telegram ! Telegram.SelectStation(null)
+
+      goto(AwaitAnswer)  forMax(15 seconds)
+  }
+
+}
 
 object Talk {
 
   sealed trait TalkState
-
-  case class AwaitStation(dest: RoutePoint) extends TalkState
-
-  /**
-    * Temporary stat that await for answer.
-    * @param options match options
-    */
-  case class StationSelection(options: Map[String, Station]) extends TalkState
-
-}
-
-class Talk extends PersistentActor {
-  override def persistenceId: String = "persist-id"
-
-  /**
-    *
-    */
-  private var state : TalkState = null
-
-
-  override def receiveCommand: Receive = {
-    case msg: Msg =>
-  }
-
-  override def receiveRecover: Receive = ???
-
-
-
-  private def onIdle(msg: Msg) = msg.phrase.command {
-    case "/from" =>
-    case "/to" =>
-  }
-
-  private def awaitStationOpts(value: Any) = {
-    case Stations.StationHits(options) =>
-
-  }
-
+  case object Idle extends TalkState
+  case object AskStationFrom extends TalkState
+  case object AwaitAnswer extends TalkState
 }
