@@ -2,9 +2,9 @@ package org.tikets.bot
 
 import akka.actor.ActorSelection
 import akka.persistence.PersistentActor
-import org.tikets.bot.RoutesTalk.{Evt, Suggestion, Unset}
+import org.tikets.bot.RoutesTalk.{Evt, Unset}
 import org.tikets.misc.Log
-import org.tikets.msg.SelectDepartStation
+import org.tikets.msg.{ArriveAt, PickArriveStation, PickDepartStation}
 
 
 
@@ -12,10 +12,6 @@ class RoutesTalk(val persistenceId: String) extends PersistentActor with Log {
   private val stations: ActorSelection = context.actorSelection("/stations")
   private val routes: ActorSelection = context.actorSelection("/routes")
 
-  /**
-    * Suggestions.
-    */
-  private var suggestion: Suggestion = Map.empty
 
   private var state: Evt = Unset
 
@@ -23,30 +19,31 @@ class RoutesTalk(val persistenceId: String) extends PersistentActor with Log {
 
   }
 
-  private def onIdle: Receive = {
-    case SelectDepartStation(name) =>
+  private def idle: Receive = {
+    case PickDepartStation(name) =>
       stations ! Stations.FindStationsReq(name)
-      context become awaitDepatStationsAnswer
+      context become awaitDepartStationsAnswer
+    case PickArriveStation(name) =>
+      stations ! Stations.FindStationsReq(name)
+      context become awaitArriveStationsAnswer
+    case ArriveAt(date) =>
   }
 
-  private def awaitDepatStationsAnswer: Receive = {
+  private def awaitDepartStationsAnswer: Receive = {
     case Stations.StationHits(options) =>
-      val suggestion: Map[String, Stations.Station] = options.zipWithIndex.foldLeft(Map.empty[String, Stations.Station]) { (map, pair) =>
-        val key = s"/${pair._2}"
-        val station = pair._1
-        map + (key -> station)
-      }
+      context become idle
+  }
+
+  private def awaitArriveStationsAnswer: Receive = {
+    case Stations.StationHits(options) =>
+      context become idle
   }
 
   override def receiveRecover: Receive = ???
-
-  override def receiveCommand: Receive = onIdle
-
+  override def receiveCommand: Receive = idle
 }
 
 object RoutesTalk {
-
-  type Suggestion = Map[String, Stations.Station]
 
   /**
     * Root event that modify request.
