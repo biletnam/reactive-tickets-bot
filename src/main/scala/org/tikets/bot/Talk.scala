@@ -1,50 +1,34 @@
 package org.tikets.bot
 
+import akka.actor.ActorRef
 import akka.persistence.PersistentActor
-import org.tikets.RoutePoint
-import org.tikets.bot.Stations.Station
-import org.tikets.bot.Talk.TalkState
-import org.tikets.msg.Msg
-
-object Talk {
-
-  sealed trait TalkState
-
-  case class AwaitStation(dest: RoutePoint) extends TalkState
-
-  /**
-    * Temporary stat that await for answer.
-    * @param options match options
-    */
-  case class StationSelection(options: Map[String, Station]) extends TalkState
-
-}
-
-class Talk extends PersistentActor {
-  override def persistenceId: String = "persist-id"
-
-  /**
-    *
-    */
-  private var state : TalkState = null
+import org.tikets.bot.Stations.StationHits
+import org.tikets.misc.CommandLike
+import org.tikets.msg.{FromStation, Msg}
 
 
-  override def receiveCommand: Receive = {
-    case msg: Msg =>
+class Talk(stations: ActorRef) extends PersistentActor with CommandLike {
+
+  private var routeReq: Route = null
+
+  private def onIdle: Receive = {
+    case FromStation(name) =>
+      stations ! Stations.FindStationsLike(name)
+      become(askSpecificStation)
+  }
+
+  private def askSpecificStation: Receive = {
+    case StationHits(opts) =>
   }
 
   override def receiveRecover: Receive = ???
 
+  override def persistenceId: String = ???
 
+  override def default: Receive = onIdle
+}
 
-  private def onIdle(msg: Msg) = msg.phrase.command {
-    case "/from" =>
-    case "/to" =>
-  }
-
-  private def awaitStationOpts(value: Any) = {
-    case Stations.StationHits(options) =>
-
-  }
-
+object Talk {
+  sealed trait TalkState
+  sealed trait RouteReq
 }

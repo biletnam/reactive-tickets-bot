@@ -1,7 +1,6 @@
-package org.tikets.bot
+package org.tikets
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
 
 
 object Telegram {
