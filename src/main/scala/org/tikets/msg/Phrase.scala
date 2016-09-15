@@ -15,4 +15,13 @@ trait Phrase {
     * @return keyword
     */
   def command: String
+
+  /**
+    *
+    * @param name
+    * @return
+    */
+  def param(name: String): List[String]
+
+
 }
