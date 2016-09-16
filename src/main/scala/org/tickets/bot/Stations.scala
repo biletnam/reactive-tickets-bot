@@ -1,9 +1,7 @@
-package org.tikets.bot
+package org.tickets.bot
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
-import org.tikets.bot.Stations.FindStationsReq
-import org.tikets.misc.Cmd
+import org.tickets.bot.Stations.FindStationsReq
 
 class Stations extends Actor {
 

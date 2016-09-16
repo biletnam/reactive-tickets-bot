@@ -1,4 +1,4 @@
-package org.tikets;
+package org.tickets;
 
 /**
  * Point of railway route

@@ -1,7 +1,7 @@
 /**
  * Took unchanged from https://github.com/amatkivskiy/Jjencode
  */
-package org.tikets.misc;
+package org.tickets.misc;
 
 import java.util.ArrayList;
 import java.util.HashMap;

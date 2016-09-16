@@ -1,4 +1,4 @@
-package org.tikets.misc
+package org.tickets.misc
 
 import org.slf4j.{Logger, LoggerFactory}
 
