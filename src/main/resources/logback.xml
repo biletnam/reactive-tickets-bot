@@ -14,16 +14,12 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger level="DEBUG" name="org.tickets">
+    <logger name="org.tickets" level="debug"
+            additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
-
-    <logger level="INFO" name="akka.actor">
-        <appender-ref ref="STDOUT" />
-    </logger>
-
 </configuration>

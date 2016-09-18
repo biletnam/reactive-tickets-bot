@@ -9,12 +9,11 @@ import org.tickets.misc.Log
 object Main extends App with Log {
   val init = System.currentTimeMillis()
 
-  val injector = Guice.createInjector(
-    new ApiModule
-  )
-
   val system = ActorSystem("tickets-bot")
 
+  val injector = Guice.createInjector(
+    new ApiModule(system)
+  )
 
   log.info("Started in {}", System.currentTimeMillis() - init)
 }

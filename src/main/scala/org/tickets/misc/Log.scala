@@ -1,6 +1,6 @@
 package org.tickets.misc
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
 
 /**
   * Log.

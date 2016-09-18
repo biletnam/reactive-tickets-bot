@@ -1,7 +1,7 @@
 /**
  * Took unchanged from https://github.com/amatkivskiy/Jjencode
  */
-package org.tickets.misc;
+package org.tickets.api.token;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JJEncoder {
+class JJEncoder {
     private final static String UNDEFINED = "undefined";
     private final static String OBJECT_OBJECT = "[object Object]";
     private static final HashMap<String, String> tokens;
