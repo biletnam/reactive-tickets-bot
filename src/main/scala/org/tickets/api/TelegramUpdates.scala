@@ -5,9 +5,10 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
+import com.fasterxml.jackson.databind.JsonNode
 import de.heikoseeberger.akkahttpjackson.JacksonSupport
 import org.tickets.misc.Log
-import org.tickets.msg.telegram.Update
+import org.tickets.msg.telegram.TgUpdatesJsonNode
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -17,17 +18,18 @@ import scala.util.{Failure, Success, Try}
   */
 class TelegramUpdates(val connection: HttpStream,
                       val materializer: Materializer,
-                      val handlerRef: ActorRef)
-  extends Log with JacksonSupport  {
+                      val handlerRef: ActorRef) extends Log with JacksonSupport  {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.collection.JavaConversions._
+
   private implicit val _mt = materializer
 
   def startMessagePooling(): Unit = {
     val source: Future[(Try[HttpResponse], Int)] = connection.stream.runWith(Sink.head)
     source.map {
       case ((Success(response), _)) =>
-        val update: Future[List[Update]] = Unmarshal.apply(response).to[List[Update]]
+        val update: Future[JsonNode] = Unmarshal.apply(response).to[JsonNode]
         log.debug("GET /getMessage {}", response.status)
         update.onComplete(consumeUpdate)
       case ((Failure(error), _)) =>
@@ -35,8 +37,10 @@ class TelegramUpdates(val connection: HttpStream,
     }
   }
 
-  private def consumeUpdate(data: Try[List[Update]]) = data match {
-    case Success(msg) => msg foreach (handlerRef ! _)
+  private def consumeUpdate(data: Try[JsonNode]) = data match {
+    case Success(msg) if msg.isArray =>
+      new TgUpdatesJsonNode(msg).toIterable foreach( handlerRef ! _)
+
     case Failure(err) => log.error("Unmarshal failed", err)
   }
 

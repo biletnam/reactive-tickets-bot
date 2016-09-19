@@ -3,13 +3,14 @@ package org.tickets.api
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.model.HttpEntity.Strict
 import akka.http.scaladsl.model._
+
 import scala.concurrent.duration._
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.stream.scaladsl.{Flow, Source}
 import akka.testkit.{TestActor, TestActors, TestKit}
 import akka.util.CompactByteString
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike}
-import org.tickets.msg.telegram.Update
+import org.tickets.msg.telegram.TgUpdates
 
 import scala.util.{Success, Try}
 
@@ -63,7 +64,7 @@ class TelegramTest extends TestKit(ActorSystem("test-sys")) with FlatSpecLike wi
 
     pooler.startMessagePooling()
 
-    expectMsg[Update](max = 10.seconds, obj = Update(10, null))
+    expectMsgAllClassOf(classOf[TgUpdates])
   }
 
 }

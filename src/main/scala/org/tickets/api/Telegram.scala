@@ -2,6 +2,7 @@ package org.tickets.api
 
 import akka.actor.{Actor, Props}
 import org.tickets.misc.{Log, Named}
+import org.tickets.msg.telegram.TgUpdates
 
 
 /**
@@ -12,7 +13,7 @@ import org.tickets.misc.{Log, Named}
 class Telegram extends Actor with Log {
 
   override def receive: Receive = {
-    case msg @ _ => log.info("Get {}", msg)
+    case updates: TgUpdates => log.info("Get {}", updates)
   }
 
   @scala.throws[Exception](classOf[Exception])
