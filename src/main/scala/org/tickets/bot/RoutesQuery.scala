@@ -11,8 +11,8 @@ import org.tickets.bot.StationsActor.Station
   */
 class RoutesQuery extends FSM[QueryState, Query] {
 
-  val stationsApi = context.actorSelection("/stations")
-  val telegram = context.actorSelection("/telegram")
+  private val stationsApi = context.actorSelection("/stations")
+  private val telegram = context.actorSelection("/telegram")
 
   /**
     * Await income messages.
@@ -40,11 +40,11 @@ class RoutesQuery extends FSM[QueryState, Query] {
   when(FromStationSearchAsk) {
     case Event(StringMsg(keyword), req @ Req(StationSearchMatches(variants), _, _)) if variants.contains(keyword) =>
       val data = req.copy(from = StationDef(variants(keyword)))
-      goto(DoSearch) using data
+      goto(DefQuery) using data
   }
 
   onTransition {
-    case FromStationSearchAsk -> DoSearch =>
+    case FromStationSearchAsk -> DefQuery =>
       stateData match {
         case Req(_, EmptyStation, _) => ???
         case Req(_, StationSearch(name), _) => ???
@@ -69,7 +69,7 @@ object RoutesQuery {
   /**
     * Execute search.
     */
-  case object DoSearch extends QueryState
+  case object DefQuery extends QueryState
 
   /**
     * Ready for income.
