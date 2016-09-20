@@ -16,9 +16,9 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by bsnisar on 18.09.16.
   */
-class TelegramUpdates(val connection: HttpStream,
-                      val materializer: Materializer,
-                      val handlerRef: ActorRef) extends Log with JacksonSupport  {
+class PoolTelegramUpdates(val connection: HttpStream,
+                          val materializer: Materializer,
+                          val handlerRef: ActorRef) extends Log with JacksonSupport  {
 
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.collection.JavaConversions._
@@ -26,22 +26,14 @@ class TelegramUpdates(val connection: HttpStream,
   private implicit val _mt = materializer
 
   def startMessagePooling(): Unit = {
-    val source: Future[(Try[HttpResponse], Int)] = connection.stream.runWith(Sink.head)
-    source.map {
-      case ((Success(response), _)) =>
-        val update: Future[JsonNode] = Unmarshal.apply(response).to[JsonNode]
-        log.debug("GET /getMessage {}", response.status)
-        update.onComplete(consumeUpdate)
-      case ((Failure(error), _)) =>
-        log.error("GET /getMessage failed: {}", error.getMessage)
-    }
+    connection.stream.map {
+      case (resp, seq) =>
+    }.runWith(Sink.head)
   }
 
   private def consumeUpdate(data: Try[JsonNode]) = data match {
     case Success(msg) if msg.isArray =>
-      new TgUpdatesJsonNode(msg).toIterable foreach( handlerRef ! _)
-
-    case Failure(err) => log.error("Unmarshal failed", err)
+    case Failure(err) => log.error("Unmarshalling failed", err)
   }
 
 }

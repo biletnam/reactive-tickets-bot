@@ -30,3 +30,4 @@ trait HttpStream {
     */
   def stream = source.via(flow)
 }
+

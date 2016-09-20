@@ -1,6 +1,6 @@
 package org.tickets.bot
 
 /**
-  * Created by Bogdan_Snisar on 9/20/2016.
+  * Raw user input string.
   */
 case class StringMsg(word: String)

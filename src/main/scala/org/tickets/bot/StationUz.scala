@@ -1,9 +1,9 @@
 package org.tickets.bot
 
 import akka.actor.Actor
-import org.tickets.bot.StationsActor.FindStationsReq
+import org.tickets.bot.StationUz.FindStationsReq
 
-class StationsActor extends Actor {
+class StationUz extends Actor {
 
   override def receive: Receive = {
     case FindStationsReq(name) => println(name)
@@ -15,7 +15,7 @@ class StationsActor extends Actor {
   *
   * @author bsnsiar
   */
-object StationsActor {
+object StationUz {
   /**
     * Request for searching of station names by given pattern.
     * @param name pattern

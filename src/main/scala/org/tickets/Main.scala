@@ -11,9 +11,6 @@ object Main extends App with Log {
 
   val system = ActorSystem("tickets-bot")
 
-  val injector = Guice.createInjector(
-    new ApiModule(system)
-  )
 
   log.info("Started in {}", System.currentTimeMillis() - init)
 }

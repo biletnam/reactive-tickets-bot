@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import akka.actor.FSM
 import org.tickets.bot.RoutesQuery._
-import org.tickets.bot.StationsActor.Station
+import org.tickets.bot.StationUz.Station
 
 /**
   * Dialog for routes definition.
@@ -20,7 +20,7 @@ class RoutesQuery extends FSM[QueryState, Query] {
   when(Idle) {
     case Event(FindRoutes(getFrom, getTo), EmptyQuery) =>
       val req = Req(from = StationSearch(getFrom.likeName), to = StationSearch(getTo.likeName))
-      stationsApi ! StationsActor.FindStationsReq(getFrom.likeName)
+      stationsApi ! StationUz.FindStationsReq(getFrom.likeName)
       goto(FromStationSearchReq) using req
   }
 
@@ -28,7 +28,7 @@ class RoutesQuery extends FSM[QueryState, Query] {
     * Reply from StationsAPI for search req.
     */
   when(FromStationSearchReq) {
-    case Event(StationsActor.StationHits(hits), req @ Req(StationSearch(_), _, _)) =>
+    case Event(StationUz.StationHits(hits), req @ Req(StationSearch(_), _, _)) =>
       val matches = groupMatches(hits)
 
       goto(FromStationSearchAsk) using req.copy(from = StationSearchMatches(matches))
@@ -86,6 +86,15 @@ object RoutesQuery {
     */
   case object FromStationSearchAsk extends QueryState
 
+  /**
+    * Ask API for station like this name.
+    */
+  case object ToStationSearchReq extends QueryState
+
+  /**
+    * Ask Client for selecting station.
+    */
+  case object ToStationSearchAsk extends QueryState
 
   /**
     * Query
@@ -107,7 +116,9 @@ object RoutesQuery {
     * @param to to station
     * @param arrive arrive at
     */
-  final case class Req(from: StationParam = EmptyStation, to: StationParam = EmptyStation, arrive: Option[LocalDate] = None) extends Query {
+  final case class Req(from: StationParam = EmptyStation,
+                       to: StationParam = EmptyStation,
+                       arrive: Option[LocalDate] = None) extends Query {
     override def empty: Boolean = (from == EmptyStation) && (to == EmptyStation) && arrive.isEmpty
   }
 
