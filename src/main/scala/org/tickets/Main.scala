@@ -2,7 +2,6 @@ package org.tickets
 
 import akka.actor.ActorSystem
 import com.google.inject.Guice
-import org.tickets.api.ApiModule
 import org.tickets.misc.Log
 
 
