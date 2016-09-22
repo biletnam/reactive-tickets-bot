@@ -22,4 +22,4 @@ final case class RoutesToStation(likeName: String)
   * @param from
   * @param to
   */
-case class FindRoutes(from: RoutesFromStation, to: RoutesToStation)
+case class FindRoutes(from: String, to: String)

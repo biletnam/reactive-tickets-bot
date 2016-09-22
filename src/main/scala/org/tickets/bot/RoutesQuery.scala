@@ -2,26 +2,29 @@ package org.tickets.bot
 
 import java.time.LocalDate
 
-import akka.actor.FSM
+import akka.actor.{ActorRef, FSM}
 import org.tickets.bot.RoutesQuery._
 import org.tickets.bot.StationUz.Station
 
 /**
   * Dialog for routes definition.
   */
-class RoutesQuery extends FSM[QueryState, Query] {
+class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
 
-  private val stationsApi = context.actorSelection("/stations")
   private val telegram = context.actorSelection("/telegram")
+
+  startWith(Idle, EmptyQuery)
 
   /**
     * Await income messages.
     */
   when(Idle) {
-    case Event(FindRoutes(getFrom, getTo), EmptyQuery) =>
-      val req = Req(from = StationSearch(getFrom.likeName), to = StationSearch(getTo.likeName))
-      stationsApi ! StationUz.FindStationsReq(getFrom.likeName)
+    case e @ Event(FindRoutes(getFrom, getTo), EmptyQuery) =>
+      log.info("FindRoutes: {}", e)
+      val req = Req(from = StationSearch(getFrom), to = StationSearch(getTo))
+      stationsApi ! StationUz.FindStationsReq(getFrom)
       goto(FromStationSearchReq) using req
+    case _ => ???
   }
 
   /**
@@ -44,13 +47,25 @@ class RoutesQuery extends FSM[QueryState, Query] {
   }
 
   onTransition {
-    case FromStationSearchAsk -> DefQuery =>
+    case _ -> DefQuery =>
       stateData match {
-        case Req(_, EmptyStation, _) => ???
-        case Req(_, StationSearch(name), _) => ???
+        case Req(param, _, _) if !param.define =>
+          log.info("param 1")
+        case Req(_, param, _) if param.define =>
+          log.info("param 2")
+        case Req(_, _, param) if param.isEmpty =>
+
       }
-      ???
   }
+
+  whenUnhandled {
+    // common code for both states
+    case Event(e, s) =>
+      log.warning("received unhandled request {} in state {}/{}", e, stateName, s)
+      stay
+  }
+
+  initialize()
 
 
   private def groupMatches(stations: List[Station]): Map[String, Station] = {
