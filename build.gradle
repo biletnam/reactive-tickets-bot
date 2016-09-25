@@ -27,7 +27,9 @@ dependencies {
     compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.11', version: '2.4.10'
     compile group: 'com.typesafe.akka', name: 'akka-persistence_2.11', version: '2.4.10'
     compile group: 'com.typesafe.akka', name: 'akka-http-experimental_2.11', version: '2.4.10'
+
     compile group: 'de.heikoseeberger', name: 'akka-http-json4s_2.11', version: '1.10.0'
+    compile group: 'org.json4s', name: 'json4s-jackson_2.11', version: '3.4.0'
 
 
 
