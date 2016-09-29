@@ -4,7 +4,8 @@ import java.time.LocalDate
 
 import akka.actor.{ActorRef, FSM}
 import org.tickets.bot.RoutesQuery._
-import org.tickets.bot.StationUz.Station
+import org.tickets.bot.uz.StationUz
+import org.tickets.bot.uz.StationUz.Station
 
 /**
   * Dialog for routes definition.

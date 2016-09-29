@@ -1,18 +1,15 @@
-package org.tickets.bot
+package org.tickets.bot.uz
 
 import akka.actor.Actor
-import org.tickets.bot.StationUz.FindStationsReq
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.stream.javadsl.{Sink, Source}
+import akka.stream.scaladsl.Flow
+import org.tickets.bot.uz.StationUz.FindStationsReq
 
-class StationUz extends Actor {
-
-  override def receive: Receive = {
-    case FindStationsReq(name) => println(name)
-  }
-}
+import scala.util.Try
 
 /**
   * Stations partial object.
-  *
   * @author bsnsiar
   */
 object StationUz {
@@ -35,3 +32,17 @@ object StationUz {
     */
   case class Station(name: String, id: String)
 }
+
+/**
+  * UZ service.
+  * @param flow http flow
+  */
+class StationUz(val flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _]) extends Actor {
+
+  override def receive: Receive = {
+    case FindStationsReq(name) =>
+      println(name)
+  }
+}
+
+

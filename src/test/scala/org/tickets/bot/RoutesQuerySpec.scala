@@ -4,6 +4,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestActors, TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import org.tickets.bot.RoutesQuery.{Req, StationSearch}
+import org.tickets.bot.uz.StationUz
 
 class RoutesQuerySpec extends TestKit(ActorSystem("test")) with FlatSpecLike with BeforeAndAfterAll with Matchers {
 

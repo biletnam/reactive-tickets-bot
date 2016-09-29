@@ -3,7 +3,7 @@ package org.tickets
 import akka.actor.{ActorSystem, Props}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
-import org.tickets.bot.Telegram
+import org.tickets.bot.tg.Telegram
 import org.tickets.misc.Log
 
 

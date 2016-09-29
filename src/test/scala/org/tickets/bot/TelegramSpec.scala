@@ -6,7 +6,8 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
-import org.tickets.bot.Telegram.TelegramMethod
+import org.tickets.bot.tg.Telegram
+import org.tickets.bot.tg.Telegram.TelegramMethod
 
 import scala.util.{Success, Try}
 import scala.concurrent.duration._
