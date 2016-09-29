@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class JJEncoder {
+public class JJEncoder {
     private final static String UNDEFINED = "undefined";
     private final static String OBJECT_OBJECT = "[object Object]";
     private static final HashMap<String, String> tokens;
