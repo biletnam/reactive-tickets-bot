@@ -16,38 +16,40 @@ import scala.concurrent.duration._
   */
 class TelegramSpec extends TestKit(ActorSystem("test")) with FlatSpecLike with BeforeAndAfterAll with Matchers  {
 
-  val json =
-    """
-      |[
-      | {
-      | "update_id":10000,
-      | "message":{
-      |   "date":1441645532,
-      |   "chat":{
-      |      "last_name":"Test Lastname",
-      |      "id":1111111,
-      |      "type": "private",
-      |      "first_name":"Test Firstname",
-      |      "username":"Testusername"
-      |   },
-      |   "message_id":1365,
-      |   "from":{
-      |      "last_name":"Test Lastname",
-      |      "id":1111111,
-      |      "first_name":"Test Firstname",
-      |      "username":"Testusername"
-      |   },
-      |   "text":"/start"
-      | }
-      | }
-      |]
-    """.stripMargin
+
 
   override def afterAll {
     shutdown()
   }
 
   "A Telegram "  should "parse json response and push notifications" in {
+    val json =
+      """
+        |[
+        | {
+        | "update_id":10000,
+        | "message":{
+        |   "date":1441645532,
+        |   "chat":{
+        |      "last_name":"Test Lastname",
+        |      "id":1111111,
+        |      "type": "private",
+        |      "first_name":"Test Firstname",
+        |      "username":"Testusername"
+        |   },
+        |   "message_id":1365,
+        |   "from":{
+        |      "last_name":"Test Lastname",
+        |      "id":1111111,
+        |      "first_name":"Test Firstname",
+        |      "username":"Testusername"
+        |   },
+        |   "text":"/start"
+        | }
+        | }
+        |]
+      """.stripMargin
+
     val mt = ActorMaterializer()
     val flow: Flow[(HttpRequest, TelegramMethod), (Try[HttpResponse], TelegramMethod), _] =
       Flow.fromFunction(req =>
