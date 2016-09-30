@@ -42,7 +42,7 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
     * Await reply from client for stations pick up.
     */
   when(FromStationSearchAsk) {
-    case Event(StringMsg(keyword), req @ Req(StationSearchMatches(variants), _, _)) if variants.contains(keyword) =>
+    case Event(keyword: String, req @ Req(StationSearchMatches(variants), _, _)) if variants.contains(keyword) =>
       val data = req.copy(from = StationDef(variants(keyword)))
       goto(DefQuery) using data
   }

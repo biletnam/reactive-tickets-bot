@@ -43,9 +43,10 @@ object Telegram {
   * Telegram API.
   */
 class Telegram(val flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _],
-                implicit
-                val mt: Materializer,
-                val botToken: BotToken) extends Actor with Log with Json4sSupport {
+               implicit
+               val mt: Materializer,
+               implicit
+               val botToken: BotToken) extends Actor with Log with Json4sSupport {
 
   import akka.http.scaladsl.unmarshalling._
   import context.dispatcher

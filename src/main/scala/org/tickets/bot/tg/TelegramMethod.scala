@@ -4,6 +4,8 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, Uri}
 
+import scala.concurrent.ExecutionContext
+
 object TelegramMethod {
 
   /**
@@ -30,7 +32,7 @@ object TelegramMethod {
     * @tparam T type of content
     * @return ready http POST request.
     */
-  def sendMessage[T: ToEntityMarshaller](content: T)(implicit tk: BotToken): HttpRequest =
+  def sendMessage[T: ToEntityMarshaller](content: T)(implicit tk: BotToken, ec: ExecutionContext): HttpRequest =
     RequestBuilding.Post(tk.SendMessageUri, content)
 
 

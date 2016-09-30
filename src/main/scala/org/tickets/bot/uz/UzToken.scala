@@ -6,7 +6,7 @@ import org.tickets.api.token.JJEncoder
 
 /**
   * Extract token from page content.
-  * @author bsnisar
+  * @author Bogdan_Snisar
   */
 private object UzToken {
   val EncodedDataPattern = Pattern.compile("\\$\\$_=.*~\\[\\];.*\"\"\\)\\(\\)\\)\\(\\);")

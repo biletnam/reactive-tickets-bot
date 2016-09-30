@@ -7,7 +7,6 @@ import akka.stream.scaladsl.Flow
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import org.tickets.bot.tg.Telegram
-import org.tickets.bot.tg.Telegram.TelegramMethod
 
 import scala.util.{Success, Try}
 import scala.concurrent.duration._
@@ -52,7 +51,7 @@ class TelegramSpec extends TestKit(ActorSystem("test")) with FlatSpecLike with B
       """.stripMargin
 
     val mt = ActorMaterializer()
-    val flow: Flow[(HttpRequest, TelegramMethod), (Try[HttpResponse], TelegramMethod), _] =
+    val flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] =
       Flow.fromFunction(req =>
         Success(HttpResponse(
           entity = HttpEntity(contentType = ContentTypes.`application/json`, json)
