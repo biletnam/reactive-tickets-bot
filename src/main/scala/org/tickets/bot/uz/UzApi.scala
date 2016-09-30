@@ -1,17 +1,19 @@
 package org.tickets.bot.uz
 
+import java.util.regex.Pattern
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.Materializer
-import akka.stream.scaladsl.Flow
-import org.tickets.misc.HttpSupport
+import com.google.common.base.{Supplier, Suppliers}
+import org.tickets.api.token.JJEncoder
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
-class TokenFlow {
+trait UzToken {
   import akka.http.scaladsl.util.FastFuture._
 
   /**
@@ -35,7 +37,18 @@ class TokenFlow {
     * @param pageContent page body as string
     * @return fresh token
     */
-  private def extractToken(pageContent: String): String = UzToken(pageContent)
+  private def extractToken(pageContent: String): String = {
+    val matcher = UzToken.EncodedDataPattern.matcher(pageContent)
+    require(matcher.find(), "Encoded block not found")
+
+    val encodedTokenData: String = pageContent.substring(matcher.start, matcher.end)
+    val decodedTokenData: String = new JJEncoder().decode(encodedTokenData)
+    val tokenMatcher = UzToken.TokenPattern.matcher(decodedTokenData)
+    require(tokenMatcher.find(), "Token not found")
+
+    val token: String = decodedTokenData.substring(tokenMatcher.start, tokenMatcher.end)
+    token
+  }
 
 
   /**
@@ -55,18 +68,36 @@ class TokenFlow {
 
 }
 
+/**
+  * Extract token from page content.
+  * @author Bogdan_Snisar
+  */
+object UzToken {
+  val EncodedDataPattern = Pattern.compile("\\$\\$_=.*~\\[\\];.*\"\"\\)\\(\\)\\)\\(\\);")
+  val TokenPattern = Pattern.compile("[0-9a-f]{32}")
+
+
+  /**
+    * Supplier for token. Memorize retrieved and extracted token.
+    * @return supplied
+    */
+  def singleton(implicit ec: ExecutionContext, mt: Materializer, as: ActorSystem): Supplier[String] = Suppliers.memoize(
+    new Supplier[String] with UzToken {
+      import scala.concurrent.duration._
+
+      override def get(): String = {
+        Await.result(loadToken, 10.seconds)
+      }
+  })
+
+
+}
+
 object UzApi {
   val RootPage = "http://booking.uz.gov.ua"
 
-  val FIND_STATIONS_URL = "/purchase/station/{stationNameFirstLetters}/"
-  val FIND_TRAINS_URL = "/purchase/search/"
-  val GET_COACHES_URL = "/purchase/coaches/"
-  val GET_FREE_SEATS_URL = "/purchase/coach/"
-
-
-  def foo() = {
-    Flow.apply[HttpSupport.Request].mapAsyncUnordered[HttpSupport.Request](100) { req =>
-      ???
-    }
-  }
+  val FindStations = "/purchase/station/{stationNameFirstLetters}/"
+  val FindTrains = "/purchase/search/"
+  val GetCoaches = "/purchase/coaches/"
+  val GetFreeSeats = "/purchase/coach/"
 }
