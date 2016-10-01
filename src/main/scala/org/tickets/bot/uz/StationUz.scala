@@ -1,12 +1,16 @@
 package org.tickets.bot.uz
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
+import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.stream.javadsl.{Sink, Source}
-import akka.stream.scaladsl.Flow
+import akka.stream.OverflowStrategy
+import akka.stream.actor.ActorPublisher
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import org.tickets.bot.uz.StationUz.FindStationsReq
+import org.tickets.misc.HttpSupport._
 
-import scala.util.Try
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 /**
   * Stations partial object.
@@ -33,16 +37,23 @@ object StationUz {
   case class Station(name: String, id: String)
 }
 
-/**
-  * UZ service.
-  * @param flow http flow
-  */
-class StationUz(val flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _]) extends Actor {
+
+
+
+/*
+class StationUz(val flow: Flow[Request, Response, _]) extends ActorPublisher[Request] {
 
   override def receive: Receive = {
     case FindStationsReq(name) =>
-      println(name)
+      val req = RequestBuilding.Get(s"/purchase/station/$name/") -> WithSender(sender())
+      val ref: Source[Nothing, ActorRef] = Source.actorRef(1, OverflowStrategy.dropTail)
+      val r = ref.via(flow).to(Sink.foreach {
+        case (Success(httpResp), WithSender(aRef)) =>
+        case (Failure(error), _) =>
+        case _ =>
+      })
   }
 }
+*/
 
 

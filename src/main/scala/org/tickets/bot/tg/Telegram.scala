@@ -4,6 +4,7 @@ import java.util.{Locale, ResourceBundle}
 
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
@@ -11,6 +12,7 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import com.typesafe.config.Config
 import org.tickets.bot.tg.Telegram._
 import org.tickets.bot.tg.TelegramMethod.BotToken
+import org.tickets.misc.HttpSupport.{Bound, EmptyContext, Request, Response}
 import org.tickets.misc.Log
 
 import scala.concurrent.Future
@@ -26,15 +28,15 @@ object Telegram {
     * @param cfg app config
     * @return https flow
     */
-  def https(cfg: Config)(implicit ac: ActorSystem, mt: Materializer): Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
-    Http().newHostConnectionPoolHttps[Int](cfg.getString("bot.api.host"))
+  def https(cfg: Config)(implicit ac: ActorSystem, mt: Materializer): Flow[Request, Response, HostConnectionPool] = {
+    Http().newHostConnectionPoolHttps[Bound](cfg.getString("bot.api.host"))
   }
 
   /**
     * Actor Props.
     * @return constructed props.
     */
-  def props(flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _], mt: Materializer, botToken: BotToken): Props = {
+  def props(flow: Flow[Request, Response, _], mt: Materializer, botToken: BotToken): Props = {
     Props(classOf[Telegram], flow, mt, botToken)
   }
 }
@@ -42,7 +44,7 @@ object Telegram {
 /**
   * Telegram API.
   */
-class Telegram(val flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _],
+class Telegram(val flow: Flow[Request, Response, _],
                implicit
                val mt: Materializer,
                implicit
@@ -76,8 +78,8 @@ class Telegram(val flow: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _],
   }
 
   private def consumeTelegramMessages(): Unit = {
-    val pullResponse: Future[(Try[HttpResponse], Int)] = Source.single(
-      TelegramMethod.getUpdates -> 1
+    val pullResponse: Future[Response] = Source.single(
+      TelegramMethod.getUpdates -> EmptyContext
     ).via(flow).runWith(Sink.head)
 
     pullResponse onSuccess {

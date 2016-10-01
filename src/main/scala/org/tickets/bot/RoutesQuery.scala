@@ -34,17 +34,22 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
   when(FromStationSearchReq) {
     case Event(StationUz.StationHits(hits), req @ Req(StationSearch(_), _, _)) =>
       val matches = groupMatches(hits)
-
       goto(FromStationSearchAsk) using req.copy(from = StationSearchMatches(matches))
+  }
+
+  private def groupMatches(stations: List[Station]): Map[String, Station] = {
+    println(stations)
+    Map()
   }
 
   /**
     * Await reply from client for stations pick up.
     */
   when(FromStationSearchAsk) {
-    case Event(keyword: String, req @ Req(StationSearchMatches(variants), _, _)) if variants.contains(keyword) =>
-      val data = req.copy(from = StationDef(variants(keyword)))
-      goto(DefQuery) using data
+    case Event(keyword: String, req @ Req(StationSearchMatches(variants), _, _))
+      if variants.contains(keyword) =>
+        val data = req.copy(from = StationDef(variants(keyword)))
+        goto(DefQuery) using data
   }
 
   onTransition {
@@ -54,8 +59,7 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
           log.info("param 1")
         case Req(_, param, _) if param.define =>
           log.info("param 2")
-        case Req(_, _, param) if param.isEmpty =>
-
+        case _ => println("-----------!")
       }
   }
 
@@ -67,11 +71,6 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
   }
 
   initialize()
-
-
-  private def groupMatches(stations: List[Station]): Map[String, Station] = {
-    Map()
-  }
 }
 
 
