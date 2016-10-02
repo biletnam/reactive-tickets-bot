@@ -39,7 +39,7 @@ final case class FindStationsCommand(sender: ActorRef)
 
   import HttpSupport.Json4sImplicits._
 
-  override def consume(httpResponse: HttpResponse)(
+  override def exec(httpResponse: HttpResponse)(
     implicit
     mt: Materializer,
     ec: ExecutionContext): Unit = {

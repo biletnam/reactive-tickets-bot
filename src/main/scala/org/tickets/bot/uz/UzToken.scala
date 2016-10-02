@@ -8,7 +8,7 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.Materializer
-import com.google.common.base.{Supplier, Suppliers}
+import com.google.common.base.Supplier
 import org.tickets.api.token.JJEncoder
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -20,15 +20,14 @@ trait UzToken {
     * Load token from root page.
     * @return token
     */
-  def loadToken(implicit ec: ExecutionContext, mt: Materializer, as: ActorSystem): Future[String] =
-    rootPage.fast.flatMap(extractPageBody).map(extractToken)
-
+  def loadToken(fetch: () => Future[HttpResponse])(implicit ec: ExecutionContext, mt: Materializer): Future[String] =
+    fetch().fast.flatMap(extractPageBody).map(extractToken)
 
   /**
     * Fetch root page content.
     * @return async http response
     */
-  private def rootPage(implicit as: ActorSystem, mt: Materializer): Future[HttpResponse] =
+  protected def rootPage(implicit as: ActorSystem, mt: Materializer): Future[HttpResponse] =
     Http().singleRequest(RequestBuilding.Get(UzApi.RootPage))
 
 
@@ -81,15 +80,12 @@ object UzToken {
     * Supplier for token. Memorize retrieved and extracted token.
     * @return supplied
     */
-  def singleton(implicit ec: ExecutionContext, mt: Materializer, as: ActorSystem): Supplier[String]
-  = Suppliers.memoize(
-    new Supplier[String] with UzToken {
-      import scala.concurrent.duration._
-
-      override def get(): String = {
-        Await.result(loadToken, 4.seconds)
-      }
-    })
-
+  def singleton(implicit
+                ec: ExecutionContext,
+                mt: Materializer, as: ActorSystem): Supplier[String]
+  = new Supplier[String] with UzToken { import scala.concurrent.duration._
+    private lazy val token = Await.result(loadToken(() => rootPage), 4.seconds)
+    override def get(): String = token
+  }
 
 }

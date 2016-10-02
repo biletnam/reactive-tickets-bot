@@ -1,9 +1,12 @@
 package org.tickets.bot.uz
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.stream.scaladsl.Flow
+import akka.stream.{Materializer, OverflowStrategy}
+import akka.stream.scaladsl.{Flow, Source}
 import com.google.common.base.Supplier
-import org.json4s.{JValue, Reader}
+import org.json4s.Reader
 import org.tickets.misc.HttpSupport._
 
 object UzApi {
@@ -24,9 +27,14 @@ object UzApi {
       httpReq.withHeaders(headers) -> context
   }
 
-  final case class FetchRoutes(from: String, to: String)
-
-  final case class RouteHits(routes: List[Route])
+  /**
+    * UZ API connection pool
+    * @param mt Materializer
+    * @param as actor system
+    * @return prepared flow
+    */
+  def http(implicit mt: Materializer, as: ActorSystem): Flow[Request, Response, _] =
+    Http().newHostConnectionPool[Bound](RootPage)
 }
 
 /**
@@ -44,8 +52,8 @@ case class Station(id: String, name: String)
   */
 object Station {
   implicit object StationReader extends Reader[Station] {
-    import org.tickets.misc.HttpSupport.Json4sImplicits._
     import org.json4s._
+    import org.tickets.misc.HttpSupport.Json4sImplicits._
 
     def read(json: JValue): Station = Station(
       id = (json \ "station_id").extract[String],

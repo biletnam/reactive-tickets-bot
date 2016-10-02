@@ -32,6 +32,6 @@ class UzApiSubscriber(implicit mt: Materializer) extends ActorSubscriber with Ac
   }
 
   private def onSuccessMsg(resp: HttpResponse, req: Req) = req match {
-    case ev: Command[_] => ev.consume(resp)
+    case ev: Command[_] => ev.exec(resp)
   }
 }

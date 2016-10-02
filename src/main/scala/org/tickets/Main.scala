@@ -15,7 +15,7 @@ object Main extends App with ActorSlf4j {
 
   val config: Config = ConfigFactory.defaultApplication().resolve()
   log.debug("Config: telegram.url = {}", config.getString("bot.api.host"))
-    val flow = Telegram.https(config)
+  val flow = Telegram.https(config)
 
   system.actorOf(Props(classOf[Telegram], flow, materializer))
   log.info("Started in {}", System.currentTimeMillis() - init)

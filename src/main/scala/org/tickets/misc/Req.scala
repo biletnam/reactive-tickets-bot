@@ -23,6 +23,6 @@ case object EmptyContext extends Req
   */
 trait Command[T] extends Req {
 
-  def consume(httpResponse: HttpResponse)(implicit mt: Materializer, ec: ExecutionContext): Unit
+  def exec(httpResponse: HttpResponse)(implicit mt: Materializer, ec: ExecutionContext): Unit
 }
 
