@@ -4,8 +4,8 @@ import java.time.LocalDate
 
 import akka.actor.{ActorRef, FSM}
 import org.tickets.bot.RoutesQuery._
-import org.tickets.bot.uz.StationUz
-import org.tickets.bot.uz.StationUz.Station
+import org.tickets.bot.uz.FindStationsCommand.StationHits
+import org.tickets.bot.uz.{FindStationsCommand, Station}
 
 /**
   * Dialog for routes definition.
@@ -23,7 +23,7 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
     case e @ Event(FindRoutes(getFrom, getTo), EmptyQuery) =>
       log.info("FindRoutes: {}", e)
       val req = Req(from = StationSearch(getFrom), to = StationSearch(getTo))
-      stationsApi ! StationUz.FindStationsReq(getFrom)
+      stationsApi ! FindStationsCommand.FindStations(getFrom)
       goto(FromStationSearchReq) using req
     case _ => ???
   }
@@ -32,7 +32,7 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
     * Reply from StationsAPI for search req.
     */
   when(FromStationSearchReq) {
-    case Event(StationUz.StationHits(hits), req @ Req(StationSearch(_), _, _)) =>
+    case Event(StationHits(hits), req @ Req(StationSearch(_), _, _)) =>
       val matches = groupMatches(hits)
       goto(FromStationSearchAsk) using req.copy(from = StationSearchMatches(matches))
   }

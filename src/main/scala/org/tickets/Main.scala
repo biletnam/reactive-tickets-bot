@@ -4,10 +4,10 @@ import akka.actor.{ActorSystem, Props}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
 import org.tickets.bot.tg.Telegram
-import org.tickets.misc.Log
+import org.tickets.misc.ActorSlf4j
 
 
-object Main extends App with Log {
+object Main extends App with ActorSlf4j {
   val init = System.currentTimeMillis()
 
   implicit val system = ActorSystem("tickets-bot")

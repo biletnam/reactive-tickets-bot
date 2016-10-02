@@ -1,22 +1,19 @@
 package org.tickets.bot.tg
 
-import java.util.{Locale, ResourceBundle}
-
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import com.typesafe.config.Config
+import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.tickets.bot.tg.Telegram._
 import org.tickets.bot.tg.TelegramMethod.BotToken
-import org.tickets.misc.HttpSupport.{Bound, EmptyContext, Request, Response}
-import org.tickets.misc.Log
+import org.tickets.misc.HttpSupport.{Bound, Request, Response}
+import org.tickets.misc.{EmptyContext, ActorSlf4j}
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 
 object Telegram {
@@ -48,16 +45,15 @@ class Telegram(val flow: Flow[Request, Response, _],
                implicit
                val mt: Materializer,
                implicit
-               val botToken: BotToken) extends Actor with Log with Json4sSupport {
+               val botToken: BotToken) extends Actor with ActorSlf4j with Json4sSupport {
 
   import akka.http.scaladsl.unmarshalling._
-  import context.dispatcher
   import org.json4s._
+  import org.tickets.misc.HttpSupport.Json4sImplicits._
+  import context.dispatcher
 
   import scala.concurrent.duration._
 
-  implicit val sz: Serialization = jackson.Serialization
-  implicit val fs: Formats = DefaultFormats
 
   private val tick = context.system.scheduler.schedule(
     initialDelay = 1.second,

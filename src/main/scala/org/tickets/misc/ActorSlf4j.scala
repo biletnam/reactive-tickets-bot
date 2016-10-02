@@ -5,6 +5,6 @@ import org.slf4j.LoggerFactory
 /**
   * Log.
   */
-trait Log {
+trait ActorSlf4j {
   val log = LoggerFactory.getLogger(this.getClass)
 }
