@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import akka.testkit.TestKit
 import com.google.common.base.Suppliers
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
 import org.tickets.misc.EmptyContext
@@ -18,7 +19,7 @@ class UzApiSpec extends FunSuite with Matchers with BeforeAndAfterAll {
   implicit val mt = ActorMaterializer()
 
   override protected def afterAll(): Unit = {
-    as.terminate()
+    TestKit.shutdownActorSystem(as)
   }
 
   test("flow prepopulate requests with API token") {

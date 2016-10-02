@@ -1,5 +1,10 @@
 <configuration>
 
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <!-- reset all previous level configurations of all j.u.l. loggers -->
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
     <!--<appender name="ASYNC500" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>500</queueSize>
         <discardingThreshold>0</discardingThreshold>
@@ -19,6 +24,11 @@
     </root>
 
     <logger name="org.tickets" level="debug"
+            additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="com.google.inject" level="info"
             additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>

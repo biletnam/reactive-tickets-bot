@@ -14,11 +14,7 @@ import scala.concurrent.{Await, Future}
   */
 class UzTokenSpec extends FlatSpec with BeforeAndAfterAll with Matchers {
 
-  implicit var system: ActorSystem = null
-
-  override protected def beforeAll(): Unit = {
-    system = ActorSystem("sys")
-  }
+  implicit var system: ActorSystem = ActorSystem("sys")
 
   override protected def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
