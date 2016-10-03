@@ -39,7 +39,7 @@ object Telegram {
 }
 
 /**
-  * Telegram API.
+  * TelegramRef API.
   */
 class Telegram(val flow: Flow[Request, Response, _],
                implicit

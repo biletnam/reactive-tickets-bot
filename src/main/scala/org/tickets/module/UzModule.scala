@@ -30,17 +30,14 @@ class UzModule extends AbstractModule {
       .toInstance(UzApi.withTokenFlow(Suppliers.ofInstance("test")))
   }
 
-  @Provides @Named("UzApiStream")
+  @Provides @UzRef
   def uzStream(@Named("UzAPI") httpFlow: Flow[Request, Response, Http.HostConnectionPool],
                @Named("UzTokenFlow") tokenFlow: Flow[Request, Request, _],
                materializer: Materializer): ActorRef = {
 
-    val flow = Flow[Request]
+    val publisher: ActorRef = Source.actorRef(100, OverflowStrategy.dropNew)
       .via(tokenFlow)
       .via(httpFlow)
-
-    val publisher: ActorRef = Source.actorRef(100, OverflowStrategy.dropNew)
-      .via(flow)
       .runWith(Sink.actorSubscriber(Props[UzApiSubscriber]), materializer)
 
     publisher
@@ -48,13 +45,4 @@ class UzModule extends AbstractModule {
 }
 
 
-class UzApiFlowProvider @Inject() (val cfg: Config,
-                                   val actorSystem: ActorSystem,
-                                   val materializer: Materializer ) extends Provider[Flow[Request, Response, Http.HostConnectionPool]] {
 
-  override def get(): Flow[Request, Response, Http.HostConnectionPool] = {
-    implicit val mt: Materializer = materializer
-    log.info("Connect to telegram host {}", UzApi.RootPage)
-    Http(actorSystem).newHostConnectionPool[Bound](UzApi.RootPageHost)
-  }
-}

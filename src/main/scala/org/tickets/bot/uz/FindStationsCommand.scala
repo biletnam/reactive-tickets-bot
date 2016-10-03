@@ -1,24 +1,21 @@
 package org.tickets.bot.uz
 
-import akka.actor.ActorRef
+import akka.actor.{ActorContext, ActorRef}
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
-import org.tickets.bot.uz.FindStationsCommand.{FindStations, StationHits}
+import org.tickets.bot.uz.FindStationsCommand.StationHits
 import org.tickets.misc.{ActorSlf4j, Command, HttpSupport}
 
 import scala.concurrent.ExecutionContext
 
 object FindStationsCommand {
 
-  /**
-    * Ask API for stations.
-    * @param like like name
-    */
-  final case class FindStations(like: String)
+  def withPattern(name: String)(implicit ac: ActorContext) =
+    FindStationsCommand(ac.self, name)
 
   /**
     * Found stations in API
@@ -34,8 +31,9 @@ object FindStationsCommand {
   * @param sender producer of this command.
   * @author Bogdan_Snisar
   */
-final case class FindStationsCommand(sender: ActorRef)
-  extends Command[FindStations] with Json4sSupport with UzCommand with ActorSlf4j {
+final case class FindStationsCommand(sender: ActorRef, like: String)
+  extends Command[String] with Json4sSupport with UzCommand with ActorSlf4j {
+
 
   import HttpSupport.Json4sImplicits._
 

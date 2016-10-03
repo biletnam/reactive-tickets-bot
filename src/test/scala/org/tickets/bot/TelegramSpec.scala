@@ -22,7 +22,7 @@ class TelegramSpec extends TestKit(ActorSystem("test")) with FlatSpecLike with B
     shutdown()
   }
 
-  "A Telegram "  should "parse json response and push notifications" in {
+  "A TelegramRef "  should "parse json response and push notifications" in {
     val json =
       """
         |[

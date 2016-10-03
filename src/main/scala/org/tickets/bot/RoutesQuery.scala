@@ -10,10 +10,7 @@ import org.tickets.bot.uz.{FindStationsCommand, Station}
 /**
   * Dialog for routes definition.
   */
-class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
-
-  private val telegram = context.actorSelection("/telegram")
-
+class RoutesQuery(val stationsApi: ActorRef, val telegram: ActorRef) extends FSM[QueryState, Query] {
   startWith(Idle, EmptyQuery)
 
   /**
@@ -23,7 +20,7 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
     case e @ Event(FindRoutes(getFrom, getTo), EmptyQuery) =>
       log.info("FindRoutes: {}", e)
       val req = Req(from = StationSearch(getFrom), to = StationSearch(getTo))
-      stationsApi ! FindStationsCommand.FindStations(getFrom)
+      stationsApi ! FindStationsCommand.withPattern(getFrom)
       goto(FromStationSearchReq) using req
     case _ => ???
   }
@@ -50,11 +47,18 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
       if variants.contains(keyword) =>
         val data = req.copy(from = StationDef(variants(keyword)))
         goto(DefQuery) using data
+    case _ => log.warning("Ops"); stay()
   }
+
+
+  when(DefQuery) {
+    case _ => ???
+  }
+
 
   onTransition {
     case _ -> DefQuery =>
-      stateData match {
+      nextStateData match {
         case Req(param, _, _) if !param.define =>
           log.info("param 1")
         case Req(_, param, _) if param.define =>
@@ -62,9 +66,9 @@ class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
         case _ => println("-----------!")
       }
   }
-
   whenUnhandled {
     // common code for both states
+
     case Event(e, s) =>
       log.warning("received unhandled request {} in state {}/{}", e, stateName, s)
       stay

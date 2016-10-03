@@ -9,9 +9,11 @@ import org.tickets.misc.ActorSlf4j
 
 class AkkaModule extends AbstractModule with AkkaGuiceSupport with ActorSlf4j {
   override def configure(): Unit = {
+
     implicit val system: ActorSystem = ActorSystem("tickets-bot")
     log.info("Initialize ActorSystem[{}]", system)
     bind(classOf[ActorSystem]).toInstance(system)
+
     val materializer = ActorMaterializer()
     bind(classOf[Materializer]).toInstance(materializer)
     bind(classOf[Config]).toInstance(ConfigFactory.defaultApplication().resolve())

@@ -1,18 +1,29 @@
 package org.tickets.bot.tg
 
+import javax.inject.Inject
+
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, Uri}
+import com.typesafe.config.Config
+import org.tickets.misc.ActorSlf4j
 
 import scala.concurrent.ExecutionContext
 
-object TelegramMethod {
+object TelegramMethod extends ActorSlf4j {
 
   /**
-    * Telegram method bot token.
+    * TelegramRef method bot token.
     * @param value token value
     */
   case class BotToken(value: String) {
+    log.info("Bot token -- {}", value)
+
+    @Inject()
+    def this(cfg: Config) = {
+      this(cfg.getString("bot.api.token"))
+    }
+
     lazy val GetUpdatesUri: Uri = Uri(s"/bot$value/getUpdates")
     lazy val SendMessageUri: Uri = Uri(s"/bot$value/sendMessage")
   }

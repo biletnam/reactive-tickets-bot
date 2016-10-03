@@ -44,7 +44,7 @@ class UzRequestsSubscriberSpec extends TestKit(ActorSystem("test")) with FlatSpe
                """.stripMargin
     val httpResponse = HttpResponse(entity = HttpEntity(json).withContentType(ContentTypes.`application/json`))
 
-    val envelope: Req = FindStationsCommand(sender.ref)
+    val envelope: Req = FindStationsCommand(sender.ref, "name")
     actor ! (Success(httpResponse), envelope)
     sender expectMsg StationHits(
       Station("2210650", "Днепродзержинск") :: Station("2208327", "Днепровская") :: Nil
