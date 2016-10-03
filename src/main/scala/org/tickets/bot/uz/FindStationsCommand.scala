@@ -1,18 +1,26 @@
 package org.tickets.bot.uz
 
 import akka.actor.{ActorContext, ActorRef}
-import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.client.RequestBuilding
+import akka.http.scaladsl.model.Uri.ParsingMode
+import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.bot.uz.FindStationsCommand.StationHits
+import org.tickets.misc.HttpSupport.Request
 import org.tickets.misc.{ActorSlf4j, Command, HttpSupport}
 
 import scala.concurrent.ExecutionContext
 
 object FindStationsCommand {
+
+  def request(ref: ActorRef, stationLike: String): Request = {
+    RequestBuilding.Post(Uri(s"/purchase/station/$stationLike", ParsingMode.Relaxed)) -> FindStationsCommand(ref, stationLike)
+  }
+
 
   def withPattern(name: String)(implicit ac: ActorContext) =
     FindStationsCommand(ac.self, name)

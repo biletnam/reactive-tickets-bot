@@ -26,9 +26,11 @@ class UzApiSubscriber(implicit mt: Materializer) extends ActorSubscriber with Ac
 
   override def receive: Receive = {
     case (Success(httpResp: HttpResponse), boundContext: Req) =>
+      log.info("Consume message {}", boundContext)
       onSuccessMsg(httpResp, boundContext)
     case (Failure(error), ctx) =>
       log.error("Http request failed {}", ctx, error)
+    case m @ _ => log.warn("Unhandled {}", m)
   }
 
   private def onSuccessMsg(resp: HttpResponse, req: Req) = req match {

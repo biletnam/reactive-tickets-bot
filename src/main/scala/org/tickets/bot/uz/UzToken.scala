@@ -10,6 +10,7 @@ import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.Materializer
 import com.google.common.base.Supplier
 import org.tickets.api.token.JJEncoder
+import org.tickets.misc.ActorSlf4j
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -71,7 +72,7 @@ trait UzToken {
   * Extract token from page content.
   * @author Bogdan_Snisar
   */
-object UzToken {
+object UzToken extends ActorSlf4j {
   val EncodedDataPattern = Pattern.compile("\\$\\$_=.*~\\[\\];.*\"\"\\)\\(\\)\\)\\(\\);")
   val TokenPattern = Pattern.compile("[0-9a-f]{32}")
 
@@ -85,7 +86,10 @@ object UzToken {
                 mt: Materializer, as: ActorSystem): Supplier[String]
   = new Supplier[String] with UzToken { import scala.concurrent.duration._
     private lazy val token = Await.result(loadToken(() => rootPage), 4.seconds)
-    override def get(): String = token
+    override def get(): String = {
+      log.info("Load token {}", token)
+      token
+    }
   }
 
 }
