@@ -10,7 +10,8 @@ import org.json4s.Reader
 import org.tickets.misc.HttpSupport._
 
 object UzApi {
-  val RootPage = "http://booking.uz.gov.ua"
+  val RootPageHost = "booking.uz.gov.ua"
+  val RootPage = s"http://$RootPageHost"
 //  val FindStations = "/purchase/station/{stationNameFirstLetters}/"
   val FindTrains = "/purchase/search/"
   val GetCoaches = "/purchase/coaches/"
@@ -21,7 +22,7 @@ object UzApi {
     * @param token toke factory
     * @return flow of requests
     */
-  def withToken(token: Supplier[String]): Flow[Request, Request, _] = Flow.fromFunction {
+  def withTokenFlow(token: Supplier[String]): Flow[Request, Request, _] = Flow.fromFunction {
     case (httpReq, context) =>
       val headers = httpReq.headers :+ RawHeader("GV-Token", token.get())
       httpReq.withHeaders(headers) -> context

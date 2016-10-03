@@ -23,7 +23,7 @@ class UzApiSpec extends FunSuite with Matchers with BeforeAndAfterAll {
   }
 
   test("flow prepopulate requests with API token") {
-    val flow = UzApi.withToken(Suppliers.ofInstance("token"))
+    val flow = UzApi.withTokenFlow(Suppliers.ofInstance("token"))
     val resp = Source.single(HttpRequest() -> EmptyContext)
       .via(flow)
       .runWith(Sink.head)

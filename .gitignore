@@ -21,6 +21,7 @@ gradle-app.setting
 # User-specific stuff:
 /.idea
 *.iml
+*.ipr
 
 # Gradle:
 .idea/gradle.xml

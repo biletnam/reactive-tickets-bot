@@ -2,10 +2,12 @@ package org.tickets
 
 import akka.actor.{ActorSystem, Props}
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Flow
 import com.google.inject.Guice
 import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.bridge.SLF4JBridgeHandler
 import org.tickets.misc.ActorSlf4j
+import org.tickets.module.{AkkaModule, MockUzTokenModule, TelegramModule, UzModule}
 
 
 object Main extends App with ActorSlf4j {
@@ -13,10 +15,12 @@ object Main extends App with ActorSlf4j {
   SLF4JBridgeHandler.removeHandlersForRootLogger()
   SLF4JBridgeHandler.install()
 
-  implicit val system = ActorSystem("tickets-bot")
-  implicit val materializer = ActorMaterializer()
+  val injector = Guice.createInjector(new AkkaModule, new TelegramModule, new UzModule, new MockUzTokenModule)
 
-  val injector = Guice.createInjector(new AkkaModule)
-
-  log.info("Started in {}", System.currentTimeMillis() - init)
+  log.info(
+    """
+      | ---------------------------------------------------
+      |   Main started in {} ms
+      | ---------------------------------------------------
+    """.stripMargin, System.currentTimeMillis() - init)
 }
