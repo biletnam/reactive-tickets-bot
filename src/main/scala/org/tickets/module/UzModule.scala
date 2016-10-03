@@ -19,6 +19,7 @@ import org.tickets.misc.HttpSupport._
 class UzModule extends AbstractModule {
 
   override def configure(): Unit = {
+
     bind(new TypeLiteral[Flow[Request, Response, Http.HostConnectionPool]](){})
       .annotatedWith(Names.named("UzAPI"))
       .toProvider(classOf[UzApiFlowProvider])
@@ -29,10 +30,11 @@ class UzModule extends AbstractModule {
       .toInstance(UzApi.withTokenFlow(Suppliers.ofInstance("test")))
   }
 
-  @Provides
+  @Provides @Named("UzApiStream")
   def uzStream(@Named("UzAPI") httpFlow: Flow[Request, Response, Http.HostConnectionPool],
                @Named("UzTokenFlow") tokenFlow: Flow[Request, Request, _],
                materializer: Materializer): ActorRef = {
+
     val flow = Flow[Request]
       .via(tokenFlow)
       .via(httpFlow)
