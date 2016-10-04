@@ -1,16 +1,20 @@
-package org.tickets.bot
+package org.tickets.bot.fsm
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 import akka.actor.{ActorRef, FSM}
-import org.tickets.bot.RoutesQuery._
-import org.tickets.bot.uz.FindStationsCommand.StationHits
-import org.tickets.bot.uz.{FindStationsCommand, Station}
+import org.tickets.bot.fsm.RoutesQuery._
+import org.tickets.bot.tg.{Telegram, TelegramRequests}
+import org.tickets.uz.Station
+import org.tickets.uz.cmd.FindStationsCommand
+import org.tickets.uz.cmd.FindStationsCommand.StationHits
 
 /**
   * Dialog for routes definition.
   */
-class RoutesQuery(val stationsApi: ActorRef, val telegram: ActorRef) extends FSM[QueryState, Query] {
+class RoutesQuery(val stationsApi: ActorRef) extends FSM[QueryState, Query] {
+  private val telegram = context.actorSelection("/telegram")
+
   startWith(Idle, EmptyQuery)
 
   /**
@@ -20,10 +24,12 @@ class RoutesQuery(val stationsApi: ActorRef, val telegram: ActorRef) extends FSM
     case e @ Event(FindRoutes(getFrom, getTo), EmptyQuery) =>
       log.info("FindRoutes: {}", e)
       val req = Req(from = StationSearch(getFrom), to = StationSearch(getTo))
-      stationsApi ! FindStationsCommand.withPattern(getFrom)
+      stationsApi ! FindStationsCommand.FindStations(getFrom)
       goto(FromStationSearchReq) using req
-    case _ => ???
+    case Event(TelegramRequests.FindRouteTo(getTo), req) => ???
   }
+
+
 
   /**
     * Reply from StationsAPI for search req.
@@ -35,8 +41,9 @@ class RoutesQuery(val stationsApi: ActorRef, val telegram: ActorRef) extends FSM
   }
 
   private def groupMatches(stations: List[Station]): Map[String, Station] = {
-    println(stations)
-    Map()
+    val now: LocalDateTime = LocalDateTime.now()
+    val seed: Int = now.getSecond + now.getMinute
+    stations.zip(1 to stations.size).map{ case (st, idx) => (Integer.toHexString(seed + idx), st) }.toMap
   }
 
   /**
@@ -47,28 +54,27 @@ class RoutesQuery(val stationsApi: ActorRef, val telegram: ActorRef) extends FSM
       if variants.contains(keyword) =>
         val data = req.copy(from = StationDef(variants(keyword)))
         goto(DefQuery) using data
-    case _ => log.warning("Ops"); stay()
   }
-
-
-  when(DefQuery) {
-    case _ => ???
-  }
-
 
   onTransition {
     case _ -> DefQuery =>
-      nextStateData match {
+      stateData match {
         case Req(param, _, _) if !param.define =>
           log.info("param 1")
         case Req(_, param, _) if param.define =>
-          log.info("param 2")
+          goto(ToStationSearchReq)
         case _ => println("-----------!")
       }
   }
+
+  private def actDestinationStation(req: Req): Unit = req match {
+    case Req(_, EmptyStation, _) =>
+      goto(ToStationSearchReq)
+
+  }
+
   whenUnhandled {
     // common code for both states
-
     case Event(e, s) =>
       log.warning("received unhandled request {} in state {}/{}", e, stateName, s)
       stay

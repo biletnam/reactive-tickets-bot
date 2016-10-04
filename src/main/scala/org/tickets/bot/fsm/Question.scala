@@ -1,5 +1,4 @@
-package org.tickets.bot
-
+package org.tickets.bot.fsm
 
 trait Question {
 

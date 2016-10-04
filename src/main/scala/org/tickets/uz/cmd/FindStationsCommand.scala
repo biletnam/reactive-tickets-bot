@@ -1,29 +1,37 @@
-package org.tickets.bot.uz
+package org.tickets.uz.cmd
 
-import akka.actor.{ActorContext, ActorRef}
+import java.net.URLEncoder
+
+import akka.actor.ActorRef
 import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.Uri.ParsingMode
-import akka.http.scaladsl.model.{HttpResponse, Uri}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
+import com.google.common.base.Charsets
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
-import org.tickets.bot.uz.FindStationsCommand.StationHits
 import org.tickets.misc.HttpSupport.Request
-import org.tickets.misc.{ActorSlf4j, Command, HttpSupport}
+import org.tickets.misc.{ActorSlf4j, HttpSupport}
+import org.tickets.uz.Station
+import org.tickets.uz.cmd.FindStationsCommand.StationHits
 
 import scala.concurrent.ExecutionContext
 
 object FindStationsCommand {
 
-  def request(ref: ActorRef, stationLike: String): Request = {
-    RequestBuilding.Post(Uri(s"/purchase/station/$stationLike", ParsingMode.Relaxed)) -> FindStationsCommand(ref, stationLike)
+  def request(nameLike: String, ref: ActorRef): Request = {
+    val encName = URLEncoder.encode(nameLike, Charsets.UTF_8.name())
+    val get: HttpRequest = RequestBuilding.Get(s"/ru/purchase/station/$encName/")
+    get -> FindStationsCommand(ref)
   }
 
 
-  def withPattern(name: String)(implicit ac: ActorContext) =
-    FindStationsCommand(ac.self, name)
+  /**
+    * Ask API for stations.
+    * @param like like name
+    */
+  final case class FindStations(like: String)
 
   /**
     * Found stations in API
@@ -39,9 +47,8 @@ object FindStationsCommand {
   * @param sender producer of this command.
   * @author Bogdan_Snisar
   */
-final case class FindStationsCommand(sender: ActorRef, like: String)
-  extends Command[String] with Json4sSupport with UzCommand with ActorSlf4j {
-
+final case class FindStationsCommand(sender: ActorRef)
+  extends Command with Json4sSupport with UzCommand with ActorSlf4j {
 
   import HttpSupport.Json4sImplicits._
 
@@ -49,10 +56,9 @@ final case class FindStationsCommand(sender: ActorRef, like: String)
     implicit
     mt: Materializer,
     ec: ExecutionContext): Unit = {
-
-    Unmarshal(httpResponse.entity).to[JValue]
-      .map(json => parseUzAnswer(json))
-      .onFailure { case ex => log.error("Unmarshalling failed", ex) }
+      Unmarshal(httpResponse.entity).to[JValue]
+        .map(json => parseUzAnswer(json))
+        .onFailure { case ex => log.error("Unmarshal failed", ex) }
   }
 
   override def onContent(data: JValue): Unit = data match {

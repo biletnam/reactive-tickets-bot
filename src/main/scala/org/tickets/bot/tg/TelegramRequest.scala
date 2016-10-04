@@ -5,7 +5,4 @@ trait TelegramRequest {
 }
 
 
-case class Test(text: String) extends TelegramRequest {
 
-  override def toMap: Map[String, Any] = ???
-}

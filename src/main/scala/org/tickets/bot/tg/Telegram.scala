@@ -17,7 +17,6 @@ import scala.util.{Failure, Success}
 
 
 object Telegram {
-
   case object GetUpdatesTick
 
   /**

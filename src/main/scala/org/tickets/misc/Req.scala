@@ -19,9 +19,8 @@ case object EmptyContext extends Req
 /**
   * Envelope of http request that was produced based on message from some actor.
   *
-  * @tparam T type of message that was act http request
   */
-trait Command[T] extends Req {
+trait Command extends Req {
 
   def exec(httpResponse: HttpResponse)(implicit mt: Materializer, ec: ExecutionContext): Unit
 }

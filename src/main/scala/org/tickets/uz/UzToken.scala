@@ -1,4 +1,4 @@
-package org.tickets.bot.uz
+package org.tickets.uz
 
 import java.util.regex.Pattern
 

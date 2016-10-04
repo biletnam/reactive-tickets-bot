@@ -1,9 +1,29 @@
-package org.tickets.bot.uz
+package org.tickets.uz.cmd
 
+import akka.http.scaladsl.model.HttpResponse
+import akka.stream.Materializer
+import org.json4s.JsonAST.JBool
 import org.json4s._
+import org.tickets.misc.Req
+
+import scala.concurrent.ExecutionContext
+
+/**
+  * Command on result of remote api call.
+  */
+trait Command extends Req {
+
+  /**
+    * Execute command on given http response.
+    * @param httpResponse response
+    */
+  def exec(httpResponse: HttpResponse)(implicit mt: Materializer, ec: ExecutionContext): Unit
+}
+
 
 /**
   * Generic command for UZ API.
+  *
   * @author Bogdan_Snisar
   */
 trait UzCommand {
@@ -29,4 +49,3 @@ trait UzCommand {
     */
   def onApiError(json: JValue) = System.err.println("api error: " + json)
 }
-
