@@ -32,6 +32,10 @@ object FindStationsCommand {
     */
   final case class StationHits(stations: List[Station])
 
+  /**
+    * API search problem.
+    */
+  final case object SearchError
 }
 
 /**
