@@ -10,8 +10,6 @@ object Main extends App with ActorSlf4j {
   SLF4JBridgeHandler.removeHandlersForRootLogger()
   SLF4JBridgeHandler.install()
 
-  val injector = Guice.createInjector()
-
   log.info(
     """
       | ---------------------------------------------------

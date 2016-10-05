@@ -26,13 +26,6 @@ object FindStationsCommand {
     get -> FindStationsCommand(ref)
   }
 
-
-  /**
-    * Ask API for stations.
-    * @param like like name
-    */
-  final case class FindStations(like: String)
-
   /**
     * Found stations in API
     * @param stations stations
@@ -47,7 +40,7 @@ object FindStationsCommand {
   * @param sender producer of this command.
   * @author Bogdan_Snisar
   */
-final case class FindStationsCommand(sender: ActorRef)
+final case class FindStationsCommand(sender: ActorRef, name: String = null)
   extends Command with Json4sSupport with UzCommand with ActorSlf4j {
 
   import HttpSupport.Json4sImplicits._
