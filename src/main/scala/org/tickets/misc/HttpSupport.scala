@@ -22,3 +22,11 @@ object HttpSupport extends ActorSlf4j {
     implicit val sz: Serialization = jackson.Serialization
   }
 }
+
+
+/**
+  * Context of http request.
+  *
+  * @author bsnisar
+  */
+trait Req

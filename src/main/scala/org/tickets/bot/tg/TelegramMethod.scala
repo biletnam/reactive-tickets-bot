@@ -11,23 +11,7 @@ import org.tickets.misc.ActorSlf4j
 import scala.concurrent.ExecutionContext
 
 object TelegramMethod extends ActorSlf4j {
-
-  /**
-    * TelegramRef method bot token.
-    * @param value token value
-    */
-  case class BotToken(value: String) {
-    log.info("Bot token -- {}", value)
-
-    @Inject()
-    def this(cfg: Config) = {
-      this(cfg.getString("bot.api.token"))
-    }
-
-    lazy val GetUpdatesUri: Uri = Uri(s"/bot$value/getUpdates")
-    lazy val SendMessageUri: Uri = Uri(s"/bot$value/sendMessage")
-  }
-
+ /*
   /**
     * <a href="https://core.telegram.org/bots/api#getupdates">Get updates</a>
     * @param tk implicit bot token.
@@ -46,7 +30,7 @@ object TelegramMethod extends ActorSlf4j {
   def sendMessage[T: ToEntityMarshaller](content: T)(implicit tk: BotToken, ec: ExecutionContext): HttpRequest =
     RequestBuilding.Post(tk.SendMessageUri, content)
 
-
+*/
 
 }
 
