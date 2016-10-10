@@ -1,6 +1,6 @@
 package org.tickets.bot
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import org.json4s.JValue
 import org.tickets.misc.LogSlf4j
 
@@ -11,26 +11,32 @@ object TalkBot {
 class TalkBot(chatId: String) extends Actor with LogSlf4j {
   import org.json4s.DefaultReaders._
 
-  override def receive: Receive = readMessage()
+  override def receive: Receive = actionCommands()
 
-
-  @scala.throws[Exception](classOf[Exception])
-  override def preStart(): Unit = {
-    log.debug("register talk to char = {}", chatId)
-  }
-
-  def readMessage(): Receive = {
-    case msg: JValue  =>
-      val text = (msg \ "text").as[String]
-      onCommand(msg, text)
-    case e @ _ =>
-      log.warn("Unhandled message {}", e)
-  }
-
-  def onCommand(msg: JValue, text: String): Unit = text match {
-    case "/start" =>
-      log.debug("Start talk...")
-    case "/new_route" =>
+  private def actionCommands(): Receive = {
+    case update: JValue =>
+      extractTextMessage(update) match {
+        case "/start" =>
+          println("CLear it")
+      }
 
   }
+
+  private def routesQueryCmd(query: ActorRef): Receive = {
+    case update: JValue =>
+
+      extractTextMessage(update) match {
+        case "clear" =>
+          println("CLear it")
+        case cmd: String =>
+          query ! cmd
+      }
+  }
+
+  private def extractTextMessage(update: JValue): String = {
+    val msg = update \ "message"
+    val text = (msg \ "text").as[String]
+    text
+  }
+
 }

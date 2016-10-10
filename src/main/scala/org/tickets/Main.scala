@@ -4,7 +4,6 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
-import org.tickets.bot.BroadcastTalksBot
 import org.tickets.bot.telegram.{TelegramMethods, TelegramPush}
 import org.tickets.bot.telegram.TelegramMethods.BotToken
 import org.tickets.misc.LogSlf4j
@@ -19,10 +18,9 @@ object Main extends App with LogSlf4j {
   implicit val as = ActorSystem("bot")
   implicit val mt = ActorMaterializer()
 
-  val chatBot = as.actorOf(BroadcastTalksBot.props)
   val botToken: BotToken = new BotToken(cfg)
 
-  TelegramMethods.telegramGraph(botToken, chatBot, TelegramPush.props)
+  TelegramMethods.telegramGraph(botToken, null, TelegramPush.props)
 
   log.info(
     """
