@@ -11,14 +11,20 @@ import org.tickets.uz.cmd.FindStationsCommand
 object QuerySpec {
   trait QueryStatus
   case object NeedDest extends QueryStatus
-  case object NeedSrc extends QueryStatus
   case object WaitDest extends QueryStatus
-  case object WaitSrc extends QueryStatus
   case object WaitClientAnswer extends QueryStatus
+  case object Ready extends QueryStatus
+
+  trait Todo
+  case object From extends Todo
+  case object To extends Todo
+
+  val Actions = From :: To :: Nil
 
   trait Param
   case object EmptyParam extends Param
-  case class StationsVars(variants: Map[String, Station], remain: Param) extends Param
+  case class Ctx(todo: Todo, remain: List[Todo], done: Map[Todo, Any]) extends Param
+  case class StationsVars(variants: Map[String, Station], param: Param) extends Param
 
   def groupStations(stations: Seq[Station]): Map[String, Station] = {
     val seed = ThreadLocalRandom.current().nextInt(10000)
@@ -30,37 +36,38 @@ object QuerySpec {
 
 }
 
-class QuerySpec(uz: ActorRef) extends FSM[QueryStatus, Param] {
+class QuerySpec(uz: ActorRef, parent: ActorRef) extends FSM[QueryStatus, Param] {
 
   when(NeedDest) {
-    case Event(likeName: String, _) =>
+    case Event(likeName: String, EmptyParam) =>
       uz ! FindStationsCommand(self, likeName)
-      goto(WaitDest) using EmptyParam
+      goto(WaitDest) using Ctx(From, To :: Nil, Map.empty)
   }
 
   when(WaitDest) {
-    case Event(FindStationsCommand.StationHits(stations), _) =>
-      goto(WaitClientAnswer) using StationsVars(groupStations(stations), EmptyParam)
+    case Event(FindStationsCommand.StationHits(stations), param) =>
+      goto(WaitClientAnswer) using StationsVars(groupStations(stations), param)
   }
 
-  when(NeedSrc) {
-    case Event(likeName: String, d) =>
-      uz ! FindStationsCommand(self, likeName)
-      goto(WaitSrc) using d
-  }
 
   when(WaitClientAnswer) {
-    case Event(id: String, d @ StationsVars(vars: Map[String, Station], _)) if vars.contains(id) =>
-      goto(NeedSrc) using d
-    case Event(id: String, d) =>
-      stay() using d
+    case Event(id: String, d @ StationsVars(vars: Map[String, Station], ctx: Ctx)) if vars.contains(id) =>
+      val station = vars(id)
+      goto(Ready) using ctx.copy(done = ctx.done + (ctx.todo -> station))
+    case Event(id: String, ctx) =>
+      stay() using ctx
   }
 
-
-
   onTransition {
-    case _ -> NeedSrc =>
-      println("Need src")
+    case _ -> Ready =>
+      nextStateData match {
+        case ctx @ Ctx(_, To :: rest, _) =>
+          parent ! ""
+          goto(NeedDest) using ctx.copy(todo = To, remain = rest)
+
+        case Ctx(todo, pending, done) if pending.isEmpty =>
+
+      }
   }
 
 }
