@@ -1,4 +1,4 @@
-package org.tickets.bot.telegram
+package org.tickets.telegram
 
 import javax.inject.Inject
 

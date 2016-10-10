@@ -1,4 +1,4 @@
-package org.tickets.bot.telegram
+package org.tickets.telegram
 
 import akka.actor.{Deploy, Props}
 import akka.stream.actor.ActorPublisher

@@ -1,4 +1,4 @@
-package org.tickets.bot.telegram
+package org.tickets.telegram
 
 import akka.actor.{ActorRef, Props}
 import akka.http.scaladsl.model.HttpResponse
