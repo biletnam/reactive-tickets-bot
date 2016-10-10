@@ -2,7 +2,7 @@ package org.tickets.uz.cmd
 
 import akka.http.scaladsl.model.HttpResponse
 import akka.stream.Materializer
-import org.tickets.misc.ActorSlf4j
+import org.tickets.misc.LogSlf4j
 
 import scala.concurrent.ExecutionContext
 
@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
   * @param delegate delegate
   * @author bsnisar
   */
-class CmdSuccessStatus(val delegate: Command) extends Command with ActorSlf4j {
+class CmdSuccessStatus(val delegate: Command) extends Command with LogSlf4j {
 
   override def exec(httpResponse: HttpResponse)(implicit mt: Materializer, ec: ExecutionContext): Unit = {
     httpResponse.status match {

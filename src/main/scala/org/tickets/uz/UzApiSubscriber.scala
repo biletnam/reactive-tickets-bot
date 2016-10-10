@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.stream.Materializer
 import akka.stream.actor.ActorSubscriberMessage.OnNext
 import akka.stream.actor.{ActorSubscriber, RequestStrategy, WatermarkRequestStrategy}
-import org.tickets.misc.{ActorSlf4j, Req}
+import org.tickets.misc.{LogSlf4j, Req}
 import org.tickets.uz.cmd.Command
 
 import scala.util.{Failure, Success}
@@ -20,7 +20,7 @@ object UzApiSubscriber {
 /**
   * Subscriber for http requests to UZ API.
   */
-class UzApiSubscriber(implicit mt: Materializer) extends ActorSubscriber with ActorSlf4j {
+class UzApiSubscriber(implicit mt: Materializer) extends ActorSubscriber with LogSlf4j {
   import context.dispatcher
 
   override

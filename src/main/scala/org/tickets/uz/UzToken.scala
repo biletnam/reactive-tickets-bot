@@ -10,7 +10,7 @@ import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.Materializer
 import com.google.common.base.Supplier
 import org.tickets.api.token.JJEncoder
-import org.tickets.misc.ActorSlf4j
+import org.tickets.misc.LogSlf4j
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -72,7 +72,7 @@ trait UzToken {
   * Extract token from page content.
   * @author Bogdan_Snisar
   */
-object UzToken extends ActorSlf4j {
+object UzToken extends LogSlf4j {
   val EncodedDataPattern = Pattern.compile("\\$\\$_=.*~\\[\\];.*\"\"\\)\\(\\)\\)\\(\\);")
   val TokenPattern = Pattern.compile("[0-9a-f]{32}")
 

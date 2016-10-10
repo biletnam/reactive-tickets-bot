@@ -12,7 +12,7 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.misc.HttpSupport.Request
-import org.tickets.misc.{ActorSlf4j, HttpSupport}
+import org.tickets.misc.{LogSlf4j, HttpSupport}
 import org.tickets.uz.Station
 import org.tickets.uz.cmd.FindStationsCommand.StationHits
 
@@ -45,7 +45,7 @@ object FindStationsCommand {
   * @author Bogdan_Snisar
   */
 final case class FindStationsCommand(sender: ActorRef, name: String = null)
-  extends Command with Json4sSupport with UzCommand with ActorSlf4j {
+  extends Command with Json4sSupport with UzCommand with LogSlf4j {
 
   import HttpSupport.Json4sImplicits._
 

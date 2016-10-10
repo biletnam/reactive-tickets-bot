@@ -8,7 +8,7 @@ import scala.util.Try
 /**
   * Created by bsnisar on 29.09.16.
   */
-object HttpSupport extends ActorSlf4j {
+object HttpSupport extends LogSlf4j {
   type Request = (HttpRequest, Bound)
   type Response = (Try[HttpResponse], Bound)
 

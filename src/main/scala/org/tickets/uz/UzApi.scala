@@ -6,11 +6,11 @@ import akka.http.scaladsl.Http.HostConnectionPool
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.{Materializer, OverflowStrategy}
 import org.json4s.Reader
-import org.tickets.misc.ActorSlf4j
+import org.tickets.misc.LogSlf4j
 import org.tickets.misc.HttpSupport.{Bound, Request, Response}
 
 
-object UzApi extends ActorSlf4j {
+object UzApi extends LogSlf4j {
   val RootPageHost = "booking.uz.gov.ua"
   val RootPage = s"http://$RootPageHost"
 
