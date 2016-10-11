@@ -37,7 +37,7 @@ class QuerySpecTest extends TestKit(ActorSystem("test")) with FunSuiteLike
 
   test("wait for input on start up") {
     spec ! QueryProtocol.Start
-    parent expectMsg UserInteractions.NeedDepartureStation
+    parent expectMsg Message.NeedDepartureStation
     spec.stateName shouldBe WaitInput
     spec.stateData shouldBe EmptyParam
   }
@@ -56,7 +56,7 @@ class QuerySpecTest extends TestKit(ActorSystem("test")) with FunSuiteLike
     val variants: Map[String, Station] = Map("1" -> station)
 
     spec ! FindStationsCommand.StationHits(List(station))
-    parent expectMsg UserInteractions.PickUpStation(variants)
+    parent expectMsg Message.PickUpStation(variants)
     spec.stateName shouldBe WaitClientChoice
     spec.stateData shouldBe TmpChoices(variants, PartialData())
   }
@@ -68,8 +68,8 @@ class QuerySpecTest extends TestKit(ActorSystem("test")) with FunSuiteLike
 
     spec ! "1"
     parent.expectMsgPF() {
-      case UserInteractions.NeedDepartureStation => Unit
-      case UserInteractions.NeedArrivalState => Unit
+      case Message.NeedDepartureStation => Unit
+      case Message.NeedArrivalState => Unit
     }
     spec.stateName shouldBe WaitInput
     spec.stateData shouldBe PartialData(Todo.Src, List(Todo.ArriveAt), Map(Todo.Dest -> station))

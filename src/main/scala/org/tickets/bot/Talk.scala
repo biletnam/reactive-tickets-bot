@@ -29,7 +29,7 @@ class Talk(chatId: String, telegram: ActorRef, railway: ActorRef) extends Actor 
       search ! e
 
     // msg to telegram
-    case msg: UserInteractions.TelegramMessage =>
+    case msg: Message.TelegramMessage =>
       log.debug("to telegram")
   }
 

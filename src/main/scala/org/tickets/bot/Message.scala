@@ -4,7 +4,7 @@ import java.util.{Locale, ResourceBundle}
 
 import org.tickets.uz.Station
 
-object UserInteractions {
+object Message {
 
   private lazy val _bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH)
 

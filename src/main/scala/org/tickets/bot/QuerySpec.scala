@@ -86,7 +86,7 @@ class QuerySpec(uz: ActorRef, parent: ActorRef) extends FSM[QueryStatus, Param] 
 
   when(Idle) {
     case Event(QueryProtocol.Start, param) =>
-      parent ! UserInteractions.NeedDepartureStation
+      parent ! Message.NeedDepartureStation
       goto(WaitInput) using param
   }
 
@@ -117,14 +117,14 @@ class QuerySpec(uz: ActorRef, parent: ActorRef) extends FSM[QueryStatus, Param] 
       import UniqueIndex._
 
       val variants: Map[String, Station] = groupBy[Station](stations)
-      parent ! UserInteractions.PickUpStation(variants)
+      parent ! Message.PickUpStation(variants)
       goto(WaitClientChoice) using TmpChoices(variants, q)
   }
 
   /**
     * Wait client pick up.
     */
-  when(WaitClientChoice, stateTimeout = 5.seconds) {
+  when(WaitClientChoice) {
 
     case Event(id: String, TmpChoices(vars, q: PartialData)) if vars.contains(id) =>
       goto(WaitInput) using q.completeAction(vars(id))
@@ -135,7 +135,7 @@ class QuerySpec(uz: ActorRef, parent: ActorRef) extends FSM[QueryStatus, Param] 
       nextStateData match {
         // ask client for next input
         case PartialData(Todo.Src, _, _) =>
-          parent ! UserInteractions.NeedArrivalState
+          parent ! Message.NeedArrivalState
 
         // complete query
         case PartialData(Todo.AllDone, _, _) =>
