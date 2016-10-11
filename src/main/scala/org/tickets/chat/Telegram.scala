@@ -1,12 +1,33 @@
 package org.tickets.chat
 
-import akka.http.scaladsl.model.HttpRequest
+import akka.NotUsed
+import akka.stream._
+import akka.stream.scaladsl.{Balance, Broadcast, Flow, GraphDSL, Merge, RunnableGraph, Sink, Source}
 
 object Telegram {
-  type Req = (HttpRequest, Bound)
-  type Bound =  ReqType
 
-  trait ReqType
-  case object Updates extends ReqType
+
+  def telegramMessagingGraph: RunnableGraph[NotUsed] = {
+    val graph = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      val A: Outlet[Int]                  = builder.add(Source.single(0)).out
+      val B: UniformFanOutShape[Int, Int] = builder.add(Broadcast[Int](2))
+      val C: UniformFanInShape[Int, Int]  = builder.add(Merge[Int](2))
+      val D: FlowShape[Int, Int]          = builder.add(Flow[Int].map(_ + 1))
+      val E: UniformFanOutShape[Int, Int] = builder.add(Balance[Int](2))
+      val F: UniformFanInShape[Int, Int]  = builder.add(Merge[Int](2))
+      val G: Inlet[Any]                   = builder.add(Sink.foreach(println)).in
+
+      C     <~      F
+      A  ~>  B  ~>  C     ~>      F
+      B  ~>  D  ~>  E  ~>  F
+      E  ~>  G
+
+      ClosedShape
+    })
+
+    graph
+  }
 
 }
