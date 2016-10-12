@@ -1,4 +1,4 @@
-package org.tickets.chat
+package org.tickets.telegram
 
 import org.json4s.JValue
 import org.json4s._
@@ -19,7 +19,7 @@ trait Update {
   def text: String
 }
 
-case class UpdateJs(id: Int, msg: JValue) extends Update {
+case class UpdateJVal(id: Int, msg: JValue) extends Update {
 
   def this(up: JValue) = {
     this((up \ "update_id").extract[Int], up \ "message")
