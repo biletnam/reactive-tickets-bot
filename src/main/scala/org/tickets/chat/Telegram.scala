@@ -1,33 +1,63 @@
 package org.tickets.chat
 
 import akka.NotUsed
+import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.stream._
 import akka.stream.scaladsl.{Balance, Broadcast, Flow, GraphDSL, Merge, RunnableGraph, Sink, Source}
+import org.tickets.misc.LogSlf4j
 
-object Telegram {
+import scala.util.{Failure, Success, Try}
 
+object Telegram  extends LogSlf4j {
+  type TgMethod = Method
+  type TgReq = (HttpRequest, TgMethod)
+  type TgRes = (Try[HttpResponse], TgMethod)
 
-  def telegramMessagingGraph: RunnableGraph[NotUsed] = {
-    val graph = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
+  /**
+    * TelegramRef method bot token.
+    * @param value token value
+    */
+  case class BotToken(value: String) {
+    log.info("Bot token -- {}", value)
+
+    lazy val GetUpdatesUri: Uri = Uri(s"/bot$value/getUpdates")
+    lazy val SendMessageUri: Uri = Uri(s"/bot$value/sendMessage")
+  }
+
+  /**
+    * Https flow to telegram.
+    *
+    * @param as actor system
+    * @param mt materializer
+    * @return request to response flow
+    */
+  def flow(implicit as: ActorSystem, mt: Materializer): Flow[TgReq, TgRes, _] = {
+    val uri: String = "api.telegram.org"
+    log.debug("create Telegram API flow {}", uri)
+    Http().newHostConnectionPoolHttps[TgMethod](uri)
+  }
+
+  def telegramGraph(tk: BotToken, chatBot: ActorRef, pushRequests: Props)
+                   (implicit mt: Materializer, as: ActorSystem): Unit = {
+    val graph = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
       import GraphDSL.Implicits._
+      import scala.concurrent.duration._
 
-      val A: Outlet[Int]                  = builder.add(Source.single(0)).out
-      val B: UniformFanOutShape[Int, Int] = builder.add(Broadcast[Int](2))
-      val C: UniformFanInShape[Int, Int]  = builder.add(Merge[Int](2))
-      val D: FlowShape[Int, Int]          = builder.add(Flow[Int].map(_ + 1))
-      val E: UniformFanOutShape[Int, Int] = builder.add(Balance[Int](2))
-      val F: UniformFanInShape[Int, Int]  = builder.add(Merge[Int](2))
-      val G: Inlet[Any]                   = builder.add(Sink.foreach(println)).in
 
-      C     <~      F
-      A  ~>  B  ~>  C     ~>      F
-      B  ~>  D  ~>  E  ~>  F
-      E  ~>  G
+      val tickSrc:    SourceShape[Pull.Tick]          = builder.add(Source.tick(initialDelay = 2.seconds, interval = 15.seconds, tick = Pull.Tick))
+      val connection: FlowShape[TgReq, TgRes]         = builder.add(flow)
+      val pullBracer: FlowShape[Pull.Tick, Pull.Pull] = builder.add(new CursorPuller)
+
+
 
       ClosedShape
     })
 
-    graph
+    graph.run()
   }
 
+
 }
+
