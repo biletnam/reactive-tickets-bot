@@ -1,6 +1,6 @@
 package org.tickets.telegram
 
-import akka.actor.Actor
+import akka.actor.{Actor, Props}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import org.json4s.JValue
@@ -11,6 +11,9 @@ import org.tickets.telegram.Telegram.{BotToken, HttpFlow}
 
 object Push {
   import org.json4s.JsonDSL._
+
+  def props(httpFlow: HttpFlow, botToken: BotToken)(implicit mt: Materializer): Props =
+    Props(classOf[Push], httpFlow, botToken, mt)
 
   type PushMsg = Msg
 
