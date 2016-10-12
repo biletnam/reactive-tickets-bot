@@ -21,7 +21,6 @@ trait Update {
 
 case class UpdateJs(id: Int, msg: JValue) extends Update {
 
-
   def this(up: JValue) = {
     this((up \ "update_id").extract[Int], up \ "message")
   }
