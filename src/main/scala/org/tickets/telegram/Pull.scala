@@ -1,11 +1,9 @@
 package org.tickets.telegram
 
 import akka.actor.{Actor, ActorRef}
-import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Pull.{Ack, NotFetch, Tick}
 import org.tickets.telegram.Telegram.{BotToken, HttpFlow}
@@ -26,7 +24,7 @@ class Pull(val httpFlow: HttpFlow,
   import context.dispatcher
 
   /**
-    *
+    * Offset of messages that was consumed.
     */
   private var offset: Int = 0
 
