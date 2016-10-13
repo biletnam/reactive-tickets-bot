@@ -5,15 +5,15 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import org.json4s.JValue
 import org.tickets.misc.LogSlf4j
-import org.tickets.telegram.Push.PushMsg
+import org.tickets.telegram.TelegramPush.PushMsg
 import org.tickets.telegram.Telegram.HttpFlow
 
 
-object Push {
+object TelegramPush {
   import org.json4s.JsonDSL._
 
   def props(httpFlow: HttpFlow, botToken: MethodBindings)(implicit mt: Materializer): Props =
-    Props(classOf[Push], httpFlow, botToken, mt)
+    Props(classOf[TelegramPush], httpFlow, botToken, mt)
 
   type PushMsg = Msg
 
@@ -43,7 +43,7 @@ object Push {
   * @param botToken bot token
   * @param mt materializer
   */
-class Push(httpFlow: HttpFlow, botToken: MethodBindings, mt: Materializer) extends Actor with LogSlf4j {
+class TelegramPush(httpFlow: HttpFlow, botToken: MethodBindings, mt: Materializer) extends Actor with LogSlf4j {
   override def receive: Receive = push()
 
   import context.dispatcher

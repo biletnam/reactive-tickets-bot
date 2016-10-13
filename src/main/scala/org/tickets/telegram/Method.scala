@@ -5,8 +5,9 @@ import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, Uri}
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JValue
+import org.tickets.misc.Logger
 import org.tickets.telegram.Method.TgReq
-import org.tickets.telegram.Push.Msg
+import org.tickets.telegram.TelegramPush.Msg
 import org.tickets.telegram.Telegram.BotToken
 
 import scala.concurrent.ExecutionContext
@@ -18,7 +19,7 @@ object Method {
   type TgRes = (Try[HttpResponse], TgMethod)
 }
 
-final case class MethodBindings(value: String) extends Json4sSupport  {
+final class MethodBindings(value: String) extends Json4sSupport  {
   import org.tickets.misc.JsonUtil._
   private lazy val GetUpdatesUri: Uri = Uri(s"/bot$value/getUpdates")
   private lazy val SendMessageUri: Uri = Uri(s"/bot$value/sendMessage")
@@ -48,6 +49,13 @@ final case class MethodBindings(value: String) extends Json4sSupport  {
     RequestBuilding.Post(SendMessageUri, content.toJson) -> SendMessage
   }
 
+}
+
+object MethodBindings {
+  def apply(token: String): MethodBindings = {
+    Logger.Log.info("MethodBindings( telegram bot token = {} )", token)
+    new MethodBindings(token)
+  }
 }
 
 /**

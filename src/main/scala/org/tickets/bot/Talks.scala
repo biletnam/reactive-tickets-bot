@@ -2,7 +2,7 @@ package org.tickets.bot
 
 import akka.actor.{Actor, ActorRef, ActorRefFactory, Props}
 import org.tickets.misc.LogSlf4j
-import org.tickets.telegram.{Pull, Update, Updates}
+import org.tickets.telegram.{TelegramPull, Update, Updates}
 
 object Talks {
   def props(push: ActorRef): Props = Props(classOf[Talks], push)
@@ -21,7 +21,7 @@ class Talks(val push: ActorRef) extends Actor with LogSlf4j {
       log.debug("#updates: content is empty")
     case updates: Updates =>
       routeAndSend(updates)
-      sender() ! Pull.Ack(updates.lastId)
+      sender() ! TelegramPull.Ack(updates.lastId)
   }
 
   private def routeAndSend(updates: Updates): Unit = {

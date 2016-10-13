@@ -6,13 +6,13 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Method.TgReq
-import org.tickets.telegram.Pull.{Ack, NotFetch, Tick}
+import org.tickets.telegram.TelegramPull.{Ack, NotFetch, Tick}
 import org.tickets.telegram.Telegram.{BotToken, HttpFlow}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-object Pull {
+object TelegramPull {
 
   /**
     * Cron trigger
@@ -31,7 +31,7 @@ object Pull {
   case class Ack(seqNum: Int)
 
   def props(httpFlow: HttpFlow, botToken: MethodBindings, dest: ActorRef)(implicit mt: Materializer): Props =
-    Props(classOf[Pull], httpFlow, botToken, mt, dest)
+    Props(classOf[TelegramPull], httpFlow, botToken, mt, dest)
 }
 
 /**
@@ -41,9 +41,9 @@ object Pull {
   * @param mt materializer
   * @param dest destination of messages
   */
-class Pull(val httpFlow: HttpFlow,
-           val token: MethodBindings,
-           val mt: Materializer, dest: ActorRef) extends Actor with LogSlf4j {
+class TelegramPull(val httpFlow: HttpFlow,
+                   val token: MethodBindings,
+                   val mt: Materializer, dest: ActorRef) extends Actor with LogSlf4j {
 
   import context.dispatcher
 

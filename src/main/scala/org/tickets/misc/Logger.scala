@@ -4,11 +4,10 @@ import org.slf4j.{LoggerFactory, Marker, MarkerFactory}
 
 object Logger {
   private val Marker: Marker = MarkerFactory.getMarker("content")
-  private val Log = LoggerFactory.getLogger(this.getClass)
-
+  val Log = LoggerFactory.getLogger(this.getClass)
 
   def logMessage(json: String): Unit = {
-    Log.debug(Marker,"Get content {}", json)
+    Log.debug("[income content] {}", json)
   }
 
 }
