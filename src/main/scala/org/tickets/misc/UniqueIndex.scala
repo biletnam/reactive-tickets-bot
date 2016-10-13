@@ -16,7 +16,10 @@ trait UniqueIndex {
 
   def groupBy[T: ToStringId](entries: Seq[T]): Map[String, T] = {
     val toStringId = implicitly[ToStringId[T]]
-    entries.zip(1 to entries.size).foldLeft(Map.empty[String, T])((map, idxEntry) => map + (toStringId(idxEntry._1, idxEntry._2) -> idxEntry._1))
+    entries.zip(1 to entries.size)
+      .foldLeft(Map.empty[String, T])((map, idxEntry) =>
+        map + (toStringId(idxEntry._1, idxEntry._2) -> idxEntry._1)
+      )
   }
 }
 
@@ -26,7 +29,6 @@ trait UniqueIndex {
   * @author Bogdan_Snisar
   */
 trait ToStringId[T] {
-  def apply(entry: T): String = apply(entry, 1)
   def apply(entry: T, idx: Int): String
 }
 
