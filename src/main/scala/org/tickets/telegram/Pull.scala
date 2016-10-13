@@ -13,16 +13,36 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 object Pull {
+
+  /**
+    * Cron trigger
+    */
   case object Tick
+
+  /**
+    * Pull failed, and should be repeat
+    */
   case object NotFetch
+
+  /**
+    * Next peace of updates have been consumed
+    * @param seqNum next sequence number.
+    */
   case class Ack(seqNum: Int)
 
-  def props(httpFlow: HttpFlow, botToken: BotToken, dest: ActorRef)(implicit mt: Materializer): Props =
+  def props(httpFlow: HttpFlow, botToken: MethodBindings, dest: ActorRef)(implicit mt: Materializer): Props =
     Props(classOf[Pull], httpFlow, botToken, mt, dest)
 }
 
+/**
+  * Periodically pull updates from Telegram API. Do it in a classic manure with scheduled cron ticks.
+  * @param httpFlow connection flow to Telegram API
+  * @param token bot token
+  * @param mt materializer
+  * @param dest destination of messages
+  */
 class Pull(val httpFlow: HttpFlow,
-           val token: BotToken,
+           val token: MethodBindings,
            val mt: Materializer, dest: ActorRef) extends Actor with LogSlf4j {
 
   import context.dispatcher
@@ -34,7 +54,7 @@ class Pull(val httpFlow: HttpFlow,
 
   override def receive: Receive = pulling()
 
-  def ack(): Receive = {
+  private def ack(): Receive = {
     case Ack(seqNum) =>
       log.debug("#ack got acknowledge by {}", seqNum)
       offset = seqNum + 1
@@ -43,9 +63,8 @@ class Pull(val httpFlow: HttpFlow,
       context become pulling()
   }
 
-  def pulling(): Receive = {
+  private def pulling(): Receive = {
     case Tick =>
-      log.debug("#pulling: on next tick")
       fetchUpdates.onComplete(deliverUpdates)
       context become ack()
   }
@@ -54,7 +73,7 @@ class Pull(val httpFlow: HttpFlow,
     * Send updates to destination or recall updates again.
     * @param tryUpdates result of computation
     */
-  def deliverUpdates(tryUpdates: Try[Updates]): Unit = tryUpdates match {
+  private def deliverUpdates(tryUpdates: Try[Updates]): Unit = tryUpdates match {
     case Success(updates) if updates.empty =>
       log.debug("#deliverUpdates no updates available")
       context become pulling()
@@ -72,12 +91,12 @@ class Pull(val httpFlow: HttpFlow,
     * Call host for updates and pars it into [[Updates]]
     * @return async result of updates.
     */
-  def fetchUpdates: Future[Updates] = {
-    val req: TgReq = if (offset < 0) GetUpdates(token) else GetUpdates(offset, token)
+  private def fetchUpdates: Future[Updates] = {
+    val req: TgReq = if (offset < 0) token.createGetUpdates() else token.createGetUpdates(Some(offset))
     log.debug("#fetchUpdates: require updates with offset > {}", offset)
 
     implicit val materializer = mt
-    implicit val um: FromEntityUnmarshaller[Updates] = UpdatesJVal.updatesByJson4s
+    implicit val um: FromEntityUnmarshaller[Updates] = UpdatesJVal.fromEntityToJson4s
 
     Source.single(req)
       .via(httpFlow)

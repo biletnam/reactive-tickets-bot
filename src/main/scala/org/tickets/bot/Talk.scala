@@ -1,50 +1,40 @@
 package org.tickets.bot
 
-import org.json4s.DefaultReaders._
-import akka.actor.{Actor, ActorRef, ActorSelection, PoisonPill, Props}
-import org.json4s.JValue
+import akka.actor.{Actor, ActorRef, Props}
 import org.tickets.misc.LogSlf4j
+import org.tickets.telegram.Telegram.ChatId
+import org.tickets.telegram.{Push, Update}
 
 object Talk {
-  def props(chatId: String): Props = Props(classOf[Talk])
+  def props(telegram: ActorRef, id: ChatId): Props
+    = Props(classOf[Talk], telegram, id)
 }
 
-
-
-class Talk(chatId: String, telegram: ActorRef, railway: ActorRef) extends Actor with LogSlf4j  {
-  private val route: ActorRef = context.actorOf(QuerySpec.props(self, railway), "/route")
-  private val search: ActorSelection = context.actorSelection("/route/search")
-
+class Talk(telegram: ActorRef, id: ChatId) extends Actor with LogSlf4j {
   override def receive: Receive = {
-
-    // telegram update
-    case update: JValue =>
-      val text = (update \ "message" \ "text").as[String]
-      log.debug("on command: {}", text)
-      onCommand(text)
-
-    // query for search
-    case e @ QueryProtocol.DefQuery(_,_,_) =>
-      log.debug("query defined")
-      search ! e
-
-    // msg to telegram
-    case msg: Message.TelegramMessage =>
-      log.debug("to telegram")
+    case update: Update =>
+      controlCommands orElse specificCommands
   }
 
-  def onCommand(cmd: String): Unit = cmd match {
-    case "/start" =>
-
-    case "/new_route" =>
-      route ! QueryProtocol.Start
-
-    case "/clear" =>
-      route ! QueryProtocol.Reload
-
-    case any: String =>
-      route ! any
+  /**
+    * Common control commands.
+    */
+  def controlCommands: Receive = {
+    case update: Update => update.text match {
+      case "/start" =>
+        log.trace("[{}] on start command", id)
+        telegram ! Push.TextMsg(id, "Hello world!")
+    }
   }
+
+  /**
+    * Specific control commands
+    * @return
+    */
+  final def specificCommands: Receive = {
+    case _ => Unit
+  }
+
 
 
 }

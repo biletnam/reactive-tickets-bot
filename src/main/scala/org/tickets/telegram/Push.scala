@@ -6,13 +6,13 @@ import akka.stream.scaladsl.{Sink, Source}
 import org.json4s.JValue
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Push.PushMsg
-import org.tickets.telegram.Telegram.{BotToken, HttpFlow}
+import org.tickets.telegram.Telegram.HttpFlow
 
 
 object Push {
   import org.json4s.JsonDSL._
 
-  def props(httpFlow: HttpFlow, botToken: BotToken)(implicit mt: Materializer): Props =
+  def props(httpFlow: HttpFlow, botToken: MethodBindings)(implicit mt: Materializer): Props =
     Props(classOf[Push], httpFlow, botToken, mt)
 
   type PushMsg = Msg
@@ -24,6 +24,11 @@ object Push {
     def toJson: JValue
   }
 
+  /**
+    * Send text to some chat.
+    * @param chatId chat id
+    * @param text text to client
+    */
   case class TextMsg(chatId: Long, text: String) extends Msg {
     override def toJson: JValue =
       ("chat_id" -> chatId) ~
@@ -32,21 +37,28 @@ object Push {
 
 }
 
-class Push(httpFlow: HttpFlow, botToken: BotToken, mt: Materializer) extends Actor with LogSlf4j {
+/**
+  * Push message to Telegram API
+  * @param httpFlow connection to Telegram API host
+  * @param botToken bot token
+  * @param mt materializer
+  */
+class Push(httpFlow: HttpFlow, botToken: MethodBindings, mt: Materializer) extends Actor with LogSlf4j {
   override def receive: Receive = push()
 
   import context.dispatcher
   implicit val materializer = mt
 
-  def push(): Receive = {
+  private def push(): Receive = {
     case msg: PushMsg =>
+      log.trace("#push: sending message {}", msg)
       pushMsg(msg).onFailure {
         case ex => log.error("#push failed", ex)
       }
   }
 
-  def pushMsg(msg: PushMsg) =
-    Source.single(SendMessage(msg.toJson, botToken))
+  private def pushMsg(msg: PushMsg) =
+    Source.single(botToken.createSendMessage(msg))
       .via(httpFlow)
       .runWith(Sink.head)
 

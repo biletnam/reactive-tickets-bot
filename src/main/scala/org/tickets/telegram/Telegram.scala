@@ -12,6 +12,8 @@ object Telegram  extends LogSlf4j {
 
   type HttpFlow = Flow[TgReq, TgRes, Any]
 
+  type ChatId = Long
+
   /**
     * TelegramRef method bot token.
     * @param value token value

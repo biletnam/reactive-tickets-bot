@@ -19,6 +19,12 @@ trait Update {
   def chat: Long
 
   /**
+    * Client username
+    * @return username
+    */
+  def user: String
+
+  /**
     * Text message from Telegram
     * @return string
     */
@@ -33,4 +39,5 @@ case class UpdateJVal(id: Int, msg: JValue) extends Update {
 
   override def text: String = (msg \ "text").extract[String]
   override def chat: Long = (msg \ "chat" \ "id").extract[Long]
+  override def user: String = (msg \ "from" \ "first_name").extract[String]
 }

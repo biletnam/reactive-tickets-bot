@@ -3,7 +3,7 @@ package org.tickets.telegram
 
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.unmarshalling._
-import org.tickets.misc.{Log, LogSlf4j}
+import org.tickets.misc.{Logger, LogSlf4j}
 
 
 /**
@@ -23,13 +23,13 @@ trait Updates {
     * All available updates
     * @return updates or empty iterable
     */
-  def updates: Iterable[Update]
+  def messages: Iterable[Update]
 
   /**
     * Number of updates in batch.
     * @return number of updates in batch
     */
-  def size: Int = updates.size
+  def size: Int = messages.size
 
   /**
     * No updates are available ?
@@ -38,10 +38,10 @@ trait Updates {
   def empty: Boolean = size == 0
 }
 
-case class UpdatesJVal(updates: List[Update]) extends Updates {
-  private lazy val maxId: Int = updates match {
+case class UpdatesJVal(messages: List[Update]) extends Updates {
+  private lazy val maxId: Int = messages match {
     case Nil => 0
-    case _ => updates.view.map(_.id).max
+    case _ => messages.view.map(_.id).max
   }
 
   override def lastId: Int = maxId
@@ -71,13 +71,13 @@ object UpdatesJVal extends LogSlf4j {
   }
 
 
-  implicit def updatesByJson4s: FromEntityUnmarshaller[Updates] =
+  implicit def fromEntityToJson4s: FromEntityUnmarshaller[Updates] =
     Unmarshaller
       .byteStringUnmarshaller
       .forContentTypes(`application/json`)
       .mapWithCharset { (data, charset) =>
         val content: String = data.decodeString(charset.nioCharset.name)
-        Log.logMessage(content)
+        Logger.logMessage(content)
         val json = parse(content)
         json.as[Updates]
       }

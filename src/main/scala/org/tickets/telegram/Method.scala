@@ -2,10 +2,11 @@ package org.tickets.telegram
 
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, Uri}
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JValue
 import org.tickets.telegram.Method.TgReq
+import org.tickets.telegram.Push.Msg
 import org.tickets.telegram.Telegram.BotToken
 
 import scala.concurrent.ExecutionContext
@@ -17,7 +18,37 @@ object Method {
   type TgRes = (Try[HttpResponse], TgMethod)
 }
 
+final case class MethodBindings(value: String) extends Json4sSupport  {
+  import org.tickets.misc.JsonUtil._
+  private lazy val GetUpdatesUri: Uri = Uri(s"/bot$value/getUpdates")
+  private lazy val SendMessageUri: Uri = Uri(s"/bot$value/sendMessage")
 
+  /**
+    * Create request type: <a href="https://core.telegram.org/bots/api#getupdates">getUpdates</a>
+    * @param offset updates offset
+    * @return [[TgReq]]
+    */
+  def createGetUpdates(offset: Option[Int] = None)(implicit ex: ExecutionContext): TgReq = {
+    val httpRequest =
+      if (offset.isEmpty)
+        RequestBuilding.Post(GetUpdatesUri)
+      else
+        RequestBuilding.Post(GetUpdatesUri, Map("offset" -> offset.get))
+
+    httpRequest -> GetUpdates
+  }
+
+  /**
+    * Create request type: <a href="https://core.telegram.org/bots/api#getupdates">sendMessage</a>
+    * @param content body for sending
+    * @param ex executor for marshaller
+    * @return telegram request
+    */
+  def createSendMessage(content: Msg)(implicit ex: ExecutionContext): TgReq = {
+    RequestBuilding.Post(SendMessageUri, content.toJson) -> SendMessage
+  }
+
+}
 
 /**
   * Telegram requests method type.

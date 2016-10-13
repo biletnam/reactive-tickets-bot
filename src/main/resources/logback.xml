@@ -23,7 +23,7 @@
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="org.tickets" level="debug"
+    <logger name="org.tickets" level="trace"
             additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
