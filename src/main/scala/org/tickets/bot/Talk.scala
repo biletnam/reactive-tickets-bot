@@ -15,12 +15,6 @@ import scala.util.{Failure, Success, Try}
 object Talk {
   def props(telegram: ActorRef, id: ChatId): Props
     = Props(classOf[Talk], telegram, id)
-
-  trait StationType
-  case object FromStation extends StationType
-  case object ToStation extends StationType
-
-  case class Q(from: Option[Station], to: Option[Station], arriveAt: List[LocalDate])
 }
 
 
@@ -39,12 +33,6 @@ class Talk(telegram: ActorRef, id: ChatId) extends Actor with LogSlf4j {
           |  /to <name> - departure station name (part of name)
         """.stripMargin)
   }
-
-  private def routeCommands(): Receive = {
-    case "/from" =>
-    case "/to" =>
-  }
-
 
   private def createMessage(text: String): Msg = {
     TelegramPush.TextMsg(id, text)
