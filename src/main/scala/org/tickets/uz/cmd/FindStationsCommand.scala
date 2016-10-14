@@ -11,9 +11,9 @@ import com.google.common.base.Charsets
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
+import org.tickets.Station
 import org.tickets.misc.HttpSupport.Request
-import org.tickets.misc.{LogSlf4j, HttpSupport}
-import org.tickets.uz.Station
+import org.tickets.misc.{HttpSupport, LogSlf4j}
 import org.tickets.uz.cmd.FindStationsCommand.StationHits
 
 import scala.concurrent.ExecutionContext

@@ -35,30 +35,8 @@ object UzApi extends LogSlf4j {
 
 }
 
-/**
-  * Station API model.
-  *
-  * @param id station id
-  * @param name station name
-  * @author bsnisar
-  */
-case class Station(id: String, name: String)
 
-/**
-  * Companion object for Station
-  * @author bsnisar
-  */
-object Station {
-  implicit object StationReader extends Reader[Station] {
-    import org.json4s._
-    import org.tickets.misc.HttpSupport.Json4sImplicits._
 
-    def read(json: JValue): Station = Station(
-      id = (json \ "station_id").extract[String],
-      name = (json \ "title").extract[String]
-    )
-  }
 
-}
 
 case class Route(name: String)

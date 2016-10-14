@@ -1,6 +1,6 @@
 package org.tickets.railway
 
-import org.tickets.uz.Station
+import org.tickets.Station
 
 import scala.concurrent.Future
 

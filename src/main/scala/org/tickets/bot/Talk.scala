@@ -1,16 +1,10 @@
 package org.tickets.bot
 
-import java.time.LocalDate
-
 import akka.actor.{Actor, ActorRef, Props}
-import org.tickets.bot.Talk.{Q, StationType}
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Telegram.ChatId
 import org.tickets.telegram.TelegramPush
 import org.tickets.telegram.TelegramPush.Msg
-import org.tickets.uz.Station
-
-import scala.util.{Failure, Success, Try}
 
 object Talk {
   def props(telegram: ActorRef, id: ChatId): Props

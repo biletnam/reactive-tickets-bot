@@ -1,27 +1,41 @@
 package org.tickets.bot
 
-import akka.actor.{Actor, ActorRef, Status}
-import org.tickets.telegram.{TelegramPush, Update => Up}
+import java.time.LocalDate
+
+import akka.actor.{Actor, Status}
+import org.tickets.Station
 import org.tickets.bot.RouteTalk._
-import org.tickets.misc.{LogSlf4j, UniqueIndex}
+import org.tickets.misc.LogSlf4j
 import org.tickets.railway.RailwayStations
-import org.tickets.telegram.Telegram.ChatId
-import org.tickets.uz.Station
+import org.tickets.telegram.{Update => Up}
 
 object RouteTalk {
 
   type Control = PartialFunction[String, Any]
 
   /**
-    * Station search hits
+    * Station search hits.
     * @param hits map of id -> station
     */
   case class Hits(hits: Map[String, Station])
 
+  /**
+    * Notify that
+    * @param q query
+    */
   case class PartDone(q: Q)
 
-  case class Q(from: Option[Station] = None, to: Option[Station] = None) {
+  /**
+    * Internal state as partially defined query.
+    * @param from maybe from station
+    * @param to maybe to station
+    * @param arriveAt list af expected arrivals
+    */
+  final case class Q(from: Option[Station] = None, to: Option[Station] = None, arriveAt: List[LocalDate] = Nil) {
 
+    /**
+      * Produce list of remain commands.
+      */
     def desc: String =
       s"""
         | Query: from[$from] to[$to]
@@ -29,8 +43,10 @@ object RouteTalk {
         |
       """.stripMargin
 
-
-    def isDefined = false
+    /**
+      * Is query defined ?
+      */
+    def isDefined = from.isDefined && to.isDefined
   }
 
   trait StationLens {
@@ -47,7 +63,15 @@ object RouteTalk {
   }
 }
 
-class RouteTalk(railwayStations: RailwayStations, notifier: TelegramNotification) extends Actor with UniqueIndex with LogSlf4j {
+/**
+  * Talk for defining particular route.
+  * @param railwayStations service for stations search
+  * @param notifier telegram notifier
+  */
+class RouteTalk(
+     val railwayStations: RailwayStations,
+     val notifier: TelegramNotification) extends Actor with LogSlf4j {
+
   import akka.pattern.pipe
   import context.dispatcher
 
@@ -65,14 +89,17 @@ class RouteTalk(railwayStations: RailwayStations, notifier: TelegramNotification
   }
 
   private def route(q: Q): Receive = {
-    case up: Up => up.text.split(" ").toList match {
+    case up: Up =>
+      val cmdQuery: List[String] = up.text.split(" ").toList
+
+      cmdQuery match {
         case "/from" :: name :: Nil =>
           log.debug("find 'from' station by {}", name)
-          searchForDeparture(q, name)
+          executeSearchRequest(name, new FromStation(q))
 
         case "/to" :: name :: Nil =>
           log.debug("find 'to' station by {}", name)
-          searchForArrival(q, name)
+          executeSearchRequest(name, new ToStation(q))
 
         case "/arriveAt" :: time :: Nil =>
           log.debug("specify arrive time {}", time)
@@ -91,27 +118,33 @@ class RouteTalk(railwayStations: RailwayStations, notifier: TelegramNotification
   }
 
 
-  private def searchForArrival(q: Q, name: String): Unit = {
+  private def executeSearchRequest(name: String, lens: StationLens): Unit = {
     railwayStations.findStations(name)
-      .map(groupBy(_)).map(Hits).pipeTo(self)
+      .map(groupStations).map(Hits).pipeTo(self)
 
-    context become waitForResults(name, new ToStation(q))
-  }
-
-  private def searchForDeparture(q: Q, name: String): Unit = {
-    railwayStations.findStations(name)
-      .map(groupBy(_)).map(Hits).pipeTo(self)
-
-    context become waitForResults(name, new FromStation(q))
+    context become waitForResults(name, lens)
   }
 
   private def waitForResults(name: String, lens: StationLens): Receive = {
     case Hits(hits) =>
+      val builder = new StringBuilder(
+        TelegramNotification.Bundle.getString("list.of.stations")
+      )
 
-    case Hits(hits) if hits.empty =>
+      for ((id, station) <- hits) {
+        builder append s"\n -------------\n Station name: ${station.name}\n Identifier: /$id\n \n"
+      }
+
+      notifier push builder.mkString
+      context become waitResponse(hits, lens)
+
+    case Hits(hits) if hits.isEmpty =>
+      notifier.pushCode(TelegramNotification.RailwayApiError, name)
+      context become route(lens.q)
 
     case Status.Failure(err) =>
       log.error("station search failed", err)
+      notifier pushCode TelegramNotification.RailwayApiError
       context become route(lens.q)
   }
 
@@ -119,5 +152,10 @@ class RouteTalk(railwayStations: RailwayStations, notifier: TelegramNotification
     case id: String if hits.contains(id) => ???
       context become route(from.withStation(hits(id)))
   }
+
+  private def groupStations(stations: List[Station]): Map[String, Station] =
+    stations.foldLeft(Map.empty[String, Station]) { (map, station) =>
+      map + (station.identifier() -> station)
+    }
 
 }
