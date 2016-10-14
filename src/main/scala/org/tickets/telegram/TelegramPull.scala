@@ -56,7 +56,7 @@ class TelegramPull(val httpFlow: HttpFlow,
 
   private def ack(): Receive = {
     case Ack(seqNum) =>
-      log.debug("#ack got acknowledge by {}", seqNum)
+      log.debug("[#ack] offset = {}", seqNum)
       offset = seqNum + 1
       context become pulling()
     case NotFetch =>
@@ -65,7 +65,8 @@ class TelegramPull(val httpFlow: HttpFlow,
 
   private def pulling(): Receive = {
     case Tick =>
-      fetchUpdates.onComplete(deliverUpdates)
+      log.debug("[#pulling] pull 'getUpdates' (offset > {})", offset)
+      fetchUpdates.onComplete(handleUpdates)
       context become ack()
   }
 
@@ -73,16 +74,16 @@ class TelegramPull(val httpFlow: HttpFlow,
     * Send updates to destination or recall updates again.
     * @param tryUpdates result of computation
     */
-  private def deliverUpdates(tryUpdates: Try[Updates]): Unit = tryUpdates match {
+  private def handleUpdates(tryUpdates: Try[Updates]): Unit = tryUpdates match {
     case Success(updates) if updates.empty =>
-      log.debug("#deliverUpdates no updates available")
+      log.debug("[#handleUpdates] no updates available")
       context become pulling()
     case Success(updates) =>
-      log.debug("#deliverUpdates fetched next updates[{}], resend to [{}]", updates.size, dest)
+      log.debug("[#handleUpdates] next updates[{}], send to [{}]", updates.size, dest)
       dest ! updates
       self ! Ack(updates.lastId)
     case Failure(ex) =>
-      log.error("#deliverUpdates failed", ex)
+      log.error("[#handleUpdates] failed", ex)
       self ! NotFetch
   }
 
@@ -93,7 +94,6 @@ class TelegramPull(val httpFlow: HttpFlow,
     */
   private def fetchUpdates: Future[Updates] = {
     val req: TgReq = if (offset < 0) token.createGetUpdates() else token.createGetUpdates(Some(offset))
-    log.debug("#fetchUpdates: require updates with offset > {}", offset)
 
     implicit val materializer = mt
     implicit val um: FromEntityUnmarshaller[Updates] = UpdatesJVal.fromEntityToJson4s

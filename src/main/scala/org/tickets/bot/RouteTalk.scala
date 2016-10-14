@@ -2,16 +2,28 @@ package org.tickets.bot
 
 import java.time.LocalDate
 
-import akka.actor.{Actor, Status}
+import akka.actor.{Actor, Props, Status}
+import com.google.common.collect.Maps
 import org.tickets.Station
 import org.tickets.bot.RouteTalk._
-import org.tickets.misc.LogSlf4j
+import org.tickets.misc.{BundleKey, LogSlf4j, Text}
 import org.tickets.railway.RailwayStations
-import org.tickets.telegram.{Update => Up}
+import org.tickets.telegram.Update
 
 object RouteTalk {
 
-  type Control = PartialFunction[String, Any]
+  def props(
+             railwayStations: RailwayStations,
+             notifier: TelegramNotification): Props = Props(classOf[RouteTalk], railwayStations, notifier)
+
+  /**
+    * Input message for Actor.
+    * @param text test for input
+    * @param up whole update [[Update]]
+    */
+  case class Cmd(text: String, up: Update) {
+    def matches(patter: String) = text.startsWith(patter)
+  }
 
   /**
     * Station search hits.
@@ -34,32 +46,9 @@ object RouteTalk {
   final case class Q(from: Option[Station] = None, to: Option[Station] = None, arriveAt: List[LocalDate] = Nil) {
 
     /**
-      * Produce list of remain commands.
-      */
-    def desc: String =
-      s"""
-        | Query: from[$from] to[$to]
-        | Commands:
-        |
-      """.stripMargin
-
-    /**
       * Is query defined ?
       */
     def isDefined = from.isDefined && to.isDefined
-  }
-
-  trait StationLens {
-    def q: Q
-    def withStation(st: Station): Q
-  }
-
-  class FromStation(val q: Q) extends StationLens {
-    override def withStation(st: Station): Q = q.copy(from = Some(st))
-  }
-
-  class ToStation(val q: Q) extends StationLens {
-    override def withStation(st: Station): Q = q.copy(to = Some(st))
   }
 }
 
@@ -75,87 +64,56 @@ class RouteTalk(
   import akka.pattern.pipe
   import context.dispatcher
 
-  override def receive: Receive = generalControl
+  override def receive: Receive = command(Q())
 
-  private def generalControl: Receive = {
-    case up: Up if matches(up, "/cancel") => ???
-      notifier << ""
-    case up: Up if matches(up, "/route") =>
-      context become route(Q())
+  private def command(q: Q): Receive = {
+    case Cmd(text, _) if text.startsWith("/start") =>
+      notifier << "Hello this is a Bot!"
+    case Cmd(text, _) if text.startsWith("/help") =>
+      notifier << Text.bundle(BundleKey.ROUTES_HELP)
+    case Cmd(text, _) if text.startsWith("/fst_") =>
+      notifier << "not implemented"
+    case Cmd(text, _) if text.startsWith("/tst_") =>
+      notifier << "not implemented"
+    case Cmd(text, _) if text.startsWith("/from") =>
+      findStation(text.split(" ").toList, q)
+    case Cmd(text, _) if text.startsWith("/to") =>
+      findStation(text.split(" ").toList, q)
   }
 
-  private def matches(up: Up, ptrn: String): Boolean = {
-    up.text.startsWith(ptrn)
+  private def findStation(words: List[String], q: Q): Unit = words match {
+    case cmd :: name :: Nil =>
+      railwayStations.findStations(name)
+        .map(groupStations).map(Hits).pipeTo(self)
+
+      context become waitForResults(name, q)
   }
 
-  private def route(q: Q): Receive = {
-    case up: Up =>
-      val cmdQuery: List[String] = up.text.split(" ").toList
-
-      cmdQuery match {
-        case "/from" :: name :: Nil =>
-          log.debug("find 'from' station by {}", name)
-          executeSearchRequest(name, new FromStation(q))
-
-        case "/to" :: name :: Nil =>
-          log.debug("find 'to' station by {}", name)
-          executeSearchRequest(name, new ToStation(q))
-
-        case "/arriveAt" :: time :: Nil =>
-          log.debug("specify arrive time {}", time)
-
-        case e @ _ =>
-          notifier << "command unknown"
-    }
-
-    case PartDone =>
-      if (q.isDefined) {
-        context.parent ! q
-      }
-
-    case e @ _ =>
-      log.warn("unexpected message {}", e)
-  }
-
-
-  private def executeSearchRequest(name: String, lens: StationLens): Unit = {
-    railwayStations.findStations(name)
-      .map(groupStations).map(Hits).pipeTo(self)
-
-    context become waitForResults(name, lens)
-  }
-
-  private def waitForResults(name: String, lens: StationLens): Receive = {
-    case Hits(hits) =>
-      val builder = new StringBuilder(
-        TelegramNotification.Bundle.getString("list.of.stations")
-      )
+  private def waitForResults(name: String, q: Q): Receive = {
+    case Hits(hits) if hits.nonEmpty =>
+      val text = new Text().addBundle(BundleKey.STATIONS_LIST)
 
       for ((id, station) <- hits) {
-        builder append s"\n -------------\n Station name: ${station.name}\n Identifier: /$id\n \n"
+        text.withDashes
+          .addBundle(BundleKey.STATION_NAME, station.name)
+          .addBundle(BundleKey.STATION_ID, id)
       }
 
-      notifier push builder.mkString
-      context become waitResponse(hits, lens)
+      notifier push text.mkString
+      context become command(q)
 
     case Hits(hits) if hits.isEmpty =>
-      notifier.pushCode(TelegramNotification.RailwayApiError, name)
-      context become route(lens.q)
+      notifier << Text.bundle(BundleKey.STATION_SEARCH_ERR, name)
+      context become command(q)
 
     case Status.Failure(err) =>
       log.error("station search failed", err)
-      notifier pushCode TelegramNotification.RailwayApiError
-      context become route(lens.q)
+      notifier << Text.bundle(BundleKey.STATION_SEARCH_ERR)
+      context become command(q)
   }
 
-  private def waitResponse(hits: Map[String, Station], from: StationLens): Receive = {
-    case id: String if hits.contains(id) => ???
-      context become route(from.withStation(hits(id)))
-  }
-
-  private def groupStations(stations: List[Station]): Map[String, Station] =
-    stations.foldLeft(Map.empty[String, Station]) { (map, station) =>
+  private def groupStations(stations: List[Station]) = stations
+    .foldLeft(Map.empty[String, Station]) { (map, station) =>
       map + (station.identifier() -> station)
     }
-
 }

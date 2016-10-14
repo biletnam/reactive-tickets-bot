@@ -1,12 +1,19 @@
 package org.tickets.telegram
 
 import akka.actor.{Actor, Props}
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import org.json4s.JValue
 import org.tickets.misc.LogSlf4j
+import org.tickets.telegram.Method.{TgMethod, TgReq}
 import org.tickets.telegram.TelegramPush.PushMsg
 import org.tickets.telegram.Telegram.HttpFlow
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
 
 
 object TelegramPush {
@@ -52,15 +59,24 @@ class TelegramPush(httpFlow: HttpFlow, botToken: MethodBindings, mt: Materialize
   private def push(): Receive = {
     case msg: PushMsg =>
       log.trace("#push: sending message {}", msg)
-      pushMsg(msg).onFailure {
-        case ex => log.error("#push failed", ex)
+      val push: Future[(Try[HttpResponse], TgMethod)] = pushMsg(msg)
+      push.onSuccess {
+        case (Success(resp: HttpResponse), e) if resp.status.isFailure() =>
+          val msg: String = Await.result(Unmarshal(resp.entity).to[String], 1.second)
+          log.warn("[#push] req {} failed {} {}",
+            e, resp.status.value, msg)
+        case (Failure(ex), _) => log.error("#push failed", ex)
+      }
+
+      push.onFailure {
+        case ex => log.error("send failed", ex)
       }
   }
 
-  private def pushMsg(msg: PushMsg) =
-    Source.single(botToken.createSendMessage(msg))
+  private def pushMsg(msg: PushMsg) = {
+    val message: TgReq = botToken.createSendMessage(msg)
+    Source.single(message)
       .via(httpFlow)
       .runWith(Sink.head)
-
-
+  }
 }
