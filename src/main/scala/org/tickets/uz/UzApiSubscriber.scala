@@ -24,7 +24,7 @@ class UzApiSubscriber(implicit mt: Materializer) extends ActorSubscriber with Lo
   import context.dispatcher
 
   override
-  protected def requestStrategy: RequestStrategy = WatermarkRequestStrategy(50)
+  protected def requestStrategy: RequestStrategy = WatermarkRequestStrategy(10)
 
   override def receive: Receive = {
     case OnNext((Success(httpResp: HttpResponse), boundContext: Req)) =>

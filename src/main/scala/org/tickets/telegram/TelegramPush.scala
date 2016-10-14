@@ -58,7 +58,6 @@ class TelegramPush(httpFlow: HttpFlow, botToken: MethodBindings, mt: Materialize
 
   private def push(): Receive = {
     case msg: PushMsg =>
-      log.trace("#push: sending message {}", msg)
       val push: Future[(Try[HttpResponse], TgMethod)] = pushMsg(msg)
       push.onSuccess {
         case (Success(resp: HttpResponse), e) if resp.status.isFailure() =>
