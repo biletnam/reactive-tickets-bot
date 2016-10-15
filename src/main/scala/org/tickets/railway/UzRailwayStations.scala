@@ -5,10 +5,12 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
+import com.google.common.cache.{Cache, CacheBuilder}
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.Station
+import org.tickets.Station.StationId
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
 import org.tickets.railway.Api.ApiFlow
 
@@ -19,11 +21,16 @@ import scala.util.{Failure, Success, Try}
   * Search throw UZ railway API
   */
 class UzRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
-  extends RailwayStations with LogSlf4j with Json4sSupport {
-  import org.tickets.misc.JsonUtil._
+extends RailwayStations with LogSlf4j with Json4sSupport {
 
   final type StationsResp = Future[List[Station]]
 
+  private lazy val cash: Cache[StationId, Station] =
+    CacheBuilder
+      .newBuilder()
+      .build[StationId, Station]()
+
+  import org.tickets.misc.JsonSupport._
 
   override def findStations(byName: String): StationsResp = {
     log.debug("[#findStations] perform search '{}'", byName)
@@ -35,6 +42,9 @@ class UzRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt
         }
   }
 
+  override def station(id: StationId): Future[Station] = {
+    Future.successful(cash.getIfPresent(id))
+  }
 
   private def handle(response: Try[HttpResponse]): StationsResp = response match {
     case Success(httpResponse) if httpResponse.status.isSuccess() =>
@@ -60,6 +70,7 @@ class UzRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt
         val content = stations.foldLeft(List.empty[Station]) { (list, data) =>
           import Station._
           val station = data.as[Station]
+          cash.put(station.identifier, station)
           station :: list
         }
         log.trace("[#parseJson] found content {}", content)

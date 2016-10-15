@@ -5,7 +5,7 @@ import akka.dispatch.MessageDispatcher
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
-import org.tickets.bot.Talk.TalkFactory
+import org.tickets.bot.Talk.TalkProps
 import org.tickets.bot.Talks
 import org.tickets.misc.LogSlf4j
 import org.tickets.railway.{Api, RailwayStations, UzRailwayStations}
@@ -31,7 +31,7 @@ object Main extends App with LogSlf4j {
   val stations: RailwayStations = new UzRailwayStations(Api.httpFlowUzApi)
 
   val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, token), "telegram_push")
-  val dest: ActorRef = system.actorOf(Talks.props(new TalkFactory(stations, pushRef)), "talks")
+  val dest: ActorRef = system.actorOf(Talks.props(new TalkProps(stations, pushRef)), "talks")
   val pullRef: ActorRef = system.actorOf(TelegramPull.props(httpFlow, token, dest), "telegram_pull")
 //  val railwayPull:  ActorRef = system.actorOf(RailwayRoutesPull.props)
 

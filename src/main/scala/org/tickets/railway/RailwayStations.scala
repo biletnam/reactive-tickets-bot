@@ -1,6 +1,7 @@
 package org.tickets.railway
 
 import org.tickets.Station
+import org.tickets.Station.StationId
 
 import scala.concurrent.Future
 
@@ -15,4 +16,11 @@ trait RailwayStations {
     * @return stations
     */
   def findStations(byName: String): Future[List[Station]]
+
+  /**
+    * Station by given id.
+    * @param id station id
+    * @return station
+    */
+  def station(id: StationId): Future[Station]
 }

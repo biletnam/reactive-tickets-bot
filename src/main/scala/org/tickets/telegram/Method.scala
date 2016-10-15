@@ -21,7 +21,7 @@ object Method {
 }
 
 final class MethodBindings(value: String) extends Json4sSupport with LogSlf4j {
-  import org.tickets.misc.JsonUtil._
+  import org.tickets.misc.JsonSupport._
   private lazy val GetUpdatesUri: Uri = Uri(s"/bot$value/getUpdates")
   private lazy val SendMessageUri: Uri = Uri(s"/bot$value/sendMessage")
 

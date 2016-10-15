@@ -6,6 +6,9 @@ import org.json4s.Reader
 import java.lang.{Long => jLong}
 import java.util.concurrent.ThreadLocalRandom
 
+import org.hashids.Hashids
+import org.tickets.Station.StationId
+
 /**
   * Station API model.
   *
@@ -15,13 +18,9 @@ import java.util.concurrent.ThreadLocalRandom
   */
 case class Station(id: String, name: String) {
 
-  def identifier: String = {
+  def identifier: StationId = {
     val maybeId: jLong = Longs.tryParse(id)
-    if (maybeId != null) {
-      jLong.toHexString(maybeId)
-    } else {
-      jLong.toHexString(ThreadLocalRandom.current().nextLong(10000))
-    }
+    jLong.toHexString(maybeId)
   }
 
 }
@@ -32,9 +31,13 @@ case class Station(id: String, name: String) {
   * @author bsnisar
   */
 object Station {
+  type StationId = String
+
+  val Hash = new Hashids("stations,lol")
+
   implicit object StationReader extends Reader[Station] {
     import org.json4s._
-    import org.tickets.misc.JsonUtil._
+    import org.tickets.misc.JsonSupport._
 
     def read(json: JValue): Station = Station(
       id = (json \ "station_id").extract[String],

@@ -8,7 +8,9 @@ public enum BundleKey {
     STATION_NAME("station.name"),
     STATION_ID("station.id"),
     STATION_SEARCH_ERR("stations.search.error"),
-    STATIONS_FOUND_LIST("list.of.stations");
+    STATIONS_FOUND_LIST("list.of.stations"),
+    SECOND_ARGUMENT_REQUIRED("second.arg.need"),
+    UNKNOWN_COMMAND("unknown.command");
 
     private static ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("Messages");
 

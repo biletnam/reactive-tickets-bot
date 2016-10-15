@@ -2,7 +2,7 @@ package org.tickets.telegram
 
 import org.json4s.JValue
 import org.json4s._
-import org.tickets.misc.JsonUtil._
+import org.tickets.misc.JsonSupport._
 
 trait Update {
 

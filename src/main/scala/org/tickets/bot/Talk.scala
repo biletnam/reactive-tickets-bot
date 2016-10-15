@@ -4,18 +4,21 @@ import java.time.LocalDate
 
 import akka.actor.{ActorRef, Props, Status}
 import org.tickets.Station
+import org.tickets.Station.StationId
 import org.tickets.bot.Bot.Cmd
 import org.tickets.bot.Talk._
-import org.tickets.misc.{BundleKey, Text}
+import org.tickets.misc.{BundleKey, IdLikeCommand, PrefixedIdLike, Text}
 import org.tickets.railway.RailwayStations
 import org.tickets.telegram.Telegram.ChatId
+
+import scala.util.{Failure, Success}
 
 object Talk {
 
   def props(railwayStations: RailwayStations, notifier: TelegramNotification): Props =
     Props(classOf[Talk], railwayStations, notifier)
 
-  class TalkFactory(val railwayStations: RailwayStations, telegram: ActorRef) extends (ChatId => Props) {
+  class TalkProps(val railwayStations: RailwayStations, telegram: ActorRef) extends (ChatId => Props) {
     override def apply(id: ChatId): Props = props(railwayStations, NotifierRef(id, telegram))
   }
 
@@ -24,31 +27,29 @@ object Talk {
     * Station search hits.
     * @param hits map of id -> station
     */
-  case class Hits(hits: Map[String, Station])
-
-  /**
-    * Notify that
-    * @param q query
-    */
-  case class PartDone(q: Q)
-
+  final case class Hits(hits: Map[String, Station])
+  
   /**
     * Internal state as partially defined query.
     * @param from maybe from station
     * @param to maybe to station
     * @param arriveAt list af expected arrivals
     */
-  final case class Q(from: Option[Station] = None, to: Option[Station] = None, arriveAt: List[LocalDate] = Nil) {
+  final case class Q(from: Option[StationId] = None, 
+                     to: Option[StationId] = None, 
+                     arriveAt: List[LocalDate] = List.empty) {
 
     /**
       * Is query defined ?
       */
     def isDefined = from.isDefined && to.isDefined
   }
-
-
-  val StationFromPrefix = "/fst_"
+  
+  val StationFromCommandPrefix = "/fst_"
   val StationToPrefix = "/tst_"
+
+  val FromPrefix = new PrefixedIdLike[String](StationFromCommandPrefix)
+  val ToPrefix = new PrefixedIdLike[String](StationToPrefix)
 }
 
 /**
@@ -70,22 +71,38 @@ class Talk(
       notifier << "Hello this is a Bot!"
     case Cmd(text, _) if text.startsWith("/help") =>
       notifier << BundleKey.ROUTES_HELP.getText
-    case Cmd(text, _) if text.startsWith("/fst_") =>
-      notifier << "not implemented"
+    case Cmd(text, _) if text.startsWith(StationFromCommandPrefix) =>
+      val id = FromPrefix.decode(text)
+      railwayStations.station(id).onComplete {
+        case Success(station) =>
+          notifier << s"Route from ${station.name}"
+        case Failure(err) =>
+          log.error("can't find station (cmd-id={}, id={})", text, id, err)
+      }
+      this becomeOf command(q.copy(from = Some(id)))
+
     case Cmd(text, _) if text.startsWith("/tst_") =>
+      this becomeOf command(q.copy(to = Some(text)))
       notifier << "not implemented"
     case Cmd(text, _) if text.startsWith("/from") =>
-      findStation(text.split(" ").toList, q) (StationFromPrefix)
+      findStation(text.split(" ").toList, q) (FromPrefix)
     case Cmd(text, _) if text.startsWith("/to") =>
-      findStation(text.split(" ").toList, q)(StationToPrefix)
+      findStation(text.split(" ").toList, q)(ToPrefix)
   }
 
-  private def findStation(words: List[String], q: Q)(implicit idPrefix: String): Unit = words match {
+  private def findStation(words: List[String], q: Q)(implicit id: IdLikeCommand[String]): Unit = words match {
     case cmd :: name :: Nil =>
       railwayStations.findStations(name)
         .map(groupStations).map(Hits).pipeTo(self)
-
       this becomeOf waitForResults(name, q)
+      
+    case cmd :: Nil =>
+      notifier <<  BundleKey.SECOND_ARGUMENT_REQUIRED.getText
+      this becomeOf command(q)
+
+    case _ =>
+      notifier <<  BundleKey.UNKNOWN_COMMAND.getText
+      this becomeOf command(q)
   }
 
   private def waitForResults(name: String, q: Q): Receive = {
@@ -111,9 +128,9 @@ class Talk(
       notifier << BundleKey.STATION_SEARCH_ERR.getText
       this becomeOf command(q)
   }
-
-  private def groupStations(stations: List[Station])(implicit prefix: String) = stations
+  
+  private def groupStations(stations: List[Station])(implicit id: IdLikeCommand[String]) = stations
     .foldLeft(Map.empty[String, Station]) { (map, station) =>
-      map + (s"$prefix${station.identifier}" -> station)
+      map + (id.encode(station.identifier) -> station)
     }
 }

@@ -49,7 +49,7 @@ case class UpdatesJVal(messages: List[Update]) extends Updates {
 
 object UpdatesJVal extends LogSlf4j {
   import org.json4s._
-  import org.tickets.misc.JsonUtil._
+  import org.tickets.misc.JsonSupport._
   import org.json4s.jackson.JsonMethods._
 
   implicit object UpdatesReader extends Reader[Updates] {

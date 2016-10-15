@@ -6,7 +6,6 @@ object Text {
 
 class Text(private val buff: StringBuilder = new StringBuilder) {
 
-
   def addLine(str: String) = {
     buff.append(str)
     newLine
