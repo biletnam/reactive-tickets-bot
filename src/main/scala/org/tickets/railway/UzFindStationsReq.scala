@@ -29,7 +29,7 @@ object UzFindStationsReq {
 case class UzFindStationsReq(promise: Promise[List[Station]]) extends Command with LogSlf4j with Json4sSupport {
   import org.tickets.misc.JsonUtil._
 
-  def run(response: Try[HttpResponse])
+  override def run(response: Try[HttpResponse])
          (implicit mt: Materializer, ec: ExecutionContext): Unit = response match {
 
     case Success(httpResponse) if httpResponse.status.isSuccess() =>
@@ -47,7 +47,7 @@ case class UzFindStationsReq(promise: Promise[List[Station]]) extends Command wi
     val isError = (json \ "error").extract[Boolean]
     if (isError) {
       log.warn("error indicator is true, content {}", json)
-      throw new ApiProtocolException("uz api error indocator is true")
+      throw new ApiProtocolException("UZ api error indicator is true")
     }
 
     json \ "value" match {

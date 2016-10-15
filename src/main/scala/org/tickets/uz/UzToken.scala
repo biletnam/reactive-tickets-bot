@@ -17,6 +17,11 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 trait UzToken {
   import akka.http.scaladsl.util.FastFuture._
 
+
+  val RootPageHost = "booking.uz.gov.ua"
+  val RootPage = s"http://$RootPageHost"
+
+
   /**
     * Load token from root page.
     * @return token
@@ -29,7 +34,7 @@ trait UzToken {
     * @return async http response
     */
   protected def rootPage(implicit as: ActorSystem, mt: Materializer): Future[HttpResponse] =
-    Http().singleRequest(RequestBuilding.Get(UzApi.RootPage))
+    Http().singleRequest(RequestBuilding.Get(RootPage))
 
 
   /**

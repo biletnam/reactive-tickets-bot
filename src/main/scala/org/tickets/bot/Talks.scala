@@ -30,7 +30,7 @@ class Talks(val push: ActorRef) extends Actor with LogSlf4j {
         case Some(ref) =>
           send(update, ref)
         case None =>
-          val ref = context.actorOf(Talk.props(push, update.chat),
+          val ref = context.actorOf(Talk.props(null, NotifierRef(update.chat, push)),
             s"usr${update.user}@${update.chat}")
           chats = chats + (update.chat -> ref)
           log.debug("#updates: new root {}, total rooms {}", ref, chats.size)
