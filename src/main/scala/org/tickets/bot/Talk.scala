@@ -2,7 +2,7 @@ package org.tickets.bot
 
 import java.time.LocalDate
 
-import akka.actor.{ActorRef, ActorRefFactory, Props, Status}
+import akka.actor.{ActorRef, Props, Status}
 import org.tickets.Station
 import org.tickets.bot.Bot.Cmd
 import org.tickets.bot.Talk._
@@ -45,6 +45,10 @@ object Talk {
       */
     def isDefined = from.isDefined && to.isDefined
   }
+
+
+  val StationFromPrefix = "/fst_"
+  val StationToPrefix = "/tst_"
 }
 
 /**
@@ -65,18 +69,18 @@ class Talk(
     case Cmd(text, _) if text.startsWith("/start") =>
       notifier << "Hello this is a Bot!"
     case Cmd(text, _) if text.startsWith("/help") =>
-      notifier << Text.bundle(BundleKey.ROUTES_HELP)
+      notifier << BundleKey.ROUTES_HELP.getText
     case Cmd(text, _) if text.startsWith("/fst_") =>
       notifier << "not implemented"
     case Cmd(text, _) if text.startsWith("/tst_") =>
       notifier << "not implemented"
     case Cmd(text, _) if text.startsWith("/from") =>
-      findStation(text.split(" ").toList, q)
+      findStation(text.split(" ").toList, q) (StationFromPrefix)
     case Cmd(text, _) if text.startsWith("/to") =>
-      findStation(text.split(" ").toList, q)
+      findStation(text.split(" ").toList, q)(StationToPrefix)
   }
 
-  private def findStation(words: List[String], q: Q): Unit = words match {
+  private def findStation(words: List[String], q: Q)(implicit idPrefix: String): Unit = words match {
     case cmd :: name :: Nil =>
       railwayStations.findStations(name)
         .map(groupStations).map(Hits).pipeTo(self)
@@ -86,29 +90,30 @@ class Talk(
 
   private def waitForResults(name: String, q: Q): Receive = {
     case Hits(hits) if hits.nonEmpty =>
-      val text = new Text().addBundle(BundleKey.STATIONS_LIST)
+      val text = new Text()
+        .addLine(BundleKey.STATIONS_FOUND_LIST.getTemplateText(name))
 
       for ((id, station) <- hits) {
         text.withDashes
-          .addBundle(BundleKey.STATION_NAME, station.name)
-          .addBundle(BundleKey.STATION_ID, id)
+          .addLine(BundleKey.STATION_NAME.getTemplateText(station.name))
+          .addLine(BundleKey.STATION_ID.getTemplateText(id))
       }
 
       notifier push text.mkString
       this becomeOf command(q)
 
     case Hits(hits) if hits.isEmpty =>
-      notifier << Text.bundle(BundleKey.STATION_SEARCH_ERR, name)
+      notifier << BundleKey.STATION_SEARCH_ERR.getTemplateText(name)
       this becomeOf command(q)
 
     case Status.Failure(err) =>
       log.error("station search failed", err)
-      notifier << Text.bundle(BundleKey.STATION_SEARCH_ERR)
+      notifier << BundleKey.STATION_SEARCH_ERR.getText
       this becomeOf command(q)
   }
 
-  private def groupStations(stations: List[Station]) = stations
+  private def groupStations(stations: List[Station])(implicit prefix: String) = stations
     .foldLeft(Map.empty[String, Station]) { (map, station) =>
-      map + (station.identifier() -> station)
+      map + (s"$prefix${station.identifier}" -> station)
     }
 }

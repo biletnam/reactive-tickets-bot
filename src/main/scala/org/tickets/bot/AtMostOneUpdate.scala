@@ -12,7 +12,7 @@ object AtMostOneUpdate {
 
 class AtMostOneUpdate(props: Props) extends Actor with LogSlf4j {
   private var lastUpdateSeqNum: Int = Int.MinValue
-  private val talk: ActorRef = context.actorOf(props)
+  private val talk: ActorRef = context.actorOf(props, "talk")
 
   override def receive: Receive = {
     case update: Update if update.id > lastUpdateSeqNum =>

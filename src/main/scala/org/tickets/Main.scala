@@ -8,10 +8,11 @@ import org.slf4j.bridge.SLF4JBridgeHandler
 import org.tickets.bot.Talk.TalkFactory
 import org.tickets.bot.Talks
 import org.tickets.misc.LogSlf4j
-import org.tickets.railway.{RailwayStations, UzRailwayStations}
+import org.tickets.railway.{Api, RailwayStations, UzRailwayStations}
 import org.tickets.telegram.Telegram.HttpFlow
 import org.tickets.telegram.{MethodBindings, Telegram, TelegramPull, TelegramPush}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 object Main extends App with LogSlf4j {
@@ -24,13 +25,14 @@ object Main extends App with LogSlf4j {
 
   implicit val system = ActorSystem("bot")
   implicit val mt = ActorMaterializer()
+  implicit val ec: ExecutionContext = system.dispatcher
 
   val httpFlow: HttpFlow = Telegram.httpFlow
-  val stations: RailwayStations = new UzRailwayStations(null, system)
+  val stations: RailwayStations = new UzRailwayStations(Api.httpFlowUzApi)
 
-  val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, token))
-  val dest: ActorRef = system.actorOf(Talks.props(new TalkFactory(stations, pushRef)))
-  val pullRef: ActorRef = system.actorOf(TelegramPull.props(httpFlow, token, dest))
+  val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, token), "telegram_push")
+  val dest: ActorRef = system.actorOf(Talks.props(new TalkFactory(stations, pushRef)), "talks")
+  val pullRef: ActorRef = system.actorOf(TelegramPull.props(httpFlow, token, dest), "telegram_pull")
 //  val railwayPull:  ActorRef = system.actorOf(RailwayRoutesPull.props)
 
   // setup periodic ticks

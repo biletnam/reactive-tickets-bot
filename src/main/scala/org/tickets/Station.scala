@@ -15,12 +15,12 @@ import java.util.concurrent.ThreadLocalRandom
   */
 case class Station(id: String, name: String) {
 
-  def identifier(prefix: String = "st_"): String = {
+  def identifier: String = {
     val maybeId: jLong = Longs.tryParse(id)
     if (maybeId != null) {
-      s"$prefix${jLong.toHexString(maybeId)}"
+      jLong.toHexString(maybeId)
     } else {
-      s"$prefix${jLong.toHexString(ThreadLocalRandom.current().nextLong(10000))}"
+      jLong.toHexString(ThreadLocalRandom.current().nextLong(10000))
     }
   }
 
