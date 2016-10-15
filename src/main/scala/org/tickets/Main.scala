@@ -5,10 +5,12 @@ import akka.dispatch.MessageDispatcher
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
+import org.tickets.bot.Talk.TalkFactory
 import org.tickets.bot.Talks
 import org.tickets.misc.LogSlf4j
+import org.tickets.railway.{RailwayStations, UzRailwayStations}
 import org.tickets.telegram.Telegram.HttpFlow
-import org.tickets.telegram.{MethodBindings, TelegramPull, TelegramPush, Telegram}
+import org.tickets.telegram.{MethodBindings, Telegram, TelegramPull, TelegramPush}
 
 import scala.concurrent.duration._
 
@@ -24,8 +26,10 @@ object Main extends App with LogSlf4j {
   implicit val mt = ActorMaterializer()
 
   val httpFlow: HttpFlow = Telegram.httpFlow
+  val stations: RailwayStations = new UzRailwayStations(null, system)
+
   val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, token))
-  val dest: ActorRef = system.actorOf(Talks.props(pushRef))
+  val dest: ActorRef = system.actorOf(Talks.props(new TalkFactory(stations, pushRef)))
   val pullRef: ActorRef = system.actorOf(TelegramPull.props(httpFlow, token, dest))
 //  val railwayPull:  ActorRef = system.actorOf(RailwayRoutesPull.props)
 

@@ -34,7 +34,7 @@ case class Station(id: String, name: String) {
 object Station {
   implicit object StationReader extends Reader[Station] {
     import org.json4s._
-    import org.tickets.misc.HttpSupport.Json4sImplicits._
+    import org.tickets.misc.JsonUtil._
 
     def read(json: JValue): Station = Station(
       id = (json \ "station_id").extract[String],

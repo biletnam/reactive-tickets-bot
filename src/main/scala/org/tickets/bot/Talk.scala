@@ -2,17 +2,23 @@ package org.tickets.bot
 
 import java.time.LocalDate
 
-import akka.actor.{Props, Status}
+import akka.actor.{ActorRef, ActorRefFactory, Props, Status}
 import org.tickets.Station
 import org.tickets.bot.Bot.Cmd
 import org.tickets.bot.Talk._
 import org.tickets.misc.{BundleKey, Text}
 import org.tickets.railway.RailwayStations
+import org.tickets.telegram.Telegram.ChatId
 
 object Talk {
 
   def props(railwayStations: RailwayStations, notifier: TelegramNotification): Props =
     Props(classOf[Talk], railwayStations, notifier)
+
+  class TalkFactory(val railwayStations: RailwayStations, telegram: ActorRef) extends (ChatId => Props) {
+    override def apply(id: ChatId): Props = props(railwayStations, NotifierRef(id, telegram))
+  }
+
 
   /**
     * Station search hits.
@@ -42,7 +48,7 @@ object Talk {
 }
 
 /**
-  * Talk for defining particular route.
+  * OneAtMostUpdate for defining particular route.
   * @param railwayStations service for stations search
   * @param notifier telegram notifier
   */
