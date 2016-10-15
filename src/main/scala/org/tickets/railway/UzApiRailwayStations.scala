@@ -20,15 +20,10 @@ import scala.util.{Failure, Success, Try}
 /**
   * Search throw UZ railway API
   */
-class UzRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
+class UzApiRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
 extends RailwayStations with LogSlf4j with Json4sSupport {
 
   final type StationsResp = Future[List[Station]]
-
-  private lazy val cash: Cache[StationId, Station] =
-    CacheBuilder
-      .newBuilder()
-      .build[StationId, Station]()
 
   import org.tickets.misc.JsonSupport._
 
@@ -43,7 +38,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
   }
 
   override def station(id: StationId): Future[Station] = {
-    Future.successful(cash.getIfPresent(id))
+    Future.failed(new UnsupportedOperationException)
   }
 
   private def handle(response: Try[HttpResponse]): StationsResp = response match {
