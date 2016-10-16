@@ -38,6 +38,11 @@ dependencies {
     compile group: 'org.hashids', name: 'hashids', version: '1.0.1'
     compile group: 'com.softwaremill.quicklens', name: 'quicklens_2.11', version: '1.4.7'
 
+    //db support
+    compile group: 'com.h2database', name: 'h2', version: '1.4.192'
+    compile group: 'org.scalikejdbc', name: 'scalikejdbc_2.11', version: '2.4.2'
+
+
     compile group: 'org.iq80.leveldb', name: 'leveldb', version: '0.7'
     compile group: 'org.fusesource.leveldbjni', name: 'leveldbjni-all', version: '1.8'
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.8'
