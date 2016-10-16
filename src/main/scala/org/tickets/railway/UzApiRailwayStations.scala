@@ -7,7 +7,7 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
-import org.tickets.railway.Api.ApiFlow
+import org.tickets.railway.uz.Api.ApiFlow
 import org.tickets.railway.spy.Station.StationId
 
 import scala.concurrent.{ExecutionContext, Future}

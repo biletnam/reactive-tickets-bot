@@ -37,7 +37,6 @@ dependencies {
 
     compile group: 'org.hashids', name: 'hashids', version: '1.0.1'
     compile group: 'com.softwaremill.quicklens', name: 'quicklens_2.11', version: '1.4.7'
-    compile group: 'com.onyxdevtools', name: 'onyx-database', version: '1.0.1'
 
     compile group: 'org.iq80.leveldb', name: 'leveldb', version: '0.7'
     compile group: 'org.fusesource.leveldbjni', name: 'leveldbjni-all', version: '1.8'

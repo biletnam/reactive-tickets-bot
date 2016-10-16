@@ -16,6 +16,12 @@ object JMockSupport {
     mockery.setThreadingPolicy(new Synchroniser)
     new JMockSupport(mockery)
   }
+
+  def simple: JMockSupport = {
+    val mockery = new Mockery
+    mockery.setImposteriser(ClassImposteriser.INSTANCE)
+    new JMockSupport(mockery)
+  }
 }
 
 class JMockSupport(val mockery: Mockery) {

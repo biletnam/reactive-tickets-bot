@@ -1,17 +1,11 @@
-package org.tickets.railway
+package org.tickets.railway.uz
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream._
-import akka.stream.actor.ActorSubscriberMessage.OnNext
-import akka.stream.actor.{ActorSubscriber, RequestStrategy, WatermarkRequestStrategy}
-import akka.stream.scaladsl.{Flow, Sink, Source}
-import org.tickets.misc.LogSlf4j
-import org.tickets.railway.Api.Res
+import akka.stream.scaladsl.Flow
 
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 object Api {
