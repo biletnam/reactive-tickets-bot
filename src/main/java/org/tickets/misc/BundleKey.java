@@ -10,6 +10,8 @@ public enum BundleKey {
     STATION_SEARCH_ERR("stations.search.error"),
     STATIONS_FOUND_LIST("list.of.stations"),
     SECOND_ARGUMENT_REQUIRED("second.arg.need"),
+    STATION_DEFINED("station.defined"),
+    ARRIVAL_TIME_DEFINED("arrival.defined"),
     UNKNOWN_COMMAND("unknown.command");
 
     private static ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("Messages");
@@ -28,4 +30,7 @@ public enum BundleKey {
         return MessageFormat.format(getText(), arg);
     }
 
+    public String getTemplateText(Object arg, Object arg2) {
+        return MessageFormat.format(getText(), arg, arg2);
+    }
 }

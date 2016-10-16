@@ -34,17 +34,39 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
     push.expectMsgPF() {
       case TelegramPush.TextMsg(100, msg) if msg.contains("/fst_") => true
     }
-    cycle.mockery.assertIsSatisfied()
+    cycle.assert()
   }
 
-  test("parse from station command-id") {
+  test("find stations by /to name") {
+    val cycle = JMockSupport.threadSafe
+    import cycle._
+
+    val push = TestProbe()
+    val notifier: TelegramNotification = NotifierRef(100, push.ref)
+    val stations: RailwayStations = mock[RailwayStations]
+
+    expecting { e => import e._
+      oneOf(stations).findStations("Dn")
+      will(returnValue(Future.successful(List(StationUz("13431", "Dn-01")))))
+    }
+
+    val sut = TestActorRef(Talk.props(stations, notifier))
+    sut ! Bot.Cmd("/to Dn", mock[Update])
+
+    push.expectMsgPF() {
+      case TelegramPush.TextMsg(100, msg) if msg.contains("/tst_") => true
+    }
+    cycle.assert()
+  }
+
+  test("parse 'from' station command-id") {
     val cycle = JMockSupport.threadSafe
     import cycle._
 
     val notifier: TelegramNotification = mock[TelegramNotification]
     val stations: RailwayStations = mock[RailwayStations]
 
-    val ref = TestActorRef(Talk.props(stations, notifier))
+    val sut = TestActorRef(Talk.props(stations, notifier))
 
     expecting { e => import e._
       oneOf(stations).station("21bba0")
@@ -52,11 +74,50 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
     }
 
     expecting { e => import e._
-      oneOf(notifier) << "Route from Dn-01"
+      oneOf(notifier) << withArg(aNonNull[String])
     }
 
-    ref ! Bot.Cmd("/fst_21bba0", mock[Update])
-    cycle.mockery.assertIsSatisfied()
+    sut ! Bot.Cmd("/fst_21bba0", mock[Update])
+    cycle.assert()
+  }
+
+  test("parse 'to' station command-id") {
+    val cycle = JMockSupport.threadSafe
+    import cycle._
+
+    val notifier: TelegramNotification = mock[TelegramNotification]
+    val stations: RailwayStations = mock[RailwayStations]
+
+    val sut = TestActorRef(Talk.props(stations, notifier))
+
+    expecting { e => import e._
+      oneOf(stations).station("21bba0")
+      will(returnValue(Future.successful(StationUz("13431", "Dn-01"))))
+    }
+
+    expecting { e => import e._
+      oneOf(notifier) << withArg(aNonNull[String])
+    }
+
+    sut ! Bot.Cmd("/tst_21bba0", mock[Update])
+    cycle.assert()
+  }
+
+  test("parse '/arriveTo' command") {
+    val cycle = JMockSupport.threadSafe
+    import cycle._
+
+    val notifier: TelegramNotification = mock[TelegramNotification]
+    val stations: RailwayStations = mock[RailwayStations]
+
+    val sut = TestActorRef(Talk.props(stations, notifier))
+
+    expecting { e => import e._
+      oneOf(notifier) << withArg(aNonNull[String])
+    }
+
+    sut ! Bot.Cmd("/arriveTo 10-12-16", mock[Update])
+    cycle.assert()
   }
 
 }

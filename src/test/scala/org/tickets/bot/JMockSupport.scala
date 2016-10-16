@@ -1,10 +1,10 @@
 package org.tickets.bot
 
+import org.hamcrest.Matcher
 import org.jmock.api.Action
-import org.jmock.{AbstractExpectations, Expectations, Mockery}
 import org.jmock.lib.concurrent.Synchroniser
 import org.jmock.lib.legacy.ClassImposteriser
-import org.scalatest.jmock.JMockExpectations
+import org.jmock.{AbstractExpectations, Expectations, Mockery}
 
 import scala.reflect.ClassTag
 
@@ -25,7 +25,16 @@ class JMockSupport(val mockery: Mockery) {
   }
 
   class Expects extends Expectations {
-    def returnValue(obj: Any): Action = AbstractExpectations.returnValue(obj)
+    def returnValue(obj: Any): Action =
+      AbstractExpectations.returnValue(obj)
+
+    def aNonNull[T <: AnyRef](implicit classTag: ClassTag[T]): Matcher[T] =
+      AbstractExpectations.aNonNull(classTag.runtimeClass.asInstanceOf[Class[T]])
+
+    /**
+      * Invokes <code>with</code> on this instance, passing in the passed matcher.
+      */
+    def withArg[T](matcher: Matcher[T]): T = `with`(matcher)
   }
 
   /**
@@ -36,4 +45,9 @@ class JMockSupport(val mockery: Mockery) {
     fun(e)
     mockery.checking(e)
   }
+
+  def assert(): Unit = {
+    mockery.assertIsSatisfied()
+  }
+
 }
