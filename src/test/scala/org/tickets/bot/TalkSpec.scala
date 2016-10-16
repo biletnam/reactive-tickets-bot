@@ -2,9 +2,9 @@ package org.tickets.bot
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
-import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuiteLike, Matchers}
-import org.tickets.Station
+import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuiteLike}
 import org.tickets.railway.RailwayStations
+import org.tickets.railway.spy.StationUz
 import org.tickets.telegram.{TelegramPush, Update}
 
 import scala.concurrent.Future
@@ -25,7 +25,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
 
     expecting { e => import e._
       oneOf(stations).findStations("Dn")
-      will(returnValue(Future.successful(List(Station("13431", "Dn-01")))))
+      will(returnValue(Future.successful(List(StationUz("13431", "Dn-01")))))
     }
 
     val ref = TestActorRef(Talk.props(stations, notifier))
@@ -48,7 +48,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
 
     expecting { e => import e._
       oneOf(stations).station("21bba0")
-      will(returnValue(Future.successful(Station("13431", "Dn-01"))))
+      will(returnValue(Future.successful(StationUz("13431", "Dn-01"))))
     }
 
     expecting { e => import e._

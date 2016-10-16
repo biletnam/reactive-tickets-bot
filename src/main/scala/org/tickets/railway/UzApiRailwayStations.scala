@@ -1,20 +1,16 @@
 package org.tickets.railway
-import java.util.concurrent.TimeoutException
-
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import com.google.common.cache.{Cache, CacheBuilder}
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
-import org.tickets.Station
-import org.tickets.Station.StationId
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
 import org.tickets.railway.Api.ApiFlow
+import org.tickets.railway.spy.Station.StationId
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -23,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 class UzApiRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
 extends RailwayStations with LogSlf4j with Json4sSupport {
 
-  final type StationsResp = Future[List[Station]]
+  final type StationsResp = Future[List[spy.Station]]
 
   import org.tickets.misc.JsonSupport._
 
@@ -37,7 +33,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
         }
   }
 
-  override def station(id: StationId): Future[Station] = {
+  override def station(id: StationId): Future[spy.Station] = {
     Future.failed(new UnsupportedOperationException)
   }
 
@@ -53,7 +49,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
       Future.failed(err)
   }
 
-  private def parseJson(json: JValue): List[Station] = {
+  private def parseJson(json: JValue): List[spy.Station] = {
     val isError = (json \ "error").extract[Boolean]
     if (isError) {
       log.warn("error indicator is true, content {}", json)
@@ -62,10 +58,10 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
 
     json \ "value" match {
       case JArray(stations) =>
-        val content = stations.foldLeft(List.empty[Station]) { (list, data) =>
-          import Station._
-          val station = data.as[Station]
-          cash.put(station.identifier, station)
+        val content = stations.foldLeft(List.empty[spy.Station]) { (list, data) =>
+          import spy.StationUz._
+
+          val station = data.as[spy.Station]
           station :: list
         }
         log.trace("[#parseJson] found content {}", content)

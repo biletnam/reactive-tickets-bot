@@ -1,4 +1,4 @@
-package org.tickets.uz
+package org.tickets.railway.uz
 
 import java.util.regex.Pattern
 

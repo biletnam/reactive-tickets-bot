@@ -3,12 +3,12 @@ package org.tickets.bot
 import java.time.LocalDate
 
 import akka.actor.{ActorRef, Props, Status}
-import org.tickets.Station
-import org.tickets.Station.StationId
 import org.tickets.bot.Bot.Cmd
 import org.tickets.bot.Talk._
 import org.tickets.misc.{BundleKey, IdLikeCommand, PrefixedIdLike, Text}
 import org.tickets.railway.RailwayStations
+import org.tickets.railway.spy.Station
+import org.tickets.railway.spy.Station.StationId
 import org.tickets.telegram.Telegram.ChatId
 
 import scala.util.{Failure, Success}
@@ -46,14 +46,14 @@ object Talk {
   }
   
   val StationFromCommandPrefix = "/fst_"
-  val StationToPrefix = "/tst_"
+  val StationToCommandPrefix = "/tst_"
 
-  val FromPrefix = new PrefixedIdLike[String](StationFromCommandPrefix)
-  val ToPrefix = new PrefixedIdLike[String](StationToPrefix)
+  val FromCommandIdCodec = new PrefixedIdLike[String](StationFromCommandPrefix)
+  val ToCommandIdCode = new PrefixedIdLike[String](StationToCommandPrefix)
 }
 
 /**
-  * OneAtMostUpdate for defining particular route.
+  * Conversation with client.
   * @param railwayStations service for stations search
   * @param notifier telegram notifier
   */
@@ -67,12 +67,22 @@ class Talk(
   override def receive: Receive = command(Q())
 
   private def command(q: Q): Receive = {
+
     case Cmd(text, _) if text.startsWith("/start") =>
-      notifier << "Hello this is a Bot!"
+      notifier << BundleKey.ROUTES_HELP.getText
+
     case Cmd(text, _) if text.startsWith("/help") =>
       notifier << BundleKey.ROUTES_HELP.getText
+
+
+    case Cmd(text, _) if text.startsWith("/from") =>
+      findStation(text.split(" ").toList, q) (FromCommandIdCodec)
+    case Cmd(text, _) if text.startsWith("/to") =>
+      findStation(text.split(" ").toList, q)(ToCommandIdCode)
+
+
     case Cmd(text, _) if text.startsWith(StationFromCommandPrefix) =>
-      val id = FromPrefix.decode(text)
+      val id = FromCommandIdCodec.decode(text)
       railwayStations.station(id).onComplete {
         case Success(station) =>
           notifier << s"Route from ${station.name}"
@@ -84,10 +94,6 @@ class Talk(
     case Cmd(text, _) if text.startsWith("/tst_") =>
       this becomeOf command(q.copy(to = Some(text)))
       notifier << "not implemented"
-    case Cmd(text, _) if text.startsWith("/from") =>
-      findStation(text.split(" ").toList, q) (FromPrefix)
-    case Cmd(text, _) if text.startsWith("/to") =>
-      findStation(text.split(" ").toList, q)(ToPrefix)
   }
 
   private def findStation(words: List[String], q: Q)(implicit id: IdLikeCommand[String]): Unit = words match {

@@ -2,8 +2,6 @@ package org.tickets.misc
 
 import java.util.regex.Pattern
 
-import org.hashids.Hashids
-
 /**
   * Telegram command that contains some mnemonic.
   */
