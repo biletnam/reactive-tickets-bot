@@ -5,7 +5,7 @@ import akka.dispatch.MessageDispatcher
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
-import org.tickets.bot.Talk.TalkProps
+import org.tickets.bot.DefineRouteTalk.TalkProps
 import org.tickets.bot.Talks
 import org.tickets.misc.LogSlf4j
 import org.tickets.railway.{Api, RailwayStations, UzApiRailwayStations}

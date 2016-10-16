@@ -6,31 +6,29 @@ import java.time.format.DateTimeFormatter
 import akka.actor.{ActorRef, Props, Status}
 import com.softwaremill.quicklens
 import org.tickets.bot.Bot.Cmd
-import org.tickets.bot.Talk._
+import org.tickets.bot.DefineRouteTalk._
 import org.tickets.misc.{BundleKey, IdLikeCommand, PrefixedIdLike, Text}
 import org.tickets.railway.RailwayStations
 import org.tickets.railway.spy.Station
 import org.tickets.railway.spy.Station.StationId
 import org.tickets.telegram.Telegram.ChatId
+import org.tickets.telegram.Update
 
-import scala.util.{Failure, Success}
-
-object Talk {
+object DefineRouteTalk {
 
   def props(railwayStations: RailwayStations, notifier: TelegramNotification): Props =
-    Props(classOf[Talk], railwayStations, notifier)
+    Props(classOf[DefineRouteTalk], railwayStations, notifier)
 
   class TalkProps(val railwayStations: RailwayStations, telegram: ActorRef) extends (ChatId => Props) {
     override def apply(id: ChatId): Props = props(railwayStations, NotifierRef(id, telegram))
   }
-
 
   /**
     * Station search hits.
     * @param hits map of id -> station
     */
   final case class Hits(hits: Map[String, Station])
-  
+
   /**
     * Internal state as partially defined query.
     * @param from maybe from station
@@ -44,15 +42,8 @@ object Talk {
     /**
       * Is query defined ?
       */
-    def isDefined = from.isDefined && to.isDefined
+    def isDefined = from.isDefined && to.isDefined && arriveAt.nonEmpty
   }
-
-  import com.softwaremill.quicklens._
-
-  type ModifySession = (Talk.Session) => quicklens.PathModify[Talk.Session, Option[Station.StationId]]
-
-  val ModifyFromSession: ModifySession = modify(_: Session)(_.from)
-  val ModifyToSession: ModifySession = modify(_: Session)(_.to)
 
   /**
     * Prefix for commands that match to departure station ids
@@ -77,6 +68,12 @@ object Talk {
 
   val ArgTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yy")
   val DisplayTimeFormat = DateTimeFormatter.ofPattern("dd LLL yyyy")
+
+  import com.softwaremill.quicklens._
+
+  type ModifySession = (DefineRouteTalk.Session) => quicklens.PathModify[DefineRouteTalk.Session, Option[Station.StationId]]
+  val ModifyFromSession: ModifySession = modify(_: Session)(_.from)
+  val ModifyToSession: ModifySession = modify(_: Session)(_.to)
 }
 
 /**
@@ -84,7 +81,7 @@ object Talk {
   * @param railwayStations service for stations search
   * @param notifier telegram notifier
   */
-class Talk(
+class DefineRouteTalk(
      val railwayStations: RailwayStations,
      val notifier: TelegramNotification) extends Bot {
 
@@ -93,6 +90,18 @@ class Talk(
 
   override def receive: Receive = command(Session())
 
+  private def onCommandModified(q: Session): Receive = {
+    if (q.isDefined) {
+      command(q)
+    } else {
+      command(q)
+    }
+  }
+
+  /**
+    * Idle for input and react on it.
+    * @param q route query session
+    */
   private def command(q: Session): Receive = {
     case Cmd(text, _) if text.startsWith("/start") =>
       notifier << BundleKey.ROUTES_HELP.getText
@@ -132,7 +141,7 @@ class Talk(
         dates.map(_.format(DisplayTimeFormat)).mkString(", "), session
       )
 
-      this becomeOf command(session.copy(arriveAt = dates))
+      this becomeOf onCommandModified(session.copy(arriveAt = dates))
     }
 
   /**
@@ -206,7 +215,7 @@ class Talk(
     case station: Station =>
       val newSession = modify(q).setTo(Option(station.identifier))
       notifier << BundleKey.STATION_DEFINED.getTemplateText(station.name, q)
-      this becomeOf command(newSession)
+      this becomeOf onCommandModified(newSession)
 
     case Status.Failure(err) =>
       notifier << BundleKey.STATION_SEARCH_ERR.getText

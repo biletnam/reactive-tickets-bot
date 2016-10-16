@@ -1,5 +1,7 @@
 package org.tickets.bot
 
+import java.time.LocalDate
+
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuiteLike}
@@ -9,7 +11,7 @@ import org.tickets.telegram.{TelegramPush, Update}
 
 import scala.concurrent.Future
 
-class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with BeforeAndAfterAll with Assertions {
+class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with BeforeAndAfterAll with Assertions {
 
   override protected def afterAll(): Unit = {
     shutdown()
@@ -28,7 +30,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
       will(returnValue(Future.successful(List(StationUz("13431", "Dn-01")))))
     }
 
-    val ref = TestActorRef(Talk.props(stations, notifier))
+    val ref = TestActorRef(DefineRouteTalk.props(stations, notifier))
     ref ! Bot.Cmd("/from Dn", mock[Update])
 
     push.expectMsgPF() {
@@ -50,7 +52,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
       will(returnValue(Future.successful(List(StationUz("13431", "Dn-01")))))
     }
 
-    val sut = TestActorRef(Talk.props(stations, notifier))
+    val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
     sut ! Bot.Cmd("/to Dn", mock[Update])
 
     push.expectMsgPF() {
@@ -66,7 +68,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
     val notifier: TelegramNotification = mock[TelegramNotification]
     val stations: RailwayStations = mock[RailwayStations]
 
-    val sut = TestActorRef(Talk.props(stations, notifier))
+    val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
 
     expecting { e => import e._
       oneOf(stations).station("21bba0")
@@ -88,7 +90,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
     val notifier: TelegramNotification = mock[TelegramNotification]
     val stations: RailwayStations = mock[RailwayStations]
 
-    val sut = TestActorRef(Talk.props(stations, notifier))
+    val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
 
     expecting { e => import e._
       oneOf(stations).station("21bba0")
@@ -110,7 +112,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
     val notifier: TelegramNotification = mock[TelegramNotification]
     val stations: RailwayStations = mock[RailwayStations]
 
-    val sut = TestActorRef(Talk.props(stations, notifier))
+    val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
 
     expecting { e => import e._
       oneOf(notifier) << withArg(aNonNull[String])
@@ -119,5 +121,7 @@ class TalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike with Befor
     sut ! Bot.Cmd("/arriveTo 10-12-16", mock[Update])
     cycle.assert()
   }
+
+
 
 }
