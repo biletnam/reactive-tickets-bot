@@ -1,6 +1,5 @@
 package org.tickets.railway
 
-import org.tickets.railway.spy.Station.StationId
 
 import scala.concurrent.Future
 
@@ -15,11 +14,4 @@ trait RailwayStations {
     * @return stations
     */
   def findStations(byName: String): Future[List[spy.Station]]
-
-  /**
-    * Station by given id.
-    * @param id station id
-    * @return station
-    */
-  def station(id: StationId): Future[spy.Station]
 }

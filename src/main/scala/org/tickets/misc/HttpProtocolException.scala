@@ -7,4 +7,4 @@ import akka.http.scaladsl.model.StatusCode
   */
 class HttpProtocolException(status: StatusCode) extends RuntimeException(s"api respond with $status")
 
-class ApiProtocolException(text: String) extends RuntimeException(text)
+

@@ -1,7 +1,6 @@
 package org.tickets
 
 import akka.actor.{ActorRef, ActorSystem}
-import akka.dispatch.MessageDispatcher
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
@@ -12,6 +11,7 @@ import org.tickets.railway.uz.Api
 import org.tickets.railway.{RailwayStations, UzApiRailwayStations}
 import org.tickets.telegram.Telegram.HttpFlow
 import org.tickets.telegram.{MethodBindings, Telegram, TelegramPull, TelegramPush}
+import scalikejdbc.config.DBs
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -22,21 +22,22 @@ object Main extends App with LogSlf4j {
   SLF4JBridgeHandler.install()
 
   val cfg = ConfigFactory.load().resolve()
-  val token = MethodBindings(cfg.getString("bot.api.token"))
-
   implicit val system = ActorSystem("bot")
   implicit val mt = ActorMaterializer()
-  implicit val ec: ExecutionContext = system.dispatcher
+
+  DBs.setupAll()
+
+  val telegramMethods = MethodBindings(cfg.getString("bot.api.token"))
+  implicit val defaultContext: ExecutionContext = system.dispatcher
 
   val httpFlow: HttpFlow = Telegram.httpFlow
   val stations: RailwayStations = new UzApiRailwayStations(Api.httpFlowUzApi)
 
-  val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, token), "telegram_push")
+  val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, telegramMethods), "telegram_push")
   val dest: ActorRef = system.actorOf(Talks.props(new TalkProps(stations, pushRef)), "talks")
-  val pullRef: ActorRef = system.actorOf(TelegramPull.props(httpFlow, token, dest), "telegram_pull")
-//  val railwayPull:  ActorRef = system.actorOf(RailwayRoutesPull.props)
+  val pullRef: ActorRef = system.actorOf(TelegramPull.props(httpFlow, telegramMethods, dest), "telegram_pull")
 
-  // setup periodic ticks
+  // periodic telegram update pulls
   system.scheduler.schedule(initialDelay = 1.second,
     interval = 15.seconds,
     receiver = pullRef,
@@ -46,7 +47,6 @@ object Main extends App with LogSlf4j {
     interval = 30.seconds,
     receiver = railwayPull,
     message = RailwayRoutesPull.PullNext)(system.dispatcher)*/
-
 
   log.info(
     """
