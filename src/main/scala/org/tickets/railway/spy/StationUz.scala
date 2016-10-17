@@ -1,6 +1,4 @@
 package org.tickets.railway.spy
-import java.util.Base64
-
 import org.json4s.Reader
 
 object StationUz {
@@ -11,9 +9,7 @@ object StationUz {
     def read(json: JValue): Station = {
       val stationId = (json \ "station_id").extract[String]
       val name: String = (json \ "title").extract[String]
-      val uid = Base64.getEncoder.encodeToString(stationId.getBytes)
-
-
+      val uid = stationId.toLong.toHexString
 
       StationConst(
         uid = uid,

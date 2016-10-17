@@ -11,7 +11,6 @@ import org.tickets.railway.uz.Api
 import org.tickets.railway.{RailwayStations, UzApiRailwayStations}
 import org.tickets.telegram.Telegram.HttpFlow
 import org.tickets.telegram.{MethodBindings, Telegram, TelegramPull, TelegramPush}
-import scalikejdbc.config.DBs
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -24,8 +23,6 @@ object Main extends App with LogSlf4j {
   val cfg = ConfigFactory.load().resolve()
   implicit val system = ActorSystem("bot")
   implicit val mt = ActorMaterializer()
-
-  DBs.setupAll()
 
   val telegramMethods = MethodBindings(cfg.getString("bot.api.token"))
   implicit val defaultContext: ExecutionContext = system.dispatcher

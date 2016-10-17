@@ -41,6 +41,8 @@ object DefineRouteTalk {
       * Is query defined ?
       */
     def isDefined = from.isDefined && to.isDefined && arriveAt.nonEmpty
+
+
   }
 
   /**
@@ -164,9 +166,11 @@ class DefineRouteTalk(
   private def waitForResults(name: String, q: Session)
                             (implicit modifySession: ModifySession): Receive = {
     case Hits(hits) if hits.nonEmpty =>
-      val text = new Text().addLine(BundleKey.STATIONS_FOUND_LIST.getTemplateText(name))
+      val text = new Text()
+        .addLine(BundleKey.STATIONS_FOUND_LIST.getTemplateText(name))
+        .withDashes
       for ((id, station) <- hits) {
-        text.withDashes
+        text
           .addLine(BundleKey.STATION_NAME.getTemplateText(station.name))
           .addLine(BundleKey.STATION_ID.getTemplateText(id))
       }
@@ -188,7 +192,7 @@ class DefineRouteTalk(
     case Cmd(id, _) if hits.contains(id) =>
       val station = hits(id)
       val newSession: Session = lens.apply(q).setTo(Some(station))
-      notifier << BundleKey.STATION_DEFINED.getTemplateText(station, newSession)
+      notifier << BundleKey.STATION_DEFINED.getTemplateText(station.name, newSession)
       this becomeOf newIdleCommand(newSession)
 
     case Cmd(id, _) if !hits.contains(id) =>
