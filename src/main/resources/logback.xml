@@ -28,6 +28,11 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
+    <logger name="scalikejdbc" level="trace"
+            additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
     <logger name="com.google.inject" level="info"
             additivity="false">
         <appender-ref ref="STDOUT" />

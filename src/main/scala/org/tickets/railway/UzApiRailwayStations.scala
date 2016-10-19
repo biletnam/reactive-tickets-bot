@@ -8,7 +8,6 @@ import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
 import org.tickets.railway.uz.Api.ApiFlow
-import org.tickets.railway.spy.Station.StationId
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -31,10 +30,6 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
         .flatMap {
           case (tryResponse, _) => handle(tryResponse)
         }
-  }
-
-  override def station(id: StationId): Future[spy.Station] = {
-    Future.failed(new UnsupportedOperationException)
   }
 
   private def handle(response: Try[HttpResponse]): StationsResp = response match {
