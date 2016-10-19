@@ -1,12 +1,12 @@
-package org.tickets.bot
+package org.tickets.actors
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import akka.actor.{Actor, ActorRef, Props, Status}
 import com.softwaremill.quicklens
-import org.tickets.bot.Bot.Cmd
-import org.tickets.bot.DefineRouteTalk._
+import org.tickets.actors.Bot.Cmd
+import org.tickets.actors.DefineRouteTalk._
 import org.tickets.misc.{BundleKey, LogSlf4j, Text}
 import org.tickets.railway.RailwayStations
 import org.tickets.model.Station

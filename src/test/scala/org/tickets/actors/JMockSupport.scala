@@ -1,4 +1,4 @@
-package org.tickets.bot
+package org.tickets.actors
 
 import org.hamcrest.Matcher
 import org.jmock.api.Action

@@ -1,4 +1,4 @@
-package org.tickets.bot
+package org.tickets.actors
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit, TestProbe}

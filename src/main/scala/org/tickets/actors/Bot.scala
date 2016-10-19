@@ -1,7 +1,7 @@
-package org.tickets.bot
+package org.tickets.actors
 
 import akka.actor.{Actor, ActorSystem}
-import org.tickets.bot.Bot.TimeMark
+import org.tickets.actors.Bot.TimeMark
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.{Message, Message$}
 

@@ -1,4 +1,4 @@
-package org.tickets.bot
+package org.tickets.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import org.tickets.misc.LogSlf4j

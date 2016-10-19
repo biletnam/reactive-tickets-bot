@@ -4,8 +4,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
-import org.tickets.bot.DefineRouteTalk.TalkProps
-import org.tickets.bot.Talks
+import org.tickets.actors.DefineRouteTalk.TalkProps
+import org.tickets.actors.Talks
 import org.tickets.misc.LogSlf4j
 import org.tickets.railway.uz.UzApiRailwayStations
 import org.tickets.railway.{RailwayApi, RailwayStations}
