@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 class UzApiRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
 extends RailwayStations with LogSlf4j with Json4sSupport {
 
-  final type StationsResp = Future[List[spy.Station]]
+  final type StationsResp = Future[List[model.Station]]
 
   import org.tickets.misc.JsonSupport._
 
@@ -46,7 +46,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
       Future.failed(err)
   }
 
-  private def parseJson(json: JValue): List[spy.Station] = {
+  private def parseJson(json: JValue): List[model.Station] = {
     val isError = (json \ "error").extract[Boolean]
     if (isError) {
       log.warn("error indicator is true, content {}", json)
@@ -55,10 +55,10 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
 
     json \ "value" match {
       case JArray(stations) =>
-        val content = stations.foldLeft(List.empty[spy.Station]) { (list, data) =>
-          import spy.StationUz._
+        val content = stations.foldLeft(List.empty[model.Station]) { (list, data) =>
+          import model.Station._
 
-          val station = data.as[spy.Station]
+          val station = data.as[model.Station]
           station :: list
         }
         log.trace("[#parseJson] found content {}", content)

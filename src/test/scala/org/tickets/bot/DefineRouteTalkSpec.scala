@@ -1,12 +1,10 @@
 package org.tickets.bot
 
-import java.time.LocalDate
-
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuiteLike}
 import org.tickets.railway.RailwayStations
-import org.tickets.railway.spy.{StationConst, StationMock, StationUz}
+import org.tickets.railway.model.Station
 import org.tickets.telegram.{TelegramPush, Update}
 
 import scala.concurrent.Future
@@ -27,7 +25,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
 
     expecting { e => import e._
       oneOf(stations).findStations("Dn")
-      will(returnValue(Future.successful(List(StationMock("13431", "Dn-01")))))
+      will(returnValue(Future.successful(List(Station.mock("13431", "Dn-01")))))
     }
 
     val ref = TestActorRef(DefineRouteTalk.props(stations, notifier))
@@ -49,7 +47,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
 
     expecting { e => import e._
       oneOf(stations).findStations("Dn")
-      will(returnValue(Future.successful(List(StationMock("13431", "Dn-01")))))
+      will(returnValue(Future.successful(List(Station.mock("13431", "Dn-01")))))
     }
 
     val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))

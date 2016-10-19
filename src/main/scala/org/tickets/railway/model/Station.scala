@@ -1,8 +1,11 @@
-package org.tickets.railway.spy
+package org.tickets.railway.model
+
 import org.json4s.Reader
 
-object StationUz {
-  implicit object StationReader extends Reader[Station] {
+case class Station(uid: String, apiCode: String, name: String, provider: String)
+
+object Station {
+  implicit object UzStationReader extends Reader[Station] {
     import org.json4s._
     import org.tickets.misc.JsonSupport._
 
@@ -11,7 +14,7 @@ object StationUz {
       val name: String = (json \ "title").extract[String]
       val uid = stationId.toLong.toHexString
 
-      StationConst(
+      Station(
         uid = uid,
         apiCode = stationId,
         name = name,
@@ -20,4 +23,7 @@ object StationUz {
 
     }
   }
+
+  def mock(id: String, name: String): Station =
+    Station(id, id, name, "uz")
 }
