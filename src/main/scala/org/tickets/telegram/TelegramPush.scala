@@ -9,7 +9,7 @@ import org.json4s.JValue
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Method.{TgMethod, TgReq}
 import org.tickets.telegram.TelegramPush.PushMsg
-import org.tickets.telegram.Telegram.HttpFlow
+import org.tickets.telegram.TelegramApi.HttpFlow
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._

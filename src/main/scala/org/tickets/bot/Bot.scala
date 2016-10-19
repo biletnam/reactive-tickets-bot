@@ -3,7 +3,7 @@ package org.tickets.bot
 import akka.actor.{Actor, ActorSystem}
 import org.tickets.bot.Bot.TimeMark
 import org.tickets.misc.LogSlf4j
-import org.tickets.telegram.Update
+import org.tickets.telegram.{Message, Message$}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -11,10 +11,11 @@ object Bot {
 
   /**
     * Input message for Actor.
-    * @param text test for input
-    * @param update whole update [[Update]]
+ *
+    * @param text   test for input
+    * @param update whole update [[Message]]
     */
-  case class Cmd(text: String, update: Update)
+  case class Cmd(text: String, update: Message)
 
   /**
     * Some action during time

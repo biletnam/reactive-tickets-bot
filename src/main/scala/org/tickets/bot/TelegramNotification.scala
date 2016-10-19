@@ -1,7 +1,7 @@
 package org.tickets.bot
 
 import akka.actor.ActorRef
-import org.tickets.telegram.Telegram.ChatId
+import org.tickets.telegram.TelegramApi.ChatId
 import org.tickets.telegram.TelegramPush
 import org.tickets.telegram.TelegramPush.Msg
 

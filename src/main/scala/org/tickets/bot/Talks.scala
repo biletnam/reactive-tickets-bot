@@ -2,8 +2,8 @@ package org.tickets.bot
 
 import akka.actor.{Actor, ActorRef, ActorRefFactory, Props}
 import org.tickets.misc.LogSlf4j
-import org.tickets.telegram.Telegram.ChatId
-import org.tickets.telegram.{TelegramPull, Update, Updates}
+import org.tickets.telegram.TelegramApi.ChatId
+import org.tickets.telegram.{Message, Message$, TelegramPull, Update}
 
 object Talks {
   def props(propsFactory: ChatId => Props): Props = Props(classOf[Talks], propsFactory)
@@ -18,14 +18,14 @@ class Talks(val propsFactory: ChatId => Props) extends Actor with LogSlf4j {
   private var chats: Map[Long, ActorRef] = Map.empty
 
   override def receive: Receive = {
-    case updates: Updates if updates.empty =>
+    case updates: Update if updates.empty =>
       log.debug("#updates: content is empty")
-    case updates: Updates =>
+    case updates: Update =>
       routeAndSend(updates)
       sender() ! TelegramPull.Ack(updates.lastId)
   }
 
-  private def routeAndSend(updates: Updates): Unit = {
+  private def routeAndSend(updates: Update): Unit = {
     for (update <- updates.messages) {
       chats.get(update.chat) match {
         case Some(ref) =>
@@ -41,7 +41,7 @@ class Talks(val propsFactory: ChatId => Props) extends Actor with LogSlf4j {
     }
   }
 
-  private def send(update: Update, ref: ActorRef): Unit = {
+  private def send(update: Message, ref: ActorRef): Unit = {
     ref ! update
   }
 

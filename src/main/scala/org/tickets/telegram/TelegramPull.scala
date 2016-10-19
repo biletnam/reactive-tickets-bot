@@ -7,7 +7,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Method.TgReq
 import org.tickets.telegram.TelegramPull.{Ack, NotFetch, Tick}
-import org.tickets.telegram.Telegram.{BotToken, HttpFlow}
+import org.tickets.telegram.TelegramApi.{BotToken, HttpFlow}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -74,7 +74,7 @@ class TelegramPull(val httpFlow: HttpFlow,
     * Send updates to destination or recall updates again.
     * @param tryUpdates result of computation
     */
-  private def handleUpdates(tryUpdates: Try[Updates]): Unit = tryUpdates match {
+  private def handleUpdates(tryUpdates: Try[Update]): Unit = tryUpdates match {
     case Success(updates) if updates.empty =>
       log.debug("[#handleUpdates] no updates available")
       context become pulling()
@@ -89,20 +89,21 @@ class TelegramPull(val httpFlow: HttpFlow,
 
 
   /**
-    * Call host for updates and pars it into [[Updates]]
+    * Call host for updates and pars it into [[Update]]
+    *
     * @return async result of updates.
     */
-  private def fetchUpdates: Future[Updates] = {
+  private def fetchUpdates: Future[Update] = {
     val req: TgReq = if (offset < 0) token.createGetUpdates() else token.createGetUpdates(Some(offset))
 
     implicit val materializer = mt
-    implicit val um: FromEntityUnmarshaller[Updates] = UpdatesJVal.fromEntityToJson4s
+    implicit val um: FromEntityUnmarshaller[Update] = UpdatesJVal.fromEntityToJson4s
 
     Source.single(req)
       .via(httpFlow)
       .mapAsync(1) {
         case (Success(httpResponse), method) =>
-          Unmarshal(httpResponse.entity).to[Updates]
+          Unmarshal(httpResponse.entity).to[Update]
         case (Failure(error), method) =>
           Future.failed(error)
       }.runWith(Sink.head)

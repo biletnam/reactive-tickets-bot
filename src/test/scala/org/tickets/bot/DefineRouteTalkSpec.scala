@@ -5,7 +5,7 @@ import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuiteLike}
 import org.tickets.railway.RailwayStations
 import org.tickets.railway.model.Station
-import org.tickets.telegram.{TelegramPush, Update}
+import org.tickets.telegram.{Message, Message$, TelegramPush}
 
 import scala.concurrent.Future
 
@@ -29,7 +29,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     }
 
     val ref = TestActorRef(DefineRouteTalk.props(stations, notifier))
-    ref ! Bot.Cmd("/from Dn", mock[Update])
+    ref ! Bot.Cmd("/from Dn", mock[Message])
 
     push.expectMsgPF() {
       case TelegramPush.TextMsg(100, msg) if msg.contains("/st_") => true
@@ -51,7 +51,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     }
 
     val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
-    sut ! Bot.Cmd("/to Dn", mock[Update])
+    sut ! Bot.Cmd("/to Dn", mock[Message])
 
     push.expectMsgPF() {
       case TelegramPush.TextMsg(100, msg) if msg.contains("/st_") => true
@@ -72,7 +72,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
       oneOf(notifier) << withArg(aNonNull[String])
     }
 
-    sut ! Bot.Cmd("/arriveTo 10-12-16", mock[Update])
+    sut ! Bot.Cmd("/arriveTo 10-12-16", mock[Message])
     cycle.assert()
   }
 

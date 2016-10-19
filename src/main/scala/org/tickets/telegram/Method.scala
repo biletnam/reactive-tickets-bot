@@ -4,13 +4,10 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
-import org.json4s.JValue
 import org.tickets.misc.{LogSlf4j, Logger}
 import org.tickets.telegram.Method.TgReq
 import org.tickets.telegram.TelegramPush.Msg
-import org.tickets.telegram.Telegram.BotToken
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.Try
 
