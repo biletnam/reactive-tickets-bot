@@ -2,7 +2,7 @@ package org.tickets.railway.uz
 
 import org.tickets.railway.RailwayTickets
 import org.tickets.model.TicketsCriteria
-import org.tickets.railway.uz.Api.ApiFlow
+import org.tickets.railway.RailwayApi.ApiFlow
 
 import scala.concurrent.Future
 

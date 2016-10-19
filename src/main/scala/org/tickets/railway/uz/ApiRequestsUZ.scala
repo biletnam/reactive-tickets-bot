@@ -8,11 +8,10 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.HttpRequest
 import com.google.common.base.Charsets
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
-import org.tickets.railway.uz.Api.Req
-
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.tickets.misc.JsonSupport._
+import org.tickets.railway.RailwayApi.Req
 
 import scala.concurrent.ExecutionContext
 

@@ -17,8 +17,6 @@ class Talks(val propsFactory: ChatId => Props) extends Actor with LogSlf4j {
 
   private var chats: Map[Long, ActorRef] = Map.empty
 
-  private t = HashMapTable
-
   override def receive: Receive = {
     case updates: Update if updates.empty =>
       log.trace("#updates: content is empty")
