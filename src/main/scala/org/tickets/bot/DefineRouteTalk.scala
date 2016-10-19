@@ -3,14 +3,14 @@ package org.tickets.bot
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import akka.actor.{ActorRef, Props, Status}
+import akka.actor.{Actor, ActorRef, Props, Status}
 import com.softwaremill.quicklens
 import org.tickets.bot.Bot.Cmd
 import org.tickets.bot.DefineRouteTalk._
-import org.tickets.misc.{BundleKey, Text}
+import org.tickets.misc.{BundleKey, LogSlf4j, Text}
 import org.tickets.railway.RailwayStations
 import org.tickets.railway.model.Station
-import org.tickets.telegram.Telegram.ChatId
+import org.tickets.telegram.TelegramApi.ChatId
 
 object DefineRouteTalk {
 
@@ -67,7 +67,7 @@ object DefineRouteTalk {
   */
 class DefineRouteTalk(
      val railwayStations: RailwayStations,
-     val notifier: TelegramNotification) extends Bot {
+     val notifier: TelegramNotification) extends Actor with LogSlf4j {
 
   import akka.pattern.pipe
   import context.dispatcher
@@ -76,6 +76,7 @@ class DefineRouteTalk(
 
   private def newIdleCommand(q: Session): Receive = {
     if (q.isDefined) {
+      //todo: search for tickets
       idle(q)
     } else {
       idle(q)
@@ -115,7 +116,7 @@ class DefineRouteTalk(
         dates.map(_.format(DisplayTimeFormat)).mkString(", "), session
       )
 
-      this becomeOf newIdleCommand(session.copy(arriveAt = dates))
+      context become newIdleCommand(session.copy(arriveAt = dates))
     }
 
   /**
@@ -132,7 +133,7 @@ class DefineRouteTalk(
     railwayStations.findStations(name)
       .map(groupStations).map(Hits).pipeTo(self)
 
-    this becomeOf waitForResults(name, q)
+    context become waitForResults(name, q)
   }
 
   /**
@@ -149,11 +150,11 @@ class DefineRouteTalk(
 
     case cmd :: Nil =>
       notifier <<  BundleKey.SECOND_ARGUMENT_REQUIRED.getText
-      this becomeOf idle(q)
+      context become idle(q)
 
     case _ =>
       notifier <<  BundleKey.UNKNOWN_COMMAND.getText
-      this becomeOf idle(q)
+      context become idle(q)
   }
 
   /**
@@ -174,16 +175,16 @@ class DefineRouteTalk(
       }
 
       notifier push text.mkString
-      this becomeOf waitSelection(hits, q)
+      context become waitSelection(hits, q)
 
     case Hits(hits) if hits.isEmpty =>
       notifier << BundleKey.STATION_SEARCH_ERR.getTemplateText(name)
-      this becomeOf idle(q)
+      context become idle(q)
 
     case Status.Failure(err) =>
       log.error("station search failed", err)
       notifier << BundleKey.STATION_SEARCH_ERR.getText
-      this becomeOf idle(q)
+      context become idle(q)
   }
 
   private def waitSelection(hits: Map[String, Station], q: Session)(implicit lens: ModifySession): Receive = {
@@ -191,7 +192,7 @@ class DefineRouteTalk(
       val station = hits(id)
       val newSession: Session = lens.apply(q).setTo(Some(station))
       notifier << BundleKey.STATION_DEFINED.getTemplateText(station.name, newSession)
-      this becomeOf newIdleCommand(newSession)
+      context become newIdleCommand(newSession)
 
     case Cmd(id, _) if !hits.contains(id) =>
       notifier << "miss"

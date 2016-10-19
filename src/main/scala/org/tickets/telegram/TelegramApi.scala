@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Flow
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Method.{TgMethod, TgReq, TgRes}
 
-object Telegram  extends LogSlf4j {
+object TelegramApi  extends LogSlf4j {
 
   type HttpFlow = Flow[TgReq, TgRes, Any]
 
