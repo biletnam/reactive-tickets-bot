@@ -7,8 +7,8 @@ import org.slf4j.bridge.SLF4JBridgeHandler
 import org.tickets.bot.DefineRouteTalk.TalkProps
 import org.tickets.bot.Talks
 import org.tickets.misc.LogSlf4j
-import org.tickets.railway.uz.Api
-import org.tickets.railway.{RailwayStations, UzApiRailwayStations}
+import org.tickets.railway.uz.{Api, UzApiRailwayStations}
+import org.tickets.railway.RailwayStations
 import org.tickets.telegram.TelegramApi.HttpFlow
 import org.tickets.telegram.{MethodBindings, TelegramApi, TelegramPull, TelegramPush}
 

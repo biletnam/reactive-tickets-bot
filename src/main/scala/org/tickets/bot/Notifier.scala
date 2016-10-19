@@ -9,7 +9,7 @@ import org.tickets.telegram.TelegramPush.Msg
   * Decorator for telegram actor ref, that add additional work for wrapping messages.
   * @author bsnisar
   */
-trait TelegramNotification {
+trait Notifier {
 
   /**
     * Target Telegram API
@@ -47,4 +47,4 @@ trait TelegramNotification {
   * @param chatId chat id
   * @param telegramRef [[ActorRef]] to particular Telegram API
   */
-case class NotifierRef(chatId: ChatId, telegramRef: ActorRef) extends TelegramNotification
+case class NotifierRef(chatId: ChatId, telegramRef: ActorRef) extends Notifier

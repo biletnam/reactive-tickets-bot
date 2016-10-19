@@ -8,8 +8,8 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
-import org.tickets.railway.RailwayApi.ApiFlow
-import org.tickets.railway.{RailwayStations, spy}
+import org.tickets.railway.uz.Api.ApiFlow
+import org.tickets.railway.{RailwayStations, UzRailwayApiRequests, model}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -36,7 +36,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
 
   private def handle(response: Try[HttpResponse]): StationsResp = response match {
     case Success(httpResponse) if httpResponse.status.isSuccess() =>
-      val stations = Unmarshal(httpResponse.entity).to[JValue].map(parseJson)
+      val stations = Unmarshal(httpResponse.entity).to[JValue].map(toStations)
       stations
     case Success(httpResponse) if !httpResponse.status.isSuccess() =>
       log.warn("api respond by not success status {}", httpResponse.status.value)
@@ -46,7 +46,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
       Future.failed(err)
   }
 
-  private def parseJson(json: JValue): List[model.Station] = {
+  private def toStations(json: JValue): List[model.Station] = {
     val isError = (json \ "error").extract[Boolean]
     if (isError) {
       log.warn("error indicator is true, content {}", json)
@@ -61,7 +61,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
           val station = data.as[model.Station]
           station :: list
         }
-        log.trace("[#parseJson] found content {}", content)
+        log.trace("[#toStations] found content {}", content)
         content
       case e @ _ =>
         log.error("[UzApi] Unknown json structure. Expect {'value': [...]}, but was {}", e)

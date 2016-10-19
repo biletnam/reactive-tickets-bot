@@ -14,7 +14,7 @@ import org.tickets.telegram.TelegramApi.ChatId
 
 object DefineRouteTalk {
 
-  def props(railwayStations: RailwayStations, notifier: TelegramNotification): Props =
+  def props(railwayStations: RailwayStations, notifier: Notifier): Props =
     Props(classOf[DefineRouteTalk], railwayStations, notifier)
 
   class TalkProps(val railwayStations: RailwayStations, telegram: ActorRef) extends (ChatId => Props) {
@@ -67,7 +67,7 @@ object DefineRouteTalk {
   */
 class DefineRouteTalk(
      val railwayStations: RailwayStations,
-     val notifier: TelegramNotification) extends Actor with LogSlf4j {
+     val notifier: Notifier) extends Actor with LogSlf4j {
 
   import akka.pattern.pipe
   import context.dispatcher

@@ -20,7 +20,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     import cycle._
 
     val push = TestProbe()
-    val notifier: TelegramNotification = NotifierRef(100, push.ref)
+    val notifier: Notifier = NotifierRef(100, push.ref)
     val stations: RailwayStations = mock[RailwayStations]
 
     expecting { e => import e._
@@ -42,7 +42,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     import cycle._
 
     val push = TestProbe()
-    val notifier: TelegramNotification = NotifierRef(100, push.ref)
+    val notifier: Notifier = NotifierRef(100, push.ref)
     val stations: RailwayStations = mock[RailwayStations]
 
     expecting { e => import e._
@@ -63,7 +63,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     val cycle = JMockSupport.threadSafe
     import cycle._
 
-    val notifier: TelegramNotification = mock[TelegramNotification]
+    val notifier: Notifier = mock[Notifier]
     val stations: RailwayStations = mock[RailwayStations]
 
     val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
