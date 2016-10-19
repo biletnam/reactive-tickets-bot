@@ -17,9 +17,11 @@ class Talks(val propsFactory: ChatId => Props) extends Actor with LogSlf4j {
 
   private var chats: Map[Long, ActorRef] = Map.empty
 
+  private t = HashMapTable
+
   override def receive: Receive = {
     case updates: Update if updates.empty =>
-      log.debug("#updates: content is empty")
+      log.trace("#updates: content is empty")
     case updates: Update =>
       routeAndSend(updates)
       sender() ! TelegramPull.Ack(updates.lastId)
@@ -31,7 +33,7 @@ class Talks(val propsFactory: ChatId => Props) extends Actor with LogSlf4j {
         case Some(ref) =>
           send(update, ref)
         case None =>
-          val ref = context.actorOf(AtMostOneUpdate.props(
+          val ref = context.actorOf(Conversation.props(
             propsFactory(update.chat)
           ), s"usr${update.user}@${update.chat}")
           chats = chats + (update.chat -> ref)

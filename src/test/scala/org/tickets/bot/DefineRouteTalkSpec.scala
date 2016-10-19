@@ -4,8 +4,8 @@ import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuiteLike}
 import org.tickets.railway.RailwayStations
-import org.tickets.railway.model.Station
-import org.tickets.telegram.{Message, Message$, TelegramPush}
+import org.tickets.model.Station
+import org.tickets.telegram.{Message, TelegramPush}
 
 import scala.concurrent.Future
 

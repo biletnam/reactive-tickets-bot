@@ -4,13 +4,16 @@ import akka.actor.{Actor, ActorRef, Props}
 import org.tickets.misc.LogSlf4j
 import org.tickets.telegram.Message
 
-object AtMostOneUpdate {
-  def props(delegat: Props): Props
-  = Props(classOf[AtMostOneUpdate], delegat)
+object Conversation {
+  def props(delegate: Props): Props
+    = Props(classOf[Conversation], delegate)
 }
 
-
-class AtMostOneUpdate(props: Props) extends Actor with LogSlf4j {
+/**
+  * Client conversation. Responsible for error handling, and updates deduplication
+  * @param props define station props
+  */
+class Conversation(val props: Props) extends Actor with LogSlf4j {
   private var lastUpdateSeqNum: Int = Int.MinValue
   private val talk: ActorRef = context.actorOf(props, "talk")
 

@@ -13,5 +13,5 @@ trait RailwayStations {
     * @param byName like name
     * @return stations
     */
-  def findStations(byName: String): Future[List[model.Station]]
+  def findStations(byName: String): Future[List[org.tickets.model.Station]]
 }

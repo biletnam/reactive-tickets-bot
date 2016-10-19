@@ -9,7 +9,7 @@ import org.tickets.bot.Bot.Cmd
 import org.tickets.bot.DefineRouteTalk._
 import org.tickets.misc.{BundleKey, LogSlf4j, Text}
 import org.tickets.railway.RailwayStations
-import org.tickets.railway.model.Station
+import org.tickets.model.Station
 import org.tickets.telegram.TelegramApi.ChatId
 
 object DefineRouteTalk {

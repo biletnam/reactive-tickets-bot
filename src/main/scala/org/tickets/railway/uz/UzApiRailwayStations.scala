@@ -9,7 +9,7 @@ import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
 import org.tickets.railway.uz.Api.ApiFlow
-import org.tickets.railway.{RailwayStations, UzRailwayApiRequests, model}
+import org.tickets.railway.{RailwayStations, org.tickets.model}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -20,13 +20,13 @@ import scala.util.{Failure, Success, Try}
 class UzApiRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
 extends RailwayStations with LogSlf4j with Json4sSupport {
 
-  final type StationsResp = Future[List[model.Station]]
+  final type StationsResp = Future[List[org.tickets.model.Station]]
 
   import org.tickets.misc.JsonSupport._
 
   override def findStations(byName: String): StationsResp = {
     log.debug("[#findStations] perform search '{}'", byName)
-    Source.single(UzRailwayApiRequests.findStationByNameReq(byName))
+    Source.single(ApiRequestsUZ.createFindStationsByName(byName))
       .via(httpFlow)
       .runWith(Sink.head)
         .flatMap {
@@ -46,7 +46,7 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
       Future.failed(err)
   }
 
-  private def toStations(json: JValue): List[model.Station] = {
+  private def toStations(json: JValue): List[org.tickets.model.Station] = {
     val isError = (json \ "error").extract[Boolean]
     if (isError) {
       log.warn("error indicator is true, content {}", json)
@@ -55,10 +55,10 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
 
     json \ "value" match {
       case JArray(stations) =>
-        val content = stations.foldLeft(List.empty[model.Station]) { (list, data) =>
-          import model.Station._
+        val content = stations.foldLeft(List.empty[org.tickets.model.Station]) { (list, data) =>
+          import org.tickets.model.Station._
 
-          val station = data.as[model.Station]
+          val station = data.as[org.tickets.model.Station]
           station :: list
         }
         log.trace("[#toStations] found content {}", content)

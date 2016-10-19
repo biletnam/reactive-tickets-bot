@@ -1,4 +1,4 @@
-package org.tickets.railway.model
+package org.tickets.model
 
 import org.json4s.Reader
 import org.json4s._
