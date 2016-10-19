@@ -1,10 +1,9 @@
 package org.tickets.bot
 
-import akka.actor.{Actor, ActorRef}
-import akka.actor.Actor.Receive
-import akka.persistence.PersistentActor
-import org.tickets.bot.TicketsWatcher.SearchReq
+import akka.actor.Actor
+import org.tickets.bot.TicketsWatcher.{SearchReq, TrainsSubscription, TrainsSubscriptionRow}
 import org.tickets.model.TicketsCriteria
+import scalikejdbc._
 
 object TicketsWatcher {
 
@@ -13,15 +12,36 @@ object TicketsWatcher {
     * @param user user who need tickets
     * @param criteria criteria for search
     */
-  case class SearchReq(user: ActorRef, criteria: TicketsCriteria)
-}
+  case class SearchReq(user: String, criteria: TicketsCriteria)
 
-class TicketsWatcher extends PersistentActor {
-  override def persistenceId: String = "tickets-watcher"
 
-  override def receiveCommand: Receive = {
-    case SearchReq(user, criteria) => ???
+  case class TrainsSubscription(id: Int, user: String, query: String)
+
+
+  protected object TrainsSubscriptionRow extends SQLSyntaxSupport[TrainsSubscription] {
+    def apply(e: ResultName[TrainsSubscription])(rs: WrappedResultSet): TrainsSubscription
+      = TrainsSubscription(id = rs.get(e.id), user = rs.get(e.name), query = rs.get(e.query))
   }
 
-  override def receiveRecover: Receive = ???
+}
+
+class TicketsWatcher extends Actor  {
+  override def receive: Receive = ???
+
+
+
+  private def addSubscription(req: SearchReq): Unit = {
+    val column = TrainsSubscriptionRow.column
+    val query = ""
+
+    DB localTx { implicit session =>
+      insert.into(TrainsSubscriptionRow)
+        .namedValues(
+          column.user -> req.user,
+          column.query -> query)
+    }
+  }
+
+
+
 }
