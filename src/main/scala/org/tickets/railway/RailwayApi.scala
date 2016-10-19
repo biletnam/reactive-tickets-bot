@@ -1,4 +1,4 @@
-package org.tickets.railway.uz
+package org.tickets.railway
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Flow
 
 import scala.util.Try
 
-object Api {
+object RailwayApi {
 
   type Task = Int
   type Req = (HttpRequest, Task)

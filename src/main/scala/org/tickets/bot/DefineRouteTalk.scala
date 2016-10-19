@@ -41,8 +41,6 @@ object DefineRouteTalk {
       * Is query defined ?
       */
     def isDefined = from.isDefined && to.isDefined && arriveAt.nonEmpty
-
-
   }
 
   /**

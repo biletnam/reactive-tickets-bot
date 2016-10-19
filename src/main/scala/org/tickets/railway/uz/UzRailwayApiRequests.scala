@@ -1,11 +1,11 @@
-package org.tickets.railway
+package org.tickets.railway.uz
 
 import java.net.URLEncoder
 
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.HttpRequest
 import com.google.common.base.Charsets
-import org.tickets.railway.uz.Api.Req
+import org.tickets.railway.RailwayApi.Req
 
 object UzRailwayApiRequests {
 
