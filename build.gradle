@@ -25,7 +25,6 @@ ScalaCompileOptions.metaClass.useCompileDaemon = false
 dependencies {
     compile group: 'com.typesafe.akka', name: 'akka-actor_2.11', version: '2.4.10'
     compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.11', version: '2.4.10'
-    compile group: 'com.typesafe.akka', name: 'akka-persistence_2.11', version: '2.4.10'
     compile group: 'com.typesafe.akka', name: 'akka-http-experimental_2.11', version: '2.4.10'
 
     compile group: 'de.heikoseeberger', name: 'akka-http-json4s_2.11', version: '1.10.0'
@@ -41,10 +40,8 @@ dependencies {
     //db support
     compile group: 'com.h2database', name: 'h2', version: '1.4.192'
     compile group: 'com.typesafe.slick', name: 'slick_2.11', version: '3.1.1'
+    compile group: 'org.flywaydb', name: 'flyway-core', version: '4.0.3'
 
-
-    compile group: 'org.iq80.leveldb', name: 'leveldb', version: '0.7'
-    compile group: 'org.fusesource.leveldbjni', name: 'leveldbjni-all', version: '1.8'
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.8'
 
     testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.11', version: '2.4.10'

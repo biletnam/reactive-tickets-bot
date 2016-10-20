@@ -31,7 +31,7 @@ class Talks(val propsFactory: ChatId => Props) extends Actor with LogSlf4j {
         case Some(ref) =>
           send(update, ref)
         case None =>
-          val ref = context.actorOf(Conversation.props(
+          val ref = context.actorOf(Talk.props(
             propsFactory(update.chat)
           ), s"usr${update.user}@${update.chat}")
           chats = chats + (update.chat -> ref)

@@ -74,7 +74,7 @@ class DefineRouteTalk(
 
   override def receive: Receive = idle(Session())
 
-  private def newIdleCommand(q: Session): Receive = {
+  private def withSessionUpdate(q: Session): Receive = {
     if (q.isDefined) {
       //todo: search for tickets
       idle(q)
@@ -116,7 +116,7 @@ class DefineRouteTalk(
         dates.map(_.format(DisplayTimeFormat)).mkString(", "), session
       )
 
-      context become newIdleCommand(session.copy(arriveAt = dates))
+      context become withSessionUpdate(session.copy(arriveAt = dates))
     }
 
   /**
@@ -192,7 +192,7 @@ class DefineRouteTalk(
       val station = hits(id)
       val newSession: Session = lens.apply(q).setTo(Some(station))
       notifier << BundleKey.STATION_DEFINED.getTemplateText(station.name, newSession)
-      context become newIdleCommand(newSession)
+      context become withSessionUpdate(newSession)
 
     case Cmd(id, _) if !hits.contains(id) =>
       notifier << "miss"
