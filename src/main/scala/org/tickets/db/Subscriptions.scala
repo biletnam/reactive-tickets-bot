@@ -6,5 +6,5 @@ import scala.concurrent.Future
 
 trait Subscriptions {
 
-  def subscribe(user: String, criteria: TicketsCriteria): Future[TicketsCriteria]
+  def subscribe(user: String, long: Long, criteria: TicketsCriteria): Future[TicketsCriteria]
 }
