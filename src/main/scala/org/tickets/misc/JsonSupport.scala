@@ -11,10 +11,10 @@ object JsonSupport {
 
   private class LocalDateSerializer extends CustomSerializer[LocalDate](format => (
     {
-      case JString(time) => LocalDate.parse(time, DateTimeFormatter.ISO_DATE_TIME)
+      case JString(time) => LocalDate.parse(time, DateTimeFormatter.ISO_DATE)
     },
     {
-      case obj: LocalDate => JString(obj.format(DateTimeFormatter.ISO_DATE_TIME))
+      case obj: LocalDate => JString(obj.format(DateTimeFormatter.ISO_DATE))
     }
     ))
 

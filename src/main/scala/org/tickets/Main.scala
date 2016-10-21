@@ -7,7 +7,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler
 import org.tickets.actors.DefineRouteTalk.TalkProps
 import org.tickets.actors.Talks
 import org.tickets.misc.DatabaseSupport.DB
-import org.tickets.misc.LogSlf4j
+import org.tickets.misc.{DatabaseSupport, LogSlf4j}
 import org.tickets.railway.uz.UzApiRailwayStations
 import org.tickets.railway.{RailwayApi, RailwayStations}
 import org.tickets.telegram.TelegramApi.HttpFlow
@@ -29,7 +29,7 @@ object Main extends App with LogSlf4j {
   val telegramMethods = MethodBindings(cfg.getString("bot.api.token"))
   implicit val defaultContext: ExecutionContext = system.dispatcher
 
-  val db: DB = Database.forConfig("h2db")
+  val db: DB = DatabaseSupport.loadDatabase
   val httpFlow: HttpFlow = TelegramApi.httpFlow
   val stations: RailwayStations = new UzApiRailwayStations(RailwayApi.httpFlowUzApi)
 
@@ -42,7 +42,6 @@ object Main extends App with LogSlf4j {
     interval = 15.seconds,
     receiver = pullRef,
     message = TelegramPull.Tick)(system.dispatcher)
-
 
 
   log.info(

@@ -13,7 +13,7 @@ import slick.driver.H2Driver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class H2RailwaySubscription(val db: DB, val origin: RailwaySubscription)(
+class H2RailwaySubscription(val db: DB)(
   implicit ex: ExecutionContext) extends RailwaySubscription with LogSlf4j {
 
   override def subscribe(chatID: Long, criteria: TrainCriteria): Future[Observer] = {
@@ -21,6 +21,7 @@ class H2RailwaySubscription(val db: DB, val origin: RailwaySubscription)(
     import org.tickets.misc.JsonSupport._
 
     val json: String = write(criteria)
+    log.trace("[#subscribe] query {}", json)
     val hashVal = Hashing.md5()
       .hashString(json, Charsets.UTF_8)
       .toString

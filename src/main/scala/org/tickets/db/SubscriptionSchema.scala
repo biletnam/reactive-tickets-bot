@@ -28,19 +28,20 @@ object SubscriptionSchema {
       )
   }
 
+  val Subscriptions = TableQuery[TicketsSubscriptions]
+
   case class Observer(subID: Int, chat: Long)
 
   /**
     * User, who subscribe for updates.
     */
-  class Observers(tag: Tag) extends Table[Observer](tag, "SUBSCRIBER") {
+  class Observers(tag: Tag) extends Table[Observer](tag, "OBSERVER") {
     def subID = column[Int]("SUB_ID")
-    def name = column[Long]("NAME")
+    def name = column[Long]("OBSERVER_CODE")
     def * = (subID, name) <> ((Observer.apply _).tupled, Observer.unapply)
     def pk = primaryKey("primaryKey", (subID, name))
-    def subscription = foreignKey("FK_SUBSCRIPTION", subID, TableQuery[TicketsSubscriptions])(_.id)
+    def subscription = foreignKey("FK_OBSERVER_SUBSCRIPTION", subID, Subscriptions)(_.id)
   }
 
-  val Subscriptions = TableQuery[TicketsSubscriptions]
   val Observers = TableQuery[Observers]
 }
