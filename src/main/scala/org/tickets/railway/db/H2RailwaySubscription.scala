@@ -7,7 +7,7 @@ import com.google.common.hash.Hashing
 import org.tickets.db.SubscriptionSchema._
 import org.tickets.misc.DatabaseSupport._
 import org.tickets.misc.LogSlf4j
-import org.tickets.model.{TrainCriteria$, Train}
+import org.tickets.model.{Train, TrainCriteria, TrainCriteria$}
 import org.tickets.railway.RailwaySubscription
 import org.tickets.railway.RailwaySubscription.{Request, Watch}
 import slick.driver.H2Driver.api._

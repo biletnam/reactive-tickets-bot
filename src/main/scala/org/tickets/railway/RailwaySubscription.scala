@@ -1,7 +1,7 @@
 package org.tickets.railway
 
 import akka.actor.ActorRef
-import org.tickets.model.{TrainCriteria$, Train}
+import org.tickets.model.{Train, TrainCriteria}
 import org.tickets.railway.RailwaySubscription.Request
 
 import scala.concurrent.Future
