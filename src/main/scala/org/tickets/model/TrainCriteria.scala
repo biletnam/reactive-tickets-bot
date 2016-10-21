@@ -11,12 +11,12 @@ import org.json4s.JValue
   * @param toStation to station
   * @param arrivals arrivals
   */
-case class TicketsCriteria(fromStation: Station,
-                           toStation: Station,
-                           arrivals: List[LocalDate])
+case class TrainCriteria(fromStation: Station,
+                         toStation: Station,
+                         arrivals: List[LocalDate])
 
 
 
-object TicketsCriteria {
+object TrainCriteria {
 
 }

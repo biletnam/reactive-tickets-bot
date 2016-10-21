@@ -15,26 +15,33 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     shutdown()
   }
 
-  test("find stations by /from name") {
-    val cycle = JMockSupport.threadSafe
-    import cycle._
+  val StationID = "12345"
 
-    val push = TestProbe()
-    val notifier: Notifier = NotifierRef(100, push.ref)
-    val stations: RailwayStations = mock[RailwayStations]
+  def fixture =
+    new {
+      val cycle = JMockSupport.threadSafe
+      val push = TestProbe()
+      val notifier: Notifier = NotifierRef(100, push.ref)
+      val stations: RailwayStations = cycle.mock[RailwayStations]
 
-    expecting { e => import e._
-      oneOf(stations).findStations("Dn")
-      will(returnValue(Future.successful(List(Station.mock("13431", "Dn-01")))))
+      cycle.expecting { e => import e._
+        oneOf(stations).findStations("Dn")
+        will(returnValue(Future.successful(List(Station.mock(StationID, "Dn-01")))))
+      }
+
     }
 
-    val ref = TestActorRef(DefineRouteTalk.props(stations, notifier))
+  test("find stations by /from name") {
+    val f = fixture
+    import f.cycle._
+
+    val ref = TestActorRef(DefineRouteTalk.props(f.stations, f.notifier))
     ref ! Bot.Cmd("/from Dn", mock[Message])
 
-    push.expectMsgPF() {
+    f.push.expectMsgPF() {
       case TelegramPush.TextMsg(100, msg) if msg.contains("/st_") => true
     }
-    cycle.assert()
+    f.cycle.assert()
   }
 
   test("find stations by /to name") {
@@ -47,7 +54,7 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
 
     expecting { e => import e._
       oneOf(stations).findStations("Dn")
-      will(returnValue(Future.successful(List(Station.mock("13431", "Dn-01")))))
+      will(returnValue(Future.successful(List(Station.mock(StationID, "Dn-01")))))
     }
 
     val sut = TestActorRef(DefineRouteTalk.props(stations, notifier))
@@ -76,6 +83,19 @@ class DefineRouteTalkSpec extends TestKit(ActorSystem("test")) with FunSuiteLike
     cycle.assert()
   }
 
+  test("find stations and pick up one of them") {
+    val f = fixture
+    import f.cycle._
+
+    val ref = TestActorRef(DefineRouteTalk.props(f.stations, f.notifier))
+    val message: Message = mock[Message]
+    ref ! Bot.Cmd("/from Dn", message)
+    ref ! Bot.Cmd(s"/$StationID", message)
+
+
+
+    f.cycle.assert()
+  }
 
 
 }

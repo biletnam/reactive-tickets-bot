@@ -6,13 +6,12 @@ import com.typesafe.config.ConfigFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
 import org.tickets.actors.DefineRouteTalk.TalkProps
 import org.tickets.actors.Talks
-import org.tickets.db.H2Subscriptions
+import org.tickets.misc.DatabaseSupport.DB
 import org.tickets.misc.LogSlf4j
 import org.tickets.railway.uz.UzApiRailwayStations
-import org.tickets.railway.{RailwayApi, RailwayStations, RailwayTickets}
+import org.tickets.railway.{RailwayApi, RailwayStations}
 import org.tickets.telegram.TelegramApi.HttpFlow
 import org.tickets.telegram._
-import org.tickets.misc.DatabaseSupport.DB
 import slick.driver.H2Driver.api._
 
 import scala.concurrent.ExecutionContext
@@ -31,7 +30,6 @@ object Main extends App with LogSlf4j {
   implicit val defaultContext: ExecutionContext = system.dispatcher
 
   val db: DB = Database.forConfig("h2db")
-
   val httpFlow: HttpFlow = TelegramApi.httpFlow
   val stations: RailwayStations = new UzApiRailwayStations(RailwayApi.httpFlowUzApi)
 

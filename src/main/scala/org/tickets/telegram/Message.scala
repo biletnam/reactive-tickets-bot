@@ -4,6 +4,14 @@ import org.json4s.JValue
 import org.json4s._
 import org.tickets.misc.JsonSupport._
 
+/**
+  * Telegram Message API.
+  *
+  * @param id id of message
+  * @param chat chat id
+  * @param user username
+  * @param text input text
+  */
 case class Message(id: Int, chat: Long, user: String, text: String)
 
 object Message {
