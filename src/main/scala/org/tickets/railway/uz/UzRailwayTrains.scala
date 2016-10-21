@@ -31,15 +31,8 @@ class UzRailwayTrains(val uzApiFlow: ApiFlow)
       ClosedShape
     })
 
-  def toHitResponses(req: Res): Future[Any] = req match {
-    case (Success(httpResponse), ctx: SearchContext) => ???
-    case (Failure(err), ctx: SearchContext) => ???
-    case _ => ???
   }
-
-
 }
-
 
 object UzRailwayTrains {
 

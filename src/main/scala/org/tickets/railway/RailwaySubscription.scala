@@ -1,8 +1,7 @@
 package org.tickets.railway
 
-import akka.actor.ActorRef
-import org.tickets.model.{Train, TrainCriteria}
-import org.tickets.railway.RailwaySubscription.Request
+import org.tickets.db.SubscriptionSchema.Observer
+import org.tickets.model.TrainCriteria
 
 import scala.concurrent.Future
 
@@ -12,21 +11,11 @@ import scala.concurrent.Future
 trait RailwaySubscription {
 
   /**
-    * Find trains by given criteria request.
-    * @param request criteria request
-    * @return found stations
+    * Save subscription for given criteria.
+    * @param chatId chat id, that will be notified on results
+    * @param criteria criteria for search
+    * @return result of adding
     */
-  def subscribe(request: Request): Future[List[Train]]
+  def subscribe(chatId: Long, criteria: TrainCriteria): Future[Observer]
 }
-
-
-object RailwaySubscription {
-
-  trait Request
-
-  case class Watch(chatId: Long, criteria: TrainCriteria) extends Request
-
-  case class FindOnce(ref: ActorRef, criteria: TrainCriteria) extends Request
-}
-
 

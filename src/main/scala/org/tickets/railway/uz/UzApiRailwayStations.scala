@@ -8,10 +8,12 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JsonAST.JArray
 import org.json4s._
 import org.tickets.misc.{ApiProtocolException, HttpProtocolException, LogSlf4j}
+import org.tickets.model.Station
 import org.tickets.railway.RailwayApi.ApiFlow
-import org.tickets.railway.RailwayStations
+import org.tickets.railway.{RailwayApi, RailwayStations}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -26,12 +28,15 @@ extends RailwayStations with LogSlf4j with Json4sSupport {
 
   override def findStations(byName: String): StationsResp = {
     log.debug("[#findStations] perform search '{}'", byName)
-    Source.single(ApiRequestsUZ.createFindStationsByName(byName))
+    val stations = Source.single(ApiRequestsUZ.createFindStationsByName(byName))
       .via(httpFlow)
+      .via(RailwayApi.httpRespFlow(resp => {
+        val parseStations: Future[List[Station]] = Unmarshal(resp.entity).to[JValue].map(toStations)
+        Await.result(parseStations, Duration.Inf)
+      }))
       .runWith(Sink.head)
-        .flatMap {
-          case (tryResponse, _) => handle(tryResponse)
-        }
+
+    stations
   }
 
   private def handle(response: Try[HttpResponse]): StationsResp = response match {

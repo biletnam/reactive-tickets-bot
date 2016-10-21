@@ -39,17 +39,15 @@ object RailwayApi extends LogSlf4j {
   }
 
 
-  private def onHttpResponse[E](handler: HttpResponse => Future[E]) =
+  def httpRespFlow[E](handler: HttpResponse => E) =
     Flow[Res].map {
       case (Success(httpResp), _) if httpResp.status.isSuccess() =>
         handler(httpResp)
       case (Success(httpResp), _) if !httpResp.status.isSuccess() =>
         log.warn("api respond by not success status {}", httpResp.status.value)
-        Future.failed[E](new HttpProtocolException(httpResp.status))
+        throw new HttpProtocolException(httpResp.status)
       case (Failure(err), _)=>
         log.error("request send failed", err)
-        Future.failed[E](err)
+        throw err
     }
-
-
 }
