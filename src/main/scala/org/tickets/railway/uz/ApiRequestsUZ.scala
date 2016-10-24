@@ -25,13 +25,14 @@ object ApiRequestsUZ extends Json4sSupport {
     get -> 101
   }
 
-  def createFindTickets(fromId: String, toId: String, arrive: LocalDate)(implicit ex: ExecutionContext): Req = {
-    val json: JValue = ("station_id_from" -> fromId) ~
+  def createFindTickets(fromId: String, toId: String, arrive: LocalDate, code: Any = 102)(implicit ex: ExecutionContext): Req = {
+    val json: JValue =
+      ("station_id_from" -> fromId) ~
       ("station_id_till" -> toId) ~
       ("date_dep" -> arrive.format(ApiDateTimeFormat))
 
     val get: HttpRequest = RequestBuilding.Post("/purchase/search/", json)
-    get -> 102
+    get -> code
   }
 
 }

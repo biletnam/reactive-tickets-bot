@@ -32,9 +32,9 @@ object TrainCriteria {
                    toStation: Station,
                    arrivals: List[LocalDate]): TrainCriteria = {
 
-    new TrainCriteria(fromStation,
-      toStation,
-      arrivals.sorted)
+    new TrainCriteria(
+      fromStation, toStation, arrivals.sorted
+    )
   }
 
 }

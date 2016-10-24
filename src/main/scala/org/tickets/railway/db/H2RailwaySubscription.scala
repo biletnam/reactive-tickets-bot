@@ -34,9 +34,7 @@ class H2RailwaySubscription(val db: DB)(
       Subscriptions += TicketsSubscription(0, hashVal, json, LocalDateTime.now())
 
     lazy val subscribeObserver =
-      (id: Int) => {
-        Observers returning Observers += Observer(id, chatID)
-      }
+      (id: Int) => Observers returning Observers += Observer(id, chatID)
 
     val action = findByHash.flatMap {
       case None =>

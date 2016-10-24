@@ -26,21 +26,7 @@ object RailwayApi extends LogSlf4j {
     Http().newHostConnectionPool[Task]("booking.uz.gov.ua")
   }
 
-  private def handle(response: Try[HttpResponse]): Any = response match {
-    case Success(httpResponse) if httpResponse.status.isSuccess() =>
-//      val stations = Unmarshal(httpResponse.entity).to[JValue].map(toStations)
-      ???
-    case Success(httpResponse) if !httpResponse.status.isSuccess() =>
-      log.warn("api respond by not success status {}", httpResponse.status.value)
-      Future.failed(new HttpProtocolException(httpResponse.status))
-    case Failure(err) =>
-      log.error("request send failed", err)
-      Future.failed(err)
-  }
-
-
-  def httpRespFlow[E](handler: HttpResponse => E) =
-    Flow[Res].map {
+  def httpRespFlow[E](handler: HttpResponse => E) = Flow[Res].map {
       case (Success(httpResp), _) if httpResp.status.isSuccess() =>
         handler(httpResp)
       case (Success(httpResp), _) if !httpResp.status.isSuccess() =>
@@ -50,4 +36,15 @@ object RailwayApi extends LogSlf4j {
         log.error("request send failed", err)
         throw err
     }
+
+  def httpRespFlowAsync[E](handler: HttpResponse => Future[E]) = Flow[Res].mapAsync(10) {
+    case (Success(httpResp), _) if httpResp.status.isSuccess() =>
+      handler(httpResp)
+    case (Success(httpResp), _) if !httpResp.status.isSuccess() =>
+      log.warn("api respond by not success status {}", httpResp.status.value)
+      Future.failed(new HttpProtocolException(httpResp.status))
+    case (Failure(err), _)=>
+      log.error("request send failed", err)
+      Future.failed(err)
+  }
 }
