@@ -8,7 +8,7 @@ import org.tickets.actors.DefineRouteTalk.TalkProps
 import org.tickets.actors.Talks
 import org.tickets.misc.DatabaseSupport.DB
 import org.tickets.misc.{DatabaseSupport, LogSlf4j}
-import org.tickets.railway.uz.UzApiRailwayStations
+import org.tickets.railway.uz.UzRailwayStations
 import org.tickets.railway.{RailwayApi, RailwayStations}
 import org.tickets.telegram.TelegramApi.HttpFlow
 import org.tickets.telegram._
@@ -31,7 +31,7 @@ object Main extends App with LogSlf4j {
 
   val db: DB = DatabaseSupport.loadDatabase
   val httpFlow: HttpFlow = TelegramApi.httpFlow
-  val stations: RailwayStations = new UzApiRailwayStations(RailwayApi.httpFlowUzApi)
+  val stations: RailwayStations = new UzRailwayStations(RailwayApi.httpFlowUzApi)
 
   val pushRef: ActorRef = system.actorOf(TelegramPush.props(httpFlow, telegramMethods), "telegram_push")
   val dest: ActorRef = system.actorOf(Talks.props(new TalkProps(stations, pushRef)), "talks")

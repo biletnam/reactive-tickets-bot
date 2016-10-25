@@ -3,6 +3,7 @@ package org.tickets.railway.db
 import java.time.LocalDate
 
 import org.scalatest.{Assertions, BeforeAndAfterAll, FunSuite}
+import org.tickets.db.H2RailwaySubscription
 import org.tickets.misc.DatabaseSupport
 import org.tickets.model.{Station, TrainCriteria}
 import org.tickets.railway.RailwaySubscription

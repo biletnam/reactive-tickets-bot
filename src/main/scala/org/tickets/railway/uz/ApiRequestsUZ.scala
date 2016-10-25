@@ -10,12 +10,13 @@ import com.google.common.base.Charsets
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s._
 import org.json4s.JsonDSL._
+import org.tickets.misc.{ApiProtocolException, LogSlf4j}
 import org.tickets.misc.JsonSupport._
 import org.tickets.railway.RailwayApi.Req
 
 import scala.concurrent.ExecutionContext
 
-object ApiRequestsUZ extends Json4sSupport {
+object ApiRequestsUZ extends Json4sSupport  with LogSlf4j {
 
   val ApiDateTimeFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
@@ -33,6 +34,21 @@ object ApiRequestsUZ extends Json4sSupport {
 
     val get: HttpRequest = RequestBuilding.Post("/purchase/search/", json)
     get -> code
+  }
+
+  /**
+    * Read UZ response and handle protocol response.
+    * @param json body
+    * @return payload json
+    */
+  def readContent(json: JValue): JValue = {
+    val isError = (json \ "error").extract[Boolean]
+    if (isError) {
+      log.warn("error indicator is true, content {}", json)
+      throw new ApiProtocolException("UZ api error indicator is true")
+    }
+
+    json \ "value"
   }
 
 }

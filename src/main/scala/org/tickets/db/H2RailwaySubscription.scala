@@ -1,4 +1,4 @@
-package org.tickets.railway.db
+package org.tickets.db
 
 import java.time.LocalDateTime
 

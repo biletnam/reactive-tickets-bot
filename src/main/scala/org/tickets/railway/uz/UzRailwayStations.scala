@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Search throw UZ railway API
   */
-class UzApiRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
+class UzRailwayStations(val httpFlow: ApiFlow)(implicit ec: ExecutionContext, mt: Materializer)
 extends RailwayStations with LogSlf4j with Json4sSupport {
 
   final type StationsResp = Future[List[org.tickets.model.Station]]

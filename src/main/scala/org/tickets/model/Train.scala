@@ -1,8 +1,19 @@
 package org.tickets.model
 
+import java.time.LocalDateTime
+
 import org.json4s.{JValue, Reader}
 
-case class Train(id: String)
+/**
+  * Train and tickets for it.
+  *
+  * @param id
+  * @param code
+  * @param departure
+  * @param arrive
+  * @param tickets
+  */
+case class Train(id: String, code: String, departure: LocalDateTime, arrive: LocalDateTime, tickets: Seq[Ticket])
 
 object Train {
 
@@ -15,7 +26,7 @@ object Train {
       val to = (value \ "till")
       val places = (value \ "types").extract[JArray]
 
-      
+
 
       ???
     }

@@ -14,5 +14,5 @@ trait RailwayTrains {
     * @param criteria criteria for search
     * @return result of search.
     */
-  def findTrains(criteria: TrainCriteria): Future[Train]
+  def findTrains(criteria: TrainCriteria): Future[Seq[Train]]
 }
