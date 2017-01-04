@@ -39,8 +39,8 @@ dependencies {
 
 //    testCompile group: 'com.typesafe.akka', name: 'akka-http-testkit_2.11', version: akkaVersion
 //    compile group: 'de.heikoseeberger', name: 'akka-http-json4s_2.11', version: '1.10.0'
-//    compile group: 'org.json4s', name: 'json4s-jackson_2.11', version: '3.4.0'
 
+    compile group: 'org.json4s', name: 'json4s-jackson_2.11', version: '3.4.0'
     compile group: 'com.jcabi.incubator', name: 'xembly', version: '0.22'
     compile group: 'com.jcabi', name: 'jcabi-xml', version: '0.17.2'
 

@@ -5,14 +5,21 @@ import com.jcabi.xml.XML
 
 import slick.driver.H2Driver.api._
 
-class DbSubscription extends Subscriptions {
+class DbSubscription(val db: Database) extends Subscriptions {
 
-  override def add(client: String, query: XML): Unit = {
+  override def add(clientId: String, query: XML): Unit = {
     val queryStr = query.toString
     val hash = Hashing.md5().hashBytes(queryStr.getBytes).toString
 
-    DbSubscription.insert(hash, queryStr, client)
+    val inserts = DBIO.seq(
+      DbSubscription.addReqIfNotExists(hash, queryStr),
+      DbSubscription.addClientIfNotExists(clientId, hash)
+    )
+
+    db.run(inserts)
   }
+
+
 }
 
 private object DbSubscription {
@@ -41,8 +48,10 @@ private object DbSubscription {
     for (u <- Query(insert) if !exists) yield u
   }
 
-  def insert(hash: String, xml: String, clientId: String): DBIOAction[Unit,NoStream,_] = DBIO.seq(
-    addReqIfNotExists(hash, xml),
-    clients += (clientId, hash)
-  )
+  def addClientIfNotExists(clientId: String, reqId: String): DBIOAction[_,NoStream,_] = clients.forceInsertQuery {
+    val exists = (for (client <- clients if client.clientID === clientId && client.reqID === reqId) yield client).exists
+    val insert = (clientId, reqId)
+    for (u <- Query(insert) if !exists) yield u
+  }
+
 }

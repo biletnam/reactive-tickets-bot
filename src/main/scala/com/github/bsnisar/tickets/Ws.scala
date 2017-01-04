@@ -23,10 +23,8 @@ object Ws {
       case (Success(httpResp), _) if httpResp.status.isSuccess() =>
         Unmarshal(httpResp.entity).to[JValue]
       case (Success(httpResp), _) if !httpResp.status.isSuccess() =>
-        log.warn("api respond by not success status {}", httpResp.status.value)
         throw new IllegalStateException(s"${httpResp.status}")
       case (Failure(err), _) =>
-        log.error("request send failed", err)
         throw err
   }
 
