@@ -13,12 +13,10 @@ class UzProtocolBridge extends ProtocolBridge with Json {
     if (error) {
       Failure(new ApiProtocolException(""))
     } else {
-      val result = json \ "value" match {
+      json \ "value" match {
         case payload @ JArray(_) => Success(payload)
         case e @ _ => Failure(new ApiProtocolException(""))
       }
-
-      result
     }
   }
 }

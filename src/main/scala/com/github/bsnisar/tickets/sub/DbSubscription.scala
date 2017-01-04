@@ -49,7 +49,12 @@ private object DbSubscription {
   }
 
   def addClientIfNotExists(clientId: String, reqId: String): DBIOAction[_,NoStream,_] = clients.forceInsertQuery {
-    val exists = (for (client <- clients if client.clientID === clientId && client.reqID === reqId) yield client).exists
+    val matchClient = for {
+      client <- clients if client.clientID === clientId && client.reqID === reqId
+    } yield client
+
+    val exists = matchClient.exists
+
     val insert = (clientId, reqId)
     for (u <- Query(insert) if !exists) yield u
   }
