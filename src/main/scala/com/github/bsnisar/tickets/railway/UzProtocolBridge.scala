@@ -1,7 +1,7 @@
-package com.github.bsnisar.railway
+package com.github.bsnisar.tickets.railway
 
-import com.github.bsnisar.ProtocolBridge
-import com.github.bsnisar.misc.ApiProtocolException
+import com.github.bsnisar.tickets.ProtocolBridge
+import com.github.bsnisar.tickets.misc.ApiProtocolException
 import org.json4s._
 
 import scala.util.{Failure, Success, Try}

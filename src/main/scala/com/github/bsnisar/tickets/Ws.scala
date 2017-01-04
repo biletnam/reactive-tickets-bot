@@ -1,10 +1,9 @@
-package com.github.bsnisar
+package com.github.bsnisar.tickets
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.Flow
 import org.json4s._
-import org.tickets.railway.RailwayApi._
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}

@@ -1,4 +1,4 @@
-package com.github.bsnisar.railway
+package com.github.bsnisar.tickets.railway
 
 import scala.concurrent.Future
 

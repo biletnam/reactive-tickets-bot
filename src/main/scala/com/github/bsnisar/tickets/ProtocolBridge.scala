@@ -1,4 +1,4 @@
-package com.github.bsnisar
+package com.github.bsnisar.tickets
 
 import org.json4s.JValue
 

@@ -1,11 +1,11 @@
-package com.github.bsnisar.railway
+package com.github.bsnisar.tickets.railway
 import java.net.URLEncoder
 
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.HttpRequest
 import akka.stream.scaladsl.{Sink, Source}
-import com.github.bsnisar.Ws
-import com.github.bsnisar.Ws.HttpFlow
+import Ws.HttpFlow
+import com.github.bsnisar.tickets.Ws
 import com.google.common.base.Charsets
 import org.json4s.JValue
 
