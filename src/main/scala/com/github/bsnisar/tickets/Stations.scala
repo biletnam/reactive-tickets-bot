@@ -10,5 +10,5 @@ trait Stations {
     * @param name name like
     * @return list of stations
     */
-  def stationsByName(name: String): Future[Seq[Station]]
+  def stationsByName(name: String): Future[Iterable[Station]]
 }

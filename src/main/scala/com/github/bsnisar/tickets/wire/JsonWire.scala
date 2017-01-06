@@ -1,15 +1,23 @@
-package com.github.bsnisar.tickets
+package com.github.bsnisar.tickets.wire
 
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import com.github.bsnisar.tickets.Ws.{Req, Res}
+import com.github.bsnisar.tickets.misc.Json
+import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JValue
 
 import scala.util.{Failure, Success}
 
 
-class WireJson(private val origin: Wire[Req, Res], private val mt: Materializer) extends Wire[Req, JValue] {
+/**
+  * Wire for transforming response as JSON.
+  *
+  * @param origin original wire
+  */
+class JsonWire(private val origin: Wire[Req, Res])(private implicit val mt: Materializer)
+  extends Wire[Req, JValue] with Json4sSupport with Json {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

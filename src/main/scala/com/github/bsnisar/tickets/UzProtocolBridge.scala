@@ -11,11 +11,11 @@ class UzProtocolBridge extends ProtocolBridge with Json {
     val error = (json \ "error").extract[Boolean]
 
     if (error) {
-      Failure(new ApiProtocolException(""))
+      Failure(new ApiProtocolException("protocol error"))
     } else {
       json \ "value" match {
         case payload @ JArray(_) => Success(payload)
-        case e @ _ => Failure(new ApiProtocolException(""))
+        case e @ _ => Failure(new ApiProtocolException("expect json array"))
       }
     }
   }

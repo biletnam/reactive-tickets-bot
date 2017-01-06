@@ -1,4 +1,4 @@
-package com.github.bsnisar.tickets
+package com.github.bsnisar.tickets.wire
 
 import akka.stream.scaladsl.Flow
 

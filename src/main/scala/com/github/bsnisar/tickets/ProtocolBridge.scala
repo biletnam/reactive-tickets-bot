@@ -7,7 +7,8 @@ import scala.util.Try
 trait ProtocolBridge {
 
   /**
-    * Application level protocol from some web service. It is represented by specific json payload structure.
+    * Application level protocol from some web service.
+    * It is represented by specific json payload structure.
     * @param json income json
     * @return payload
     */
