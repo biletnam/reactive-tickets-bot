@@ -9,7 +9,7 @@ import org.json4s.JValue
 import scala.util.{Failure, Success}
 
 
-class JsonWire(private val origin: Wire[Req, Res], private val mt: Materializer) extends Wire[Req, JValue] {
+class WireJson(private val origin: Wire[Req, Res], private val mt: Materializer) extends Wire[Req, JValue] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
