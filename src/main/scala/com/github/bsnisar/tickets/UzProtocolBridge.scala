@@ -1,12 +1,11 @@
-package com.github.bsnisar.tickets.railway
+package com.github.bsnisar.tickets
 
-import com.github.bsnisar.tickets.ProtocolBridge
-import com.github.bsnisar.tickets.misc.ApiProtocolException
+import com.github.bsnisar.tickets.misc.{ApiProtocolException, Json}
 import org.json4s._
 
 import scala.util.{Failure, Success, Try}
 
-class UzProtocolBridge extends ProtocolBridge {
+class UzProtocolBridge extends ProtocolBridge with Json {
 
   override def compute(json: JValue): Try[JValue] = {
     val error = (json \ "error").extract[Boolean]
