@@ -1,5 +1,7 @@
 package com.github.bsnisar.tickets
 
-object Main extends App {
+import akka.actor.ActorSystem
 
+object Main extends App {
+ val a = ActorSystem()
 }

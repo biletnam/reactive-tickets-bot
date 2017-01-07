@@ -5,7 +5,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import com.github.bsnisar.tickets.Ws.{Req, Res}
 import com.github.bsnisar.tickets.misc.Json
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.JValue
 
 import scala.util.{Failure, Success}
@@ -17,7 +16,7 @@ import scala.util.{Failure, Success}
   * @param origin original wire
   */
 class JsonWire(private val origin: Wire[Req, Res])(private implicit val mt: Materializer)
-  extends Wire[Req, JValue] with Json4sSupport with Json {
+  extends Wire[Req, JValue]  with Json {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

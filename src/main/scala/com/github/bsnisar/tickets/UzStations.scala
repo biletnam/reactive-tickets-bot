@@ -10,7 +10,7 @@ import com.github.bsnisar.tickets.Ws.{Req, WsFlow}
 import com.github.bsnisar.tickets.misc.Json
 import com.github.bsnisar.tickets.wire.Wire
 import com.google.common.base.Charsets
-import org.json4s.JValue
+import org.json4s.{JValue, Reader}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -22,10 +22,15 @@ class UzStations(val wire: Wire[Req, JValue])(implicit mt: Materializer) extends
     val encName = URLEncoder.encode(name, Charsets.UTF_8.name())
     val req: HttpRequest = RequestBuilding.Get(s"/ru/purchase/station/$encName/")
 
+    implicit val r = new Reader[Station] {
+      override def read(value: JValue): Station = ???
+    }
+
+
     val stations: Future[Seq[Station]] = Source.single(req -> name)
       .via(wire.flow)
       .runWith(Sink.head)
-      .map(json => json.extract[List[Station]])
+      .map(json => json.as[List[Station]])
 
 
     stations

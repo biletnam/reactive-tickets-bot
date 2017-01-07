@@ -32,16 +32,15 @@ def akkaHttVersion = '10.0.1'
 dependencies {
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.12.1'
 
-    compile group: 'com.typesafe.akka', name: 'akka-actor_2.11', version: akkaVersion
-    compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.11', version: akkaVersion
-    compile group: 'com.typesafe.akka', name: 'akka-http_2.11', version: akkaHttVersion
-    compile group: 'de.heikoseeberger', name: 'akka-http-json4s_2.11', version: '1.10.0'
+    compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: akkaVersion
+    compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.12', version: akkaVersion
+    compile group: 'com.typesafe.akka', name: 'akka-http_2.12', version: akkaHttVersion
 
-    testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.11', version: akkaVersion
+    testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: akkaVersion
 
 //    testCompile group: 'com.typesafe.akka', name: 'akka-http-testkit_2.11', version: akkaVersion
 
-    compile group: 'org.json4s', name: 'json4s-jackson_2.11', version: '3.4.0'
+    compile group: 'org.json4s', name: 'json4s-jackson_2.12', version: '3.5.0'
 
 //    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
 //    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.7'
@@ -56,8 +55,13 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '20.0'
 
 
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.testng', name: 'testng', version: '6.8'
     testCompile group: 'org.jmock', name: 'jmock', version: '2.8.2'
     testCompile group: 'org.jmock', name: 'jmock-legacy', version: '2.8.2'
-    testCompile group: 'org.scalatest', name: 'scalatest_2.11', version: '3.0.1'
+    testCompile group: 'org.scalatest', name: 'scalatest_2.12', version: '3.0.1'
+}
+
+test {
+    // enable TestNG support (default is JUnit)
+    useTestNG()
 }

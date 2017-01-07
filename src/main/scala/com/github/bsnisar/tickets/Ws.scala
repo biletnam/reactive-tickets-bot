@@ -2,8 +2,6 @@ package com.github.bsnisar.tickets
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.scaladsl.Flow
-import com.github.bsnisar.tickets.misc.Json
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s._
 
 import scala.util.Try
