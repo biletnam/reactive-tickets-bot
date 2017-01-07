@@ -33,6 +33,8 @@ class UzStationsTest extends TestKit(ActorSystem()) {
     val foundStations: Iterable[Station] = Await.result(stations.stationsByName("word"), Duration.Inf)
 
     Assert.assertTrue(foundStations.nonEmpty)
+    Assert.assertEquals(foundStations.head.id, "1001")
+    Assert.assertEquals(foundStations.head.name, "TestStation")
   }
 
 }
