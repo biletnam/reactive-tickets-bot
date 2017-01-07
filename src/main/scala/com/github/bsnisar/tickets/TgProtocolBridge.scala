@@ -1,5 +1,5 @@
 package com.github.bsnisar.tickets
-import com.github.bsnisar.tickets.misc.ApiProtocolException
+import com.github.bsnisar.tickets.misc.{ApiProtocolException, Json}
 import org.json4s.JValue
 import org.json4s.JsonAST.JArray
 
@@ -8,7 +8,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Telegram API protocol.
   */
-class TgProtocolBridge extends ProtocolBridge {
+class TgProtocolBridge extends ProtocolBridge with Json {
   override def compute(json: JValue): Try[JValue] = {
     val ok = (json \ "ok").as[Boolean]
 
