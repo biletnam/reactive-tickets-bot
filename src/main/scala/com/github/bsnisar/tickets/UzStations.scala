@@ -15,21 +15,25 @@ import org.json4s.{JValue, Reader}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
+/**
+  * UzAPI station.
+  *
+  * @param wire wire to API
+  */
 class UzStations(val wire: Wire[Req, JValue])(implicit mt: Materializer)
   extends Stations with Json {
+
+  implicit val reader = new Reader[Station] {
+    override def read(value: JValue): Station = ConsStation(
+      id = (value \ "station_id").as[String],
+      name = (value \ "title").as[String]
+    )
+  }
 
   override def stationsByName(name: String): Future[Iterable[Station]] = {
     val encName = URLEncoder.encode(name, Charsets.UTF_8.name())
     val req: HttpRequest = RequestBuilding.Get(s"/ru/purchase/station/$encName/")
-
-    implicit val reader = new Reader[Station] {
-      override def read(value: JValue): Station = ConsStation(
-          id = (value \ "station_id").as[String],
-          name = (value \ "title").as[String]
-        )
-    }
-
+    
     val stations: Future[Seq[Station]] = Source.single(req -> name)
       .via(wire.flow)
       .runWith(Sink.head)
