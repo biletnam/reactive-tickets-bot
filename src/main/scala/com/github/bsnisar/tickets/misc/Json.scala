@@ -5,9 +5,9 @@ import java.lang.reflect.InvocationTargetException
 import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
-import org.json4s.{Formats, MappingException, Serialization}
+import org.json4s.{DefaultReaders, Formats, MappingException, Serialization}
 
-trait Json {
+trait Json extends DefaultReaders {
 
   /**
     * Main configuration for json4s
@@ -22,7 +22,7 @@ trait Json {
   /**
     * Default readers (primitives, collections)
     */
-  implicit val defaults = org.json4s.DefaultReaders
+//  implicit val defaults = org.json4s.DefaultReaders
 
 
   /**
