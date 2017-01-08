@@ -15,7 +15,7 @@ import com.github.bsnisar.tickets.Ws
 class RqWire(private val url: String)(private implicit val as: ActorSystem,
                                       private implicit val mt: Materializer) extends Wire[Req, Res] {
 
-  private lazy val poolClientFlow = Http().cachedHostConnectionPool[Ws.Task](url)
+  private lazy val poolClientFlow = Http().cachedHostConnectionPoolHttps[Ws.Task](url)
 
   override def flow: Flow[Req, Res, _] = poolClientFlow
 }

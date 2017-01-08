@@ -1,8 +1,18 @@
 package com.github.bsnisar.tickets
 
 /**
-  * Created by bsnisar on 07.01.17.
+  * Telegram updates.
   */
 trait Update {
+  /**
+    * Update sequence id.
+    * @return id
+    */
+  def id: Int
 
+  /**
+    * Message text.
+    * @return msg text.
+    */
+  def text: String
 }

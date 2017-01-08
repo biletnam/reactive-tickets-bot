@@ -1,8 +1,21 @@
 package com.github.bsnisar.tickets
 
-/**
-  * Created by bsnisar on 07.01.17.
-  */
-class ConsUpdate {
+import com.github.bsnisar.tickets.misc.Json
+import org.json4s.{JValue, Reader}
 
+case class ConsUpdate(id: Int, text: String) extends Update
+
+object ConsUpdate {
+  implicit object Reader extends Reader[Update] with Json {
+    override def read(value: JValue): Update = {
+      val id = (value \ "update_id").as[Int]
+      val msg = value \ "message"
+      val chat = msg \ "chat"
+      val from = msg \ "from"
+      val text = msg \ "text"
+
+      ConsUpdate(id, text.as[String])
+    }
+  }
 }
+
