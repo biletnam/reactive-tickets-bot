@@ -4,8 +4,8 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
-import com.github.bsnisar.tickets.Ws.{Req, Res}
 import com.github.bsnisar.tickets.Ws
+import com.github.bsnisar.tickets.Ws.{Req, Res}
 
 
 /**
@@ -16,6 +16,7 @@ import com.github.bsnisar.tickets.Ws
   */
 class RqWire(private val url: String)(private implicit val as: ActorSystem,
                                       private implicit val mt: Materializer) extends Wire[Req, Res] {
+
 
   private lazy val _poolClientFlow = Http().cachedHostConnectionPoolHttps[Ws.Task](url)
 

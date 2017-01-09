@@ -23,7 +23,12 @@
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="org.tickets" level="trace"
+    <logger name=" com.github.bsnisar.tickets" level="trace"
+            additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name=" akka.http" level="debug"
             additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>

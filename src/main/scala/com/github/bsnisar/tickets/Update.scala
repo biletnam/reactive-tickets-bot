@@ -11,6 +11,12 @@ trait Update {
   def id: Int
 
   /**
+    * Chat room ID.
+    * @return chat room id.
+    */
+  def chat: Long
+
+  /**
     * Message text.
     * @return msg text.
     */

@@ -1,5 +1,7 @@
 package com.github.bsnisar.tickets
 
+import scala.concurrent.Future
+
 /**
   * Telegram.
   */
@@ -18,4 +20,10 @@ trait Telegram {
     * @return updates.
     */
   def updates: Updates
+
+  /**
+    * Information about bot.
+    * @return information string
+    */
+  def info: Future[String]
 }

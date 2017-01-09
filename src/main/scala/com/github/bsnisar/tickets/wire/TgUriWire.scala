@@ -3,7 +3,7 @@ package com.github.bsnisar.tickets.wire
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.Uri.Path
 import akka.stream.scaladsl.Flow
-import com.github.bsnisar.tickets.Ws.{Req, Task}
+import com.github.bsnisar.tickets.Ws.{Req, Res, Task}
 
 /**
   * Prepend token to head segment:
@@ -14,12 +14,12 @@ import com.github.bsnisar.tickets.Ws.{Req, Task}
   *
   * @author bsnisar
   */
-class UriWire(private val token: String) extends Wire[Req, Req] {
+class TgUriWire[A](private val token: String, origin: Wire[Req, A]) extends Wire[Req, A] {
   import Path._
 
   private lazy val suffix = / (s"bot$token")
 
-  override def flow: Flow[(HttpRequest, Task), Req, _] =
+  override def flow: Flow[Req, A, _] =
     Flow[Req].map {
       case (request, task) =>
         val path = request.uri.path
@@ -31,5 +31,5 @@ class UriWire(private val token: String) extends Wire[Req, Req] {
 
         val newUri = request.uri.withPath(newPath)
         request.withUri(newUri) -> task
-    }
+    }.via(origin.flow)
 }
