@@ -9,13 +9,15 @@ import com.github.bsnisar.tickets.Ws
 
 
 /**
-  * Wire with http connection to specified host.
+  * Wire with HTTPS connection to specified host. Backed by Akka Http connection pool.
+  *
   * @param url host url
+  * @author bsnisar
   */
 class RqWire(private val url: String)(private implicit val as: ActorSystem,
                                       private implicit val mt: Materializer) extends Wire[Req, Res] {
 
-  private lazy val poolClientFlow = Http().cachedHostConnectionPoolHttps[Ws.Task](url)
+  private lazy val _poolClientFlow = Http().cachedHostConnectionPoolHttps[Ws.Task](url)
 
-  override def flow: Flow[Req, Res, _] = poolClientFlow
+  override def flow: Flow[Req, Res, _] = _poolClientFlow
 }

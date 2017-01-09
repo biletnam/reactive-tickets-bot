@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * Wire for transforming response as JSON.
   *
   * @param origin original wire
+  * @author bsnisar
   */
 class JsonWire(private val origin: Wire[Req, Res])(private implicit val mt: Materializer)
   extends Wire[Req, JValue]  with Json {

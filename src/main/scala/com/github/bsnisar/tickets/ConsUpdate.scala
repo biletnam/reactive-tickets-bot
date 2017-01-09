@@ -10,8 +10,6 @@ object ConsUpdate {
     override def read(value: JValue): Update = {
       val id = (value \ "update_id").as[Int]
       val msg = value \ "message"
-      val chat = msg \ "chat"
-      val from = msg \ "from"
       val text = msg \ "text"
 
       ConsUpdate(id, text.as[String])

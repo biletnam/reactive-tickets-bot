@@ -35,9 +35,7 @@ dependencies {
     compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: akkaVersion
     compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.12', version: akkaVersion
     compile group: 'com.typesafe.akka', name: 'akka-http_2.12', version: akkaHttVersion
-
-    testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: akkaVersion
-
+    compile group: 'com.google.guava', name: 'guava', version: '20.0'
     compile group: 'org.json4s', name: 'json4s-jackson_2.12', version: '3.5.0'
 
 //    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
@@ -47,16 +45,9 @@ dependencies {
 //    compile group: 'com.h2database', name: 'h2', version: '1.4.192'
 //    compile group: 'com.typesafe.slick', name: 'slick_2.11', version: '3.1.1'
 //    compile group: 'org.liquibase', name: 'liquibase-core', version: '3.5.3'
-    compile group: 'com.google.guava', name: 'guava', version: '20.0'
 
-
-    testCompile group: 'org.testng', name: 'testng', version: '6.8'
+    testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: akkaVersion
     testCompile group: 'org.jmock', name: 'jmock', version: '2.8.2'
     testCompile group: 'org.jmock', name: 'jmock-legacy', version: '2.8.2'
     testCompile group: 'org.scalatest', name: 'scalatest_2.12', version: '3.0.1'
-}
-
-test {
-    // enable TestNG support (default is JUnit)
-    useTestNG()
 }

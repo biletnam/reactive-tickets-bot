@@ -9,5 +9,4 @@ object Main extends App {
  implicit val actorSystem = ActorSystem()
  implicit val materializer = ActorMaterializer()
  val botUrl = s"${config.getString("bot.host")}}"
-
 }

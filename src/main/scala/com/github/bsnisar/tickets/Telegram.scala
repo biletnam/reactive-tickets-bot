@@ -1,7 +1,5 @@
 package com.github.bsnisar.tickets
 
-import scala.concurrent.Future
-
 /**
   * Telegram.
   */
@@ -16,9 +14,8 @@ trait Telegram {
   def push(chatId: Long, msg: String): Unit
 
   /**
-    * Pull for updates.
-    *
+    * Updates for bot.
     * @return updates.
     */
-  def pull(offset: Int = 0): Future[Iterable[Any]]
+  def updates: Updates
 }

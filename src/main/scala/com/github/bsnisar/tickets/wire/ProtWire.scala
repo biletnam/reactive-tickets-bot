@@ -12,9 +12,11 @@ import org.json4s.JValue
   *
   * @param origin origin wire
   * @param bridge protocol mapper
+  * @author bsnisar
   */
-class PrWire(private val origin: Wire[Req, JValue],
-             private val bridge: ProtocolBridge) extends Wire[Req, JValue] {
+class ProtWire(private val origin: Wire[Req, JValue],
+               private val bridge: ProtocolBridge) extends Wire[Req, JValue] {
+
   override lazy val flow: Flow[(HttpRequest, Task), JValue, _] = {
     Flow[Req].via(origin.flow).map(json => bridge.compute(json).get)
   }

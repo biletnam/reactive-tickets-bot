@@ -1,26 +1,27 @@
 package com.github.bsnisar.tickets
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import com.github.bsnisar.tickets.wire.MockWire
-import org.testng.Assert
-import org.testng.annotations.{AfterSuite, Test}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.{Assertions, BeforeAndAfterAll, FlatSpecLike}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class UzStationsTest extends TestKit(ActorSystem()) {
+@RunWith(classOf[JUnitRunner])
+class UzStationsSpec extends TestKit(ActorSystem())
+  with FlatSpecLike with Assertions with BeforeAndAfterAll {
 
   implicit val mt  = ActorMaterializer()
 
-  @AfterSuite
-  def after(): Unit = {
+  override protected def afterAll(): Unit = {
     shutdown()
   }
 
-  @Test
-  def parseResponseAsStations(): Unit = {
+  "An UzStations" should "parse response as stations" in {
     val json =
       """
         |[
@@ -32,9 +33,9 @@ class UzStationsTest extends TestKit(ActorSystem()) {
     val stations: Stations = new UzStations(wire)
     val foundStations: Iterable[Station] = Await.result(stations.stationsByName("word"), Duration.Inf)
 
-    Assert.assertTrue(foundStations.nonEmpty)
-    Assert.assertEquals(foundStations.head.id, "1001")
-    Assert.assertEquals(foundStations.head.name, "TestStation")
+    assert(foundStations.nonEmpty)
+    assert(foundStations.head.id === "1001")
+    assert(foundStations.head.name === "TestStation")
   }
 
 }

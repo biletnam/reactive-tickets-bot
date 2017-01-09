@@ -1,7 +1,7 @@
 package com.github.bsnisar.tickets
 
 /**
-  * Telegram updates.
+  * Telegram update message.
   */
 trait Update {
   /**

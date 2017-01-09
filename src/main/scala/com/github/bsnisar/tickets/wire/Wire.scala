@@ -4,6 +4,8 @@ import akka.stream.scaladsl.Flow
 
 /**
   * Wire.
+  *
+  * @author bsnisar
   */
 trait Wire[-In, +Out] {
 
