@@ -40,7 +40,6 @@ def akkaHttVersion = '10.0.1'
 dependencies {
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.12.1'
     compile group: 'org.scala-lang.modules', name: 'scala-xml_2.12', version: '1.0.6'
-    compile "org.scala-lang:scala-compiler:2.12.1"
 
     compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: akkaVersion
     compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.12', version: akkaVersion
@@ -72,11 +71,4 @@ scalaStyle {
 docker {
     baseImage "anapsix/alpine-java:8_jdk"
     maintainer 'Bogdan Snisar "bogdan.sns@gmail.com"'
-}
-
-task repl(type:JavaExec) {
-    main = "scala.tools.nsc.MainGenericRunner"
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput System.in
-    args '-usejavacp'
 }
