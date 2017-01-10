@@ -25,11 +25,9 @@ class RgTelegram(val wire: Wire[Req, JValue])
 
   override def info: Future[String] = {
     val getMe = RequestBuilding.Get("/getMe")
-    val response = Source.single(getMe -> 42)
+    Source.single(getMe -> 42)
       .via(wire.flow)
       .runWith(Sink.head)
       .map(json => prettyJson(json))
-    
-    response
   }
 }

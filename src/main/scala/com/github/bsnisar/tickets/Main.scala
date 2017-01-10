@@ -14,7 +14,7 @@ object Main extends App {
  implicit val actorSystem = ActorSystem()
  implicit val materializer = ActorMaterializer()
 
-  val wire: Wire[Req, JValue] = new ProtWire(
+  val tgWire: Wire[Req, JValue] = new ProtWire(
     new JsonWire(
       new TgUriWire(
         config.getString("bot.token"),
@@ -26,10 +26,18 @@ object Main extends App {
     new TgProtocolBridge
   )
 
-  val telegram: Telegram = new RgTelegram(wire)
+  val telegram: Telegram = new RgTelegram(tgWire)
   val updates: Updates = telegram.updates
 
-  updates.pull.foreach(println(_))
+  val uzWire: Wire[Req, JValue] = new ProtWire(
+    new JsonWire(
+      new RqWire(
+        "booking.uz.gov.ua"
+      )
+    ),
+    new UzProtocolBridge
+  )
 
-  telegram.info.foreach(println(_))
+  val railway: Railway = new RgRailway(uzWire)
+  val stations: Stations = railway.stations
 }

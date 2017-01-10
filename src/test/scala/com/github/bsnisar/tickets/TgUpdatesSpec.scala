@@ -12,8 +12,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 @RunWith(classOf[JUnitRunner])
-class TgUpdatesSpec extends TestKit(ActorSystem())
-  with FlatSpecLike with Assertions with BeforeAndAfterAll {
+class TgUpdatesSpec extends TestKit(ActorSystem()) with BaseTest {
 
   implicit val mt  = ActorMaterializer()
 
