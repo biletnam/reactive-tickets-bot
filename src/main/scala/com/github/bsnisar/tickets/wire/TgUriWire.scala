@@ -1,9 +1,8 @@
 package com.github.bsnisar.tickets.wire
 
-import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.Uri.Path
 import akka.stream.scaladsl.Flow
-import com.github.bsnisar.tickets.Ws.{Req, Res, Task}
+import com.github.bsnisar.tickets.Ws.Req
 
 /**
   * Prepend token to head segment:
