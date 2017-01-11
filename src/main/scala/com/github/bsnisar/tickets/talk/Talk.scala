@@ -1,7 +1,12 @@
 package com.github.bsnisar.tickets.talk
 
-trait Talk {
+import akka.actor.Actor
 
-  def act(cmd: String): Either[Talk, Any]
+class Talk extends Actor {
+  override def receive: Receive = ???
+
+}
+
+object Talk {
 
 }
