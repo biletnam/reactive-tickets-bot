@@ -1,12 +1,27 @@
 package com.github.bsnisar.tickets.talk
 
-import akka.actor.Actor
+import scala.concurrent.Future
 
-class Talk extends Actor {
-  override def receive: Receive = ???
+/**
+  * Created by bsnisar on 12.01.17.
+  */
+trait Talk {
 
+  /**
+    * Available transitions from particular dialog position.
+    */
+  def forks: List[String => Option[Transit]]
+
+  /**
+    * Talk context.
+    */
+  def memory: Map[String, Any]
+
+  /**
+    * Last message, related to this talk.
+    */
+  def msg: String = ""
 }
 
-object Talk {
 
-}
+
