@@ -9,6 +9,8 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
   import StationsDb.Stations
   import StationsDb.StationTranslations
 
+  type StationEntity = (Long, String)
+
   /**
     * @inheritdoc
     *
@@ -18,13 +20,14 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     * @return list of stations
     */
   override def stationsByName(name: String): Future[Iterable[Station]] = {
-    ???
+    val likeNameStations = db.run(findStationById(name).result)
+    likeNameStations.map((stations: Seq[(StationEntity, String)]) => )
   }
 
-  private def findIdsLocalizedName(name: String) = {
+  private def findStationById(name: String) = {
     for {
-      (state, l19n) <- Stations join StationTranslations if l19n.l19nName like name
-    } yield state
+      (state, l19n) <- Stations join StationTranslations if (l19n.l19nName like name) && l19n.local === "en"
+    } yield (state, l19n.l19nName)
   }
 
 
@@ -51,8 +54,9 @@ object StationsDb {
     def id = column[Long]("station_id", O.PrimaryKey)
     def local = column[String]("local_code")
     def l19nName = column[String]("name")
-    def station = foreignKey("transl_stations_ref_stations", id, Stations)(_.id, onUpdate = ForeignKeyAction.Restrict,
-      onDelete = ForeignKeyAction.Cascade)
+    def station = foreignKey("transl_stations_ref_stations", id, Stations)(_.id,
+      onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade
+    )
     override def * = (id, local, l19nName)
   }
 
