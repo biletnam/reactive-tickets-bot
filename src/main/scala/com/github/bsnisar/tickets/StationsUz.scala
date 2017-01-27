@@ -20,7 +20,7 @@ import scala.concurrent.Future
   *
   * @param wire wire to API
   */
-class UzStations(private val wire: Wire[Req, JValue])(implicit mt: Materializer)
+class StationsUz(private val wire: Wire[Req, JValue])(implicit mt: Materializer)
   extends Stations with Json with Log {
 
   implicit val reader = new Reader[Station] {

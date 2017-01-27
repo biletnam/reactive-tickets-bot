@@ -10,8 +10,8 @@ class UzTrainsSpec extends BaseTest {
     val q = <routes>
       <route from="10" to="5">
         <arrives>
-          <arrive>100</arrive>
-          <arrive>500</arrive>
+          <arrive>2007-12-03T10:15:30+01:00[Europe/Paris]</arrive>
+          <arrive>2007-12-03T11:15:30+01:00[Europe/Paris]</arrive>
         </arrives>
       </route>
     </routes>

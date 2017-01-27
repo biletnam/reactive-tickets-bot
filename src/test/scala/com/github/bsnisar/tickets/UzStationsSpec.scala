@@ -29,7 +29,7 @@ class UzStationsSpec extends TestKit(ActorSystem()) with BaseTest {
       """.stripMargin
 
     val wire = new MockWire(json)
-    val stations: Stations = new UzStations(wire)
+    val stations: Stations = new StationsUz(wire)
     val foundStations: Iterable[Station] = Await.result(stations.stationsByName("word"), Duration.Inf)
 
     assert(foundStations.nonEmpty)

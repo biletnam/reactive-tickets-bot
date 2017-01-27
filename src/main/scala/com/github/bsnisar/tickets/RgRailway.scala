@@ -17,5 +17,5 @@ class RgRailway(private val wire: Wire[Req, JValue])
 
   override def trains: Trains = ???
 
-  override def stations: Stations = new UzStations(wire)
+  override def stations: Stations = new StationsUz(wire)
 }
