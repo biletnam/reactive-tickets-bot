@@ -1,9 +1,10 @@
 package com.github.bsnisar.tickets
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import slick.jdbc.H2Profile.api._
+
+import scala.concurrent.duration.Duration
 
 
 class StationsDb(private val origin: Stations, private val db: Database) extends Stations {
@@ -23,7 +24,14 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     persistedStations.flatMap {
       case found if found.isEmpty =>
         origin.stationsByName(name)
+          .map { foundStations =>
+            val inserts = DBIO.sequence(
+              foundStations.map(station => updateStationsData(station.id, "en", station.name))
+            )
 
+            Await.ready(db.run(inserts), Duration.Inf)
+            foundStations
+          }
       case found =>
         val stations: Seq[Station] = found.map {
           case ((_, apiID), stationName) => ConsStation(apiID, stationName)
@@ -33,6 +41,9 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     }
   }
 
+  private def updateStationsData(apiID: String, local: String, name: String) =
+    addIfAbsentStation(apiID).map(id => addIfAbsentTranslation(id, local, name))
+
   private def findIdsLocalizedName(name: String) = {
     for {
       (state, l19n) <- Stations join StationTranslations on (_.id === _.stationID)
@@ -40,15 +51,23 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     } yield (state, l19n.l19nName)
   }
 
-
-/*  private def addTranslationIfNotExists(id: Long, local: String, nameValue: String) =
-    StationsDb.StationTranslations.forceInsertQuery {
+  private def addIfAbsentStation(apiID: String) =
+    Stations.forceInsertQuery {
       val exists = (for {
-        str <- StationsDb.StationTranslations if str.id == id.bind
+        str <- Stations if str.apiUID === apiID
+      } yield str).exists
+      val insert: (Long, String) = (1, apiID)
+      for (qu <- Query(insert) if !exists) yield qu
+    }
+
+  private def addIfAbsentTranslation(id: Long, local: String, nameValue: String) =
+    StationTranslations.forceInsertQuery {
+      val exists = (for {
+        str <- StationsDb.StationTranslations if str.stationID == id.bind
       } yield str).exists
       val insert = (id, local, nameValue)
       for (qu <- Query(insert) if !exists) yield qu
-    }*/
+    }
 }
 
 // scalastyle:off public.methods.have.type
@@ -64,8 +83,10 @@ object StationsDb {
     def stationID = column[Long]("station_id", O.PrimaryKey)
     def local = column[String]("local_code")
     def l19nName = column[String]("name")
-    def station = foreignKey("transl_stations_ref_stations", stationID, Stations)(_.id, onUpdate = ForeignKeyAction.Restrict,
-      onDelete = ForeignKeyAction.Cascade)
+    def station = foreignKey("transl_stations_ref_stations", stationID, Stations)(_.id,
+      onUpdate = ForeignKeyAction.Restrict,
+      onDelete = ForeignKeyAction.Cascade
+    )
     override def * = (stationID, local, l19nName)
   }
 
