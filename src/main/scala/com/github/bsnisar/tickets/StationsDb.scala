@@ -1,18 +1,15 @@
 package com.github.bsnisar.tickets
 
 import com.typesafe.scalalogging.LazyLogging
-
-import scala.concurrent.{Await, Future, Promise}
-import scala.concurrent.ExecutionContext.Implicits.global
 import slick.jdbc.H2Profile.api._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success}
+import scala.concurrent.{Await, Future}
 
 
 class StationsDb(private val origin: Stations, private val db: Database) extends Stations with LazyLogging {
-  import StationsDb.Stations
-  import StationsDb.StationTranslations
+  import StationsDb.{StationTranslations, Stations}
 
   /**
     * @inheritdoc
@@ -25,7 +22,7 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
   override def stationsByName(name: String): Future[Iterable[Station]] = {
     val stationsQuery = for {
       (s, ts) <- Stations join StationTranslations on (_.id === _.stationID)
-                                                   if (ts.local === "en") && (ts.l19nName like name)
+               if (ts.local === "en") && (ts.l19nName like s"%$name%")
     } yield (s.apiID, ts.l19nName)
 
     val records = db.run(stationsQuery.result)
@@ -51,15 +48,15 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     def insertStationIfAbsent(apiID: String, local: String, l19nName: String) = {
       val stationInsQuery = Stations.returning(Stations.map(_.id)).forceInsertQuery {
         val exists = (for {q <- Stations if q.apiID === apiID} yield q).exists
-        val ins: (Option[Long], String) = (None, "431")
+        val ins: (Option[Long], String) = (None, apiID)
         for {q <- Query(ins) if !exists} yield q
       }
 
-      stationInsQuery.map { generatedId =>
+      stationInsQuery.flatMap { generatedId =>
         val stationID = generatedId.head
         StationTranslations.forceInsertQuery {
           val exists = (for {q <- StationTranslations if q.stationID === stationID} yield q).exists
-          val ins: (Long, String, String) = (stationID, "431", "Dn")
+          val ins: (Long, String, String) = (stationID, local, l19nName)
           for {q <- Query(ins) if !exists} yield q
         }
       }
@@ -73,14 +70,7 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     Await.ready(db.run(actions), Duration.Inf)
   }
 
-
-
-
-
 }
-
-case class StationRecord(id: Option[Long] = None, apiID: String)
-case class TranslationStationRecord(id: Long, local: String, name: String)
 
 // scalastyle:off public.methods.have.type
 object StationsDb {

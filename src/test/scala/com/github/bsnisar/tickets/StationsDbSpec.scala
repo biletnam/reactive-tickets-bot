@@ -48,19 +48,20 @@ class StationsDbSpec extends BaseTest {
       setThreadingPolicy(new Synchroniser)
     }}
 
+    val name = "Station1"
     val mockStations: Stations = mockery.mock(classOf[Stations])
 
     mockery.checking(new JMockExpectations {
-      oneOf(mockStations).stationsByName("Dn")
-      will(returnValue(Future.successful(Seq(ConsStation("5", "Dn")))))
+      oneOf(mockStations).stationsByName(name)
+      will(returnValue(Future.successful(Seq(ConsStation("G1", "Station1")))))
     })
 
     val sut: Stations = new StationsDb(mockStations, db)
 
-    val firstCall = Await.result(sut.stationsByName("Dn"), Duration.Inf)
+    val firstCall = Await.result(sut.stationsByName(name), Duration.Inf)
     assert(firstCall.nonEmpty === true)
 
-    val secondCall = Await.result(sut.stationsByName("Dn"), Duration.Inf)
+    val secondCall = Await.result(sut.stationsByName(name), Duration.Inf)
     assert(secondCall.nonEmpty === true)
 
     mockery.assertIsSatisfied()
