@@ -5,8 +5,9 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
-import com.github.bsnisar.tickets.misc.{Json, Log}
+import com.github.bsnisar.tickets.misc.Json
 import com.github.bsnisar.tickets.wire.Wire
+import com.typesafe.scalalogging.LazyLogging
 import org.json4s.JValue
 import org.json4s.JsonDSL._
 
@@ -16,7 +17,7 @@ import scala.util.Success
 
 class TgUpdates(private val wire: Wire[Req, JValue])
                (implicit
-                val mt: Materializer) extends Updates with Json with Log {
+                val mt: Materializer) extends Updates with Json with LazyLogging {
 
   private val seq = new AtomicInteger(0)
 
@@ -24,7 +25,7 @@ class TgUpdates(private val wire: Wire[Req, JValue])
     val offset = seq.get()
     val reqBody: JValue = "offset" -> offset
     val updatesReq = RequestBuilding.Post("getUpdates", reqBody)
-    log.debug("#pull updates with offset {}", offset)
+    logger.debug("#pull updates with offset {}", offset)
 
     import ConsUpdate.Reader
     val updates: Future[Iterable[Update]] = Source.single(updatesReq -> offset)

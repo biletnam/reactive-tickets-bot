@@ -1,15 +1,14 @@
 package com.github.bsnisar.tickets
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 
 class StationsDb(private val origin: Stations, private val db: Database) extends Stations {
   import StationsDb.Stations
   import StationsDb.StationTranslations
-
-  type StationEntity = (Long, String)
 
   /**
     * @inheritdoc
@@ -20,25 +19,36 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     * @return list of stations
     */
   override def stationsByName(name: String): Future[Iterable[Station]] = {
-    val likeNameStations = db.run(findStationById(name).result)
-    likeNameStations.map((stations: Seq[(StationEntity, String)]) => )
+    val persistedStations = db.run(findIdsLocalizedName(name).result)
+    persistedStations.flatMap {
+      case found if found.isEmpty =>
+        origin.stationsByName(name)
+
+      case found =>
+        val stations: Seq[Station] = found.map {
+          case ((_, apiID), stationName) => ConsStation(apiID, stationName)
+        }
+
+        Future.successful(stations)
+    }
   }
 
-  private def findStationById(name: String) = {
+  private def findIdsLocalizedName(name: String) = {
     for {
-      (state, l19n) <- Stations join StationTranslations if (l19n.l19nName like name) && l19n.local === "en"
+      (state, l19n) <- Stations join StationTranslations on (_.id === _.stationID)
+          if (l19n.l19nName like name) && (l19n.local === "en")
     } yield (state, l19n.l19nName)
   }
 
 
-  private def addTranslationIfNotExists(id: Long, local: String, nameValue: String) =
+/*  private def addTranslationIfNotExists(id: Long, local: String, nameValue: String) =
     StationsDb.StationTranslations.forceInsertQuery {
       val exists = (for {
         str <- StationsDb.StationTranslations if str.id == id.bind
       } yield str).exists
       val insert = (id, local, nameValue)
       for (qu <- Query(insert) if !exists) yield qu
-    }
+    }*/
 }
 
 // scalastyle:off public.methods.have.type
@@ -51,13 +61,12 @@ object StationsDb {
   val Stations = TableQuery[StationsTable]
 
   class StationTranslationsTable(tag: Tag) extends Table[(Long, String, String)](tag, "translation_stations") {
-    def id = column[Long]("station_id", O.PrimaryKey)
+    def stationID = column[Long]("station_id", O.PrimaryKey)
     def local = column[String]("local_code")
     def l19nName = column[String]("name")
-    def station = foreignKey("transl_stations_ref_stations", id, Stations)(_.id,
-      onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade
-    )
-    override def * = (id, local, l19nName)
+    def station = foreignKey("transl_stations_ref_stations", stationID, Stations)(_.id, onUpdate = ForeignKeyAction.Restrict,
+      onDelete = ForeignKeyAction.Cascade)
+    override def * = (stationID, local, l19nName)
   }
 
   val StationTranslations = TableQuery[StationTranslationsTable]
