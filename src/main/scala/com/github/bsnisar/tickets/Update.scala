@@ -22,7 +22,3 @@ trait Update {
     */
   def text: String
 }
-
-object UpdateText {
-  def unapply(arg: Update): Option[String] = Option(arg.text)
-}
