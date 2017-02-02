@@ -4,10 +4,14 @@ import com.typesafe.scalalogging.LazyLogging
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
-
+/**
+  * Stations. Looks in database and then fetch stations from original Stations object.
+  * Information, that was gotten from origin [[Stations]] will be persisted in the database.
+  * @param origin original Stations
+  * @param db database
+  */
 class StationsDb(private val origin: Stations, private val db: Database) extends Stations with LazyLogging {
   import StationsDb.{StationTranslations, Stations}
 
@@ -26,16 +30,15 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     } yield (s.apiID, ts.l19nName)
 
     val records = db.run(stationsQuery.result)
-
     records.flatMap {
       case Seq() =>
         logger.debug(s"#stationsByName - call origin.stationsByName($name)")
-        val fetch = origin.stationsByName(name)
-        fetch.map { apiStations =>
-          persist(apiStations)
-          apiStations
-        }
+        val result = for {
+          resp <- origin.stationsByName(name)
+          _ <- persist(resp)
+        } yield resp
 
+        result
       case foundRows =>
         Future.successful(foundRows.map {
           case (apiId, l19nName) => ConsStation(apiId, l19nName)
@@ -43,33 +46,30 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     }
   }
 
-
-  def persist(stations: Iterable[Station]): Unit = {
+  private def persist(stations: Iterable[Station]) = {
     def insertStationIfAbsent(apiID: String, local: String, l19nName: String) = {
-      val stationInsQuery = Stations.returning(Stations.map(_.id)).forceInsertQuery {
+      val stationInsQuery = Stations returning Stations.map(_.id) forceInsertQuery {
         val exists = (for {q <- Stations if q.apiID === apiID} yield q).exists
-        val ins: (Option[Long], String) = (None, apiID)
-        for {q <- Query(ins) if !exists} yield q
+        val stationInsert: (Option[Long], String) = (None, apiID)
+        for {q <- Query(stationInsert) if !exists} yield q
       }
 
       stationInsQuery.flatMap { generatedId =>
         val stationID = generatedId.head
         StationTranslations.forceInsertQuery {
           val exists = (for {q <- StationTranslations if q.stationID === stationID} yield q).exists
-          val ins: (Long, String, String) = (stationID, local, l19nName)
-          for {q <- Query(ins) if !exists} yield q
+          val translationInsert: (Long, String, String) = (stationID, local, l19nName)
+          for {q <- Query(translationInsert) if !exists} yield q
         }
       }
     }
 
     val actions = DBIO.sequence(for {
       station <- stations
-    } yield insertStationIfAbsent(station.id, "en", station.name)
-    )
+    } yield insertStationIfAbsent(station.id, "en", station.name))
 
-    Await.ready(db.run(actions), Duration.Inf)
+    db.run(actions)
   }
-
 }
 
 // scalastyle:off public.methods.have.type
