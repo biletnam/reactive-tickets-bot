@@ -1,5 +1,7 @@
-package com.github.bsnisar.tickets
-import com.github.bsnisar.tickets.misc.{ApiProtocolException, Json}
+package com.github.bsnisar.tickets.telegram
+
+import com.github.bsnisar.tickets.ProtocolBridge
+import com.github.bsnisar.tickets.misc.Json
 import com.typesafe.scalalogging.LazyLogging
 import org.json4s.JValue
 import org.json4s.JsonAST.{JArray, JObject}
@@ -20,7 +22,7 @@ class TgProtocolBridge extends ProtocolBridge with Json with LazyLogging  {
       json \ "result" match {
         case payload @ JArray(_) => Success(payload)
         case payload @ JObject(_) => Success(payload)
-        case e @ _ => Failure(new ApiProtocolException(s"expect json array, but was ${e.getClass.getSimpleName}"))
+        case e @ _ => Failure(new IllegalStateException(s"expect json array, but was ${e.getClass.getSimpleName}"))
       }
     }
   }

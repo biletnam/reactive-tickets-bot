@@ -1,7 +1,7 @@
-package com.github.bsnisar.tickets.actors
+package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.github.bsnisar.tickets.Update
+import com.github.bsnisar.tickets.telegram.TgUpdate
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -13,7 +13,7 @@ final class Chats(private val prop: Props) extends Actor with LazyLogging {
   private var chats = Map.empty[Long, ActorRef]
 
   override def receive: Receive = {
-    case update: Update =>
+    case update: TgUpdate =>
       val chatID = update.chat
       chats.get(chatID) match {
         case Some(ref) =>

@@ -1,5 +1,7 @@
 package com.github.bsnisar.tickets
 
+import java.util.Locale
+
 import scala.concurrent.Future
 
 trait Stations {
@@ -10,5 +12,5 @@ trait Stations {
     * @param name name like
     * @return list of stations
     */
-  def stationsByName(name: String): Future[Iterable[Station]]
+  def stationsByName(name: String, local: Locale = Locale.ENGLISH): Future[Iterable[Station]]
 }

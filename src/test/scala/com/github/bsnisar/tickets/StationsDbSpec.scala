@@ -35,7 +35,7 @@ class StationsDbSpec extends BaseTest {
 
     mockery.checking(new JMockExpectations {
       oneOf(mockStations).stationsByName("Dn")
-      will(returnValue(Future.successful(Seq(ConsStation("5", "Dn")))))
+      will(returnValue(Future.successful(Seq(Station("5", "Dn")))))
     })
 
     val res = Await.result(new StationsDb(mockStations, db).stationsByName("Dn"), Duration.Inf)
@@ -53,7 +53,7 @@ class StationsDbSpec extends BaseTest {
 
     mockery.checking(new JMockExpectations {
       oneOf(mockStations).stationsByName(name)
-      will(returnValue(Future.successful(Seq(ConsStation("G1", "Station1")))))
+      will(returnValue(Future.successful(Seq(Station("G1", "Station1")))))
     })
 
     val sut: Stations = new StationsDb(mockStations, db)

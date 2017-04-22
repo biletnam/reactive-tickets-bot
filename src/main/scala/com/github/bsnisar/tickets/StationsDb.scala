@@ -1,5 +1,7 @@
 package com.github.bsnisar.tickets
 
+import java.util.Locale
+
 import com.typesafe.scalalogging.LazyLogging
 import slick.jdbc.H2Profile.api._
 
@@ -23,7 +25,7 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     * @param name name like
     * @return list of stations
     */
-  override def stationsByName(name: String): Future[Iterable[Station]] = {
+  override def stationsByName(name: String, local: Locale = Locale.ENGLISH): Future[Iterable[Station]] = {
     val stationsQuery = for {
       (s, ts) <- Stations join StationTranslations on (_.id === _.stationID)
                if (ts.local === "en") && (ts.l19nName like s"%$name%")
@@ -41,7 +43,7 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
         result
       case foundRows =>
         Future.successful(foundRows.map {
-          case (apiId, l19nName) => ConsStation(apiId, l19nName)
+          case (apiId, l19nName) => Station(apiId, l19nName)
         })
     }
   }

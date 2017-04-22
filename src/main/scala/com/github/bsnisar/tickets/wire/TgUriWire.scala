@@ -5,7 +5,7 @@ import akka.stream.scaladsl.Flow
 import com.github.bsnisar.tickets.Ws.Req
 
 /**
-  * Prepend token to head segment:
+  * Add special prefix to URI:
   *
   * {{{
   *   "/getMe" -> "/bot${botToken}/getMe"
@@ -20,7 +20,7 @@ class TgUriWire[A](private val token: String, origin: Wire[Req, A]) extends Wire
 
   override def flow: Flow[Req, A, _] =
     Flow[Req].map {
-      case (request, task) =>
+      case (request, param) =>
         val path = request.uri.path
         val newPath = if (path.startsWithSlash) {
           suffix ++ path
@@ -29,6 +29,6 @@ class TgUriWire[A](private val token: String, origin: Wire[Req, A]) extends Wire
         }
 
         val newUri = request.uri.withPath(newPath)
-        request.withUri(newUri) -> task
+        request.withUri(newUri) -> param
     }.via(origin.flow)
 }

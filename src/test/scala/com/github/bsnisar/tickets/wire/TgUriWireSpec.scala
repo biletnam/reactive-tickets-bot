@@ -20,7 +20,7 @@ class TgUriWireSpec extends FlatSpec with BeforeAndAfterAll {
 
   it should "append token to request path as head segment" in {
     val token = "ABC100x0"
-    val origin = new GatheringMockWire(new MockWire("{}"))
+    val origin = new SpyWire(new MockWire("{}"))
     val wire = new TgUriWire(token, origin)
     val get = RequestBuilding.Get("/getUpdates")
     implicit val mt = ActorMaterializer()
@@ -28,12 +28,12 @@ class TgUriWireSpec extends FlatSpec with BeforeAndAfterAll {
     val result = Source.single(get -> 42).via(wire.flow).runWith(Sink.head)
     Await.ready(result, Duration.Inf)
 
-    Assert.assertEquals(s"/bot$token/getUpdates", origin.requests.get(0)._1.uri.toString())
+    assert(s"/bot$token/getUpdates" === origin.requests.get(0)._1.uri.toString())
   }
 
   it should "append token to request path with slash" in {
     val token = "ABC100--0"
-    val origin = new GatheringMockWire(new MockWire("{}"))
+    val origin = new SpyWire(new MockWire("{}"))
     val wire = new TgUriWire(token, origin)
     val get = RequestBuilding.Get("me")
     implicit val mt = ActorMaterializer()
@@ -41,7 +41,7 @@ class TgUriWireSpec extends FlatSpec with BeforeAndAfterAll {
     val result = Source.single(get -> 42).via(wire.flow).runWith(Sink.head)
     val req = Await.result(result, Duration.Inf)
 
-    Assert.assertEquals(s"/bot$token/me", origin.requests.get(0)._1.uri.toString())
+    assert(s"/bot$token/me" === origin.requests.get(0)._1.uri.toString())
   }
 
   override protected def afterAll(): Unit = system.terminate()

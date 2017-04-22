@@ -1,6 +1,7 @@
 package com.github.bsnisar.tickets
 
 import java.net.URLEncoder
+import java.util.Locale
 
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.HttpRequest
@@ -24,14 +25,14 @@ import scala.concurrent.Future
 class StationsUz(private val wire: Wire[Req, JValue])(implicit mt: Materializer)
   extends Stations with Json with LazyLogging {
 
-  implicit val reader = new Reader[Station] {
-    override def read(value: JValue): Station = ConsStation(
+  implicit object Reader extends Reader[Station] {
+    override def read(value: JValue): Station = Station(
       id = (value \ "station_id").as[String],
       name = (value \ "title").as[String]
     )
   }
 
-  override def stationsByName(name: String): Future[Iterable[Station]] = {
+  override def stationsByName(name: String, local: Locale = Locale.ENGLISH): Future[Iterable[Station]] = {
     logger.debug("call #stationsByName({})", name)
     val encName = URLEncoder.encode(name, Charsets.UTF_8.name())
     val req: HttpRequest = RequestBuilding.Get(s"/ru/purchase/station/$encName/")

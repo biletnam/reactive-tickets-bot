@@ -1,6 +1,9 @@
 package com.github.bsnisar.tickets
 
-trait Station {
-  def id: String
-  def name: String
-}
+/**
+  * Constant station.
+  *
+  * @param id station id
+  * @param name station name
+  */
+case class Station(id: String, name: String)
