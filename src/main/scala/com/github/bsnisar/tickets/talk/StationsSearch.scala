@@ -5,8 +5,12 @@ import com.github.bsnisar.tickets.telegram.{TelegramMessages, TgUpdate}
 import com.github.bsnisar.tickets.{Station, Stations}
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.util.matching.Regex
+
 
 object StationsSearch {
+  val StationsSearchCommands: Regex = "^(/from|/to)\\s.*".r
+
   def props(stations: Stations, stationId: StationId): Props =
     Props(classOf[StationsSearch], stations, stationId)
 }
