@@ -8,7 +8,16 @@ import com.github.bsnisar.tickets.Station
 object TelegramMessages {
 
   /**
-    * Template based message.
+    * Message.
+    * <br/>
+    * See <a href="https://core.telegram.org/bots/api#sendmessage">sendmessage</a> method.
+    * @param charID direct chat.
+    * @param msg payload
+    */
+  final case class Message(charID: String, msg: SendMsg)
+
+  /**
+    * Template message payload.
     */
   sealed trait SendMsg {
 

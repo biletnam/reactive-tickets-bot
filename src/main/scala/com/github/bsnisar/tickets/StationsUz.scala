@@ -32,7 +32,7 @@ class StationsUz(private val wire: Wire[Req, JValue])(implicit mt: Materializer)
     )
   }
 
-  override def stationsByName(name: String, local: Locale = Locale.ENGLISH): Future[Iterable[Station]] = {
+  override def stationsByName(name: String): Future[Iterable[Station]] = {
     logger.debug("call #stationsByName({})", name)
     val encName = URLEncoder.encode(name, Charsets.UTF_8.name())
     val req: HttpRequest = RequestBuilding.Get(s"/ru/purchase/station/$encName/")

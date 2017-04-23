@@ -25,7 +25,7 @@ class StationsDb(private val origin: Stations, private val db: Database) extends
     * @param name name like
     * @return list of stations
     */
-  override def stationsByName(name: String, local: Locale = Locale.ENGLISH): Future[Iterable[Station]] = {
+  override def stationsByName(name: String): Future[Iterable[Station]] = {
     val stationsQuery = for {
       (s, ts) <- Stations join StationTranslations on (_.id === _.stationID)
                if (ts.local === "en") && (ts.l19nName like s"%$name%")

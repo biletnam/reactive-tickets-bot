@@ -9,8 +9,8 @@ import com.typesafe.scalalogging.LazyLogging
   * If there is no available bot for given chat, create new one.
   * @param prop bot props.
   */
-final class Chats(private val prop: Props) extends Actor with LazyLogging {
-  private var chats = Map.empty[Long, ActorRef]
+final class Talks(private val prop: Props) extends Actor with LazyLogging {
+  private var chats = Map.empty[String, ActorRef]
 
   override def receive: Receive = {
     case update: TgUpdate =>
@@ -18,10 +18,9 @@ final class Chats(private val prop: Props) extends Actor with LazyLogging {
       chats.get(chatID) match {
         case Some(ref) =>
           ref ! update
-
         case None =>
-          val botName = s"ch_$chatID"
-          logger.debug("create new bot {}", botName)
+          val botName = s"chat::$chatID"
+          logger.debug("new bot {} created", botName)
           val ref = context.actorOf(prop, botName)
           chats = chats + (chatID -> ref)
           ref ! update
