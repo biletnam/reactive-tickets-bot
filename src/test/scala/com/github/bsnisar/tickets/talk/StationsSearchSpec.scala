@@ -3,7 +3,8 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef}
 import com.github.bsnisar.tickets.talk.StationsSearch.StationsSearchCommands
-import com.github.bsnisar.tickets.telegram.{TelegramMessages, TgUpdate}
+import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations, Station, Stations}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -38,7 +39,7 @@ class StationsSearchSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender
     })
 
     val sut = TestActorRef(StationsSearch.props(mockStations, stationId))
-    sut ! TgUpdate(1, "/from Dn", "a")
+    sut ! Update(1, "/from Dn", "a")
 
     expectMsgClass(classOf[TelegramMessages.MsgFoundStations])
     mockery.assertIsSatisfied()
@@ -57,7 +58,7 @@ class StationsSearchSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender
     })
 
     val sut = TestActorRef(StationsSearch.props(mockStations, stationId))
-    sut ! TgUpdate(1, "/to Dn", "1")
+    sut ! Update(1, "/to Dn", "1")
 
     mockery.assertIsSatisfied()
     expectMsgClass(classOf[TelegramMessages.MsgFoundStations])

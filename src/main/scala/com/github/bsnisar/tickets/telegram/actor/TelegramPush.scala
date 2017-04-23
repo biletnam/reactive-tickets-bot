@@ -1,4 +1,4 @@
-package com.github.bsnisar.tickets.telegram.ac
+package com.github.bsnisar.tickets.telegram.actor
 
 import akka.actor.{Actor, Props}
 import akka.http.scaladsl.client.RequestBuilding
@@ -8,7 +8,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.{Json, Template}
 import com.github.bsnisar.tickets.telegram.TelegramMessages.SendMsg
-import com.github.bsnisar.tickets.telegram.ac.TelegramPush.PushMessage
+import com.github.bsnisar.tickets.telegram.actor.TelegramPush.PushMessage
 import com.github.bsnisar.tickets.wire.Wire
 
 object TelegramPush {

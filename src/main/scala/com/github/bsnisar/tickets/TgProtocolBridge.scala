@@ -1,6 +1,5 @@
-package com.github.bsnisar.tickets.telegram
+package com.github.bsnisar.tickets
 
-import com.github.bsnisar.tickets.ProtocolBridge
 import com.github.bsnisar.tickets.misc.Json
 import com.typesafe.scalalogging.LazyLogging
 import org.json4s.JValue

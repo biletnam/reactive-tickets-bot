@@ -1,8 +1,9 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.github.bsnisar.tickets.telegram.ac.TelegramPush
-import com.github.bsnisar.tickets.telegram.{TelegramMessages, TgUpdate}
+import com.github.bsnisar.tickets.telegram.actor.TelegramPush
+import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.typesafe.scalalogging.LazyLogging
 
 
@@ -16,7 +17,7 @@ class Talk(val charID: String,
            val telegram: ActorRef) extends Actor with LazyLogging {
 
   override def receive: Receive = {
-    case update: TgUpdate =>
+    case update: Update =>
       update.text match {
         case StationsSearch.StationsSearchCommands(_*) =>
           stationsSearch ! update

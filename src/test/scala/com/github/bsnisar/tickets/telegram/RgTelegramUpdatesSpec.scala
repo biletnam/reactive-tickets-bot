@@ -2,23 +2,19 @@ package com.github.bsnisar.tickets.telegram
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.testkit.TestKit
-import com.github.bsnisar.tickets.BaseTest
+import com.github.bsnisar.tickets.AkkaBaseTest
 import com.github.bsnisar.tickets.wire.{MockWire, SpyWire}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @RunWith(classOf[JUnitRunner])
-class RgTelegramSpec extends TestKit(ActorSystem()) with BaseTest {
+class RgTelegramUpdatesSpec extends AkkaBaseTest(ActorSystem()) {
 
   implicit val mt  = ActorMaterializer()
-
-  override protected def afterAll(): Unit = {
-    shutdown()
-  }
 
   "A TgUpdates" should "poll response as Updates" in {
     val json =
@@ -36,12 +32,12 @@ class RgTelegramSpec extends TestKit(ActorSystem()) with BaseTest {
 
     val offset = 1001
     val wire = new MockWire(json)
-    val updates: Telegram = new RgTelegram(wire)
-    val result: Iterable[TgUpdate] = Await.result(updates.pull(offset), Duration.Inf)
+    val updates = new RgTelegramUpdates(wire)
+    val result = Await.result(updates.pull(offset), Duration.Inf)
 
-    assert(result.nonEmpty)
-    assert(result.head.id === 1001)
-    assert(result.head.text === "TestMsg")
+    assert(result.data.nonEmpty)
+    assert(result.data.head.seqNum === 1001)
+    assert(result.data.head.text === "TestMsg")
   }
 
   it should "ask next messages with increased offset" in {
@@ -67,7 +63,7 @@ class RgTelegramSpec extends TestKit(ActorSystem()) with BaseTest {
 
     val offset = 200
     val wire = new SpyWire(new MockWire(json))
-    val updates: Telegram = new RgTelegram(wire)
+    val updates = new RgTelegramUpdates(wire)
     Await.ready(updates.pull(offset), Duration.Inf)
 
     assert(wire.requests.get(0)._2 == 200)

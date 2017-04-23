@@ -1,7 +1,8 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, Props}
-import com.github.bsnisar.tickets.telegram.{TelegramMessages, TgUpdate}
+import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.{Station, Stations}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -21,7 +22,7 @@ class StationsSearch(val stations: Stations, val stationId: StationId) extends A
   import context.dispatcher
 
   override def receive: Receive = {
-    case update: TgUpdate =>
+    case update: Update =>
       logger.debug(s"try understand ( ${update.text} )")
       val words = update.text.split(" ").toList
       val clientChat = sender()

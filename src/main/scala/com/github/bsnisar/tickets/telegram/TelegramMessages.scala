@@ -12,7 +12,6 @@ object TelegramMessages {
   val FromStationsFound = 'from_stations_found
   val ToStationsFound = 'to_stations_found
 
-
   /**
     * Template message payload.
     */

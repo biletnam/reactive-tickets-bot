@@ -1,4 +1,4 @@
-package com.github.bsnisar.tickets.telegram.ac
+package com.github.bsnisar.tickets.telegram.actor
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
