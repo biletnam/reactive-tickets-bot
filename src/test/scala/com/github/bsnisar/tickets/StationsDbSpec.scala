@@ -4,6 +4,7 @@ package com.github.bsnisar.tickets
 import org.jmock.Mockery
 import org.jmock.lib.concurrent.Synchroniser
 import org.junit.runner.RunWith
+import org.scalatest.Ignore
 import org.scalatest.junit.JUnitRunner
 import slick.jdbc.H2Profile.api._
 
@@ -12,6 +13,7 @@ import scala.concurrent.{Await, Future}
 
 
 @RunWith(classOf[JUnitRunner])
+@Ignore
 class StationsDbSpec extends BaseTest {
 
   private var db: TestDatabase.db.type = _

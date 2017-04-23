@@ -3,6 +3,7 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.AkkaBaseTest
+import com.github.bsnisar.tickets.telegram.ac.TelegramPush
 import com.github.bsnisar.tickets.telegram.{TelegramMessages, TgUpdate}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -24,7 +25,7 @@ class TalkSpec extends AkkaBaseTest(ActorSystem()) {
     val ref = TestActorRef(Talk.props("1", search.ref, tg.ref))
     val msg = TelegramMessages.MsgSimple('test)
     ref ! msg
-    
-    tg.expectMsg(TelegramMessages.DirectReq("1", msg))
+
+    tg.expectMsg(TelegramPush.PushMessage("1", msg))
   }
 }

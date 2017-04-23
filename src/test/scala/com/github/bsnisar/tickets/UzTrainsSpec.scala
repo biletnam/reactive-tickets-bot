@@ -1,9 +1,11 @@
 package com.github.bsnisar.tickets
 
 import org.junit.runner.RunWith
+import org.scalatest.Ignore
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
+@Ignore
 class UzTrainsSpec extends BaseTest {
 
   "A UzTrains" should "understand query" in {

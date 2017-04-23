@@ -1,15 +1,20 @@
 package com.github.bsnisar.tickets.talk
 
+
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.telegram.TgUpdate
 import com.typesafe.scalalogging.LazyLogging
+
+object Talks {
+  def props(chatRootProps: Props): Props = Props(classOf[Talks], chatRootProps)
+}
 
 /**
   * Chats router. Delegate each message separate handler.
   * If there is no available bot for given chat, create new one.
   * @param prop bot props.
   */
-final class Talks(private val prop: Props) extends Actor with LazyLogging {
+final class Talks(val prop: Props) extends Actor with LazyLogging {
   private var chats = Map.empty[String, ActorRef]
 
   override def receive: Receive = {

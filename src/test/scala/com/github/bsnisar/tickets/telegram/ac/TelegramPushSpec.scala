@@ -1,0 +1,41 @@
+package com.github.bsnisar.tickets.telegram.ac
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
+import akka.testkit.TestActorRef
+import com.github.bsnisar.tickets.AkkaBaseTest
+import com.github.bsnisar.tickets.misc.TemplateFreemarker
+import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.wire.{MockWire, SpyWire}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+
+@RunWith(classOf[JUnitRunner])
+class TelegramPushSpec extends AkkaBaseTest(ActorSystem()) {
+
+  "A TelegramPush" should "send message" in {
+    implicit val mt = ActorMaterializer()
+    implicit val tpl = new TemplateFreemarker
+    val json = "{\"message_id\": 12}"
+    val wire = new SpyWire(new MockWire(json))
+
+    val ref = TestActorRef(TelegramPush.props(wire))
+    ref ! TelegramPush.PushMessage("41", TelegramMessages.MsgSimple('test, Map("name" -> "test_name")))
+
+    wire.awaitTransmission(3.seconds)
+    val (req, _) = wire.requests.get(0)
+    val content = req.entity.dataBytes
+      .runWith(Sink.head)
+      .map(_.utf8String)
+
+    val body = Await.result(content, Duration.Inf)
+    assert(body === "{\"chat_id\":\"41\",\"text\":\"Text test_name\"}")
+
+  }
+
+}

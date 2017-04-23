@@ -1,6 +1,7 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
+import com.github.bsnisar.tickets.telegram.ac.TelegramPush
 import com.github.bsnisar.tickets.telegram.{TelegramMessages, TgUpdate}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -24,6 +25,6 @@ class Talk(val charID: String,
       }
 
     case send: TelegramMessages.SendMsg =>
-      telegram ! TelegramMessages.DirectReq(charID, send)
+      telegram ! TelegramPush.PushMessage(charID, send)
   }
 }
