@@ -1,4 +1,6 @@
-https://travis-ci.org/bsnisar/reactive-tickets-bot.svg?branch=master
+
+### Status
+[![Build Status](https://travis-ci.org/bsnisar/reactive-tickets-bot.svg?branch=master)](https://travis-ci.org/bsnisar/reactive-tickets-bot.svg?branch=master)
 
 # tickets-bot-akka
 
