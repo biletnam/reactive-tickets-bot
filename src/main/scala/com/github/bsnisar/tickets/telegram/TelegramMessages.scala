@@ -4,7 +4,7 @@ import java.util.Locale
 import java.{util => jUtil}
 
 import com.github.bsnisar.tickets.Station
-import com.github.bsnisar.tickets.misc.Template
+import com.github.bsnisar.tickets.misc.Templates
 import com.google.common.collect.ImmutableMap
 
 object TelegramMessages {
@@ -15,7 +15,7 @@ object TelegramMessages {
   /**
     * Template message payload.
     */
-  sealed trait SendMsg {
+  sealed trait Msg {
 
     /**
       * Template id
@@ -40,10 +40,10 @@ object TelegramMessages {
       * @param t template processor
       * @return message
       */
-    def mkPayload(implicit t: Template): String = t.eval(this)
+    def mkPayload(implicit t: Templates): String = t.eval(this)
   }
 
-  final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) extends SendMsg {
+  final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) extends Msg {
     override def params: jUtil.Map[String, Any] = {
       import scala.collection.JavaConverters._
       val params = stations.map(station => ImmutableMap.of(
@@ -56,14 +56,14 @@ object TelegramMessages {
   }
 
 
-  final case class MsgCommandFailed(id: Symbol = 'cmd_failed, cmd: String) extends SendMsg {
+  final case class MsgCommandFailed(id: Symbol = 'cmd_failed, cmd: String) extends Msg {
     override def params: jUtil.Map[String, Any] = ???
   }
 
   /**
     * Some simple message.
     */
-  final case class MsgSimple(id: Symbol, context: Map[String, Any] = Map.empty) extends SendMsg {
+  final case class MsgSimple(id: Symbol, context: Map[String, Any] = Map.empty) extends Msg {
     override def params: jUtil.Map[String, Any] = {
       import scala.collection.JavaConverters._
       context.asJava

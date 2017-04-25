@@ -5,7 +5,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.testkit.TestActorRef
 import com.github.bsnisar.tickets.AkkaBaseTest
-import com.github.bsnisar.tickets.misc.TemplateFreemarker
+import com.github.bsnisar.tickets.misc.TemplatesFreemarker
 import com.github.bsnisar.tickets.telegram.TelegramMessages
 import com.github.bsnisar.tickets.wire.{MockWire, SpyWire}
 import org.junit.runner.RunWith
@@ -20,11 +20,11 @@ class TelegramPushSpec extends AkkaBaseTest(ActorSystem()) {
 
   "A TelegramPush" should "send message" in {
     implicit val mt = ActorMaterializer()
-    implicit val tpl = new TemplateFreemarker
+    implicit val tpl = new TemplatesFreemarker
     val json = "{\"message_id\": 12}"
     val wire = new SpyWire(new MockWire(json))
 
-    val ref = TestActorRef(TelegramPush.props(wire))
+    val ref = TestActorRef(TelegramPush.props(wire, tpl))
     ref ! TelegramPush.PushMessage("41", TelegramMessages.MsgSimple('test, Map("name" -> "test_name")))
 
     wire.awaitTransmission(3.seconds)

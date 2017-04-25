@@ -34,6 +34,14 @@ object TelegramUpdates {
         Update(id, text.as[String], chatID)
       }
     }
+
+    /**
+      * Extracting text from update.
+      */
+    object Text {
+      def unapply(arg: Update): Option[String] = Option(arg.text)
+    }
+
   }
 }
 

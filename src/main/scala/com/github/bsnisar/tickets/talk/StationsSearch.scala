@@ -53,7 +53,7 @@ class StationsSearch(val stations: Stations, val stationId: StationId) extends A
   }
 
   private def mkStationsResponse
-  (hits: Iterable[Station], templateId: Symbol, fromStation: Boolean): TelegramMessages.SendMsg = hits match {
+  (hits: Iterable[Station], templateId: Symbol, fromStation: Boolean): TelegramMessages.Msg = hits match {
     case coll if coll.isEmpty =>
       TelegramMessages.MsgSimple('stations_not_found)
     case coll =>
