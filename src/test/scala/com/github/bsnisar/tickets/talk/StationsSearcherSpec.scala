@@ -2,7 +2,7 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef}
-import com.github.bsnisar.tickets.talk.StationsSearch.StationsSearchCommands
+import com.github.bsnisar.tickets.misc.StationId
 import com.github.bsnisar.tickets.telegram.TelegramMessages
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations, Station, Stations}
@@ -12,7 +12,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.Future
 
 @RunWith(classOf[JUnitRunner])
-class StationsSearchSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender {
+class StationsSearcherSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender {
   import org.scalatest.prop.TableDrivenPropertyChecks._
 
   val commands = Table(
@@ -35,10 +35,10 @@ class StationsSearchSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender
       will(returnValue(Future.successful(Seq(Station("101", "Dn01")))))
 
       oneOf(stationId).encode("101", from = true)
-      will(returnValue("/goto_from101"))
+      will(returnValue("/from_from101"))
     })
 
-    val sut = TestActorRef(StationsSearch.props(mockStations, stationId))
+    val sut = TestActorRef(StationsSearcher.props(mockStations, stationId))
     sut ! Update(1, "/from Dn", "a")
 
     expectMsgClass(classOf[TelegramMessages.MsgFoundStations])
@@ -54,10 +54,10 @@ class StationsSearchSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender
       will(returnValue(Future.successful(Seq(Station("abcd1", "Dn01")))))
 
       oneOf(stationId).encode("abcd1", from = false)
-      will(returnValue("/goto_to101"))
+      will(returnValue("/tp_to101"))
     })
 
-    val sut = TestActorRef(StationsSearch.props(mockStations, stationId))
+    val sut = TestActorRef(StationsSearcher.props(mockStations, stationId))
     sut ! Update(1, "/to Dn", "1")
 
     mockery.assertIsSatisfied()
@@ -67,7 +67,7 @@ class StationsSearchSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender
   it should "match commands correctly" in {
     forAll(commands) { (cmd: String, isMatch: Boolean) =>
       val result = cmd match {
-        case StationsSearch.StationsSearchCommands(_ *) => true
+        case StationsSearcher.StationsSearchCommands(_ *) => true
         case _ => false
       }
 

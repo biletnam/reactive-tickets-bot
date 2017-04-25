@@ -1,6 +1,7 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, Props}
+import com.github.bsnisar.tickets.misc.StationId
 import com.github.bsnisar.tickets.telegram.TelegramMessages
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.{Station, Stations}
@@ -9,14 +10,14 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.util.matching.Regex
 
 
-object StationsSearch {
+object StationsSearcher {
   val StationsSearchCommands: Regex = "^(/from|/to)\\s.*".r
 
   def props(stations: Stations, stationId: StationId): Props =
-    Props(classOf[StationsSearch], stations, stationId)
+    Props(classOf[StationsSearcher], stations, stationId)
 }
 
-class StationsSearch(val stations: Stations, val stationId: StationId) extends Actor with LazyLogging {
+class StationsSearcher(val stations: Stations, val stationId: StationId) extends Actor with LazyLogging {
 
   import akka.pattern.pipe
   import context.dispatcher

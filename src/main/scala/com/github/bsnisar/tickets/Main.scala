@@ -2,7 +2,7 @@ package com.github.bsnisar.tickets
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.github.bsnisar.tickets.talk.StationsSearch
+import com.github.bsnisar.tickets.talk.StationsSearcher
 import com.github.bsnisar.tickets.telegram.RgTelegramUpdates
 import com.github.bsnisar.tickets.telegram.actor.TelegramPull
 import com.github.bsnisar.tickets.wire._

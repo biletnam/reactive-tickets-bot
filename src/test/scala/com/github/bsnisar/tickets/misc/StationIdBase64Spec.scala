@@ -1,4 +1,4 @@
-package com.github.bsnisar.tickets.talk
+package com.github.bsnisar.tickets.misc
 
 import com.github.bsnisar.tickets.BaseTest
 import org.junit.runner.RunWith
@@ -12,7 +12,6 @@ class StationIdBase64Spec extends BaseTest {
     val base = new StationIdBase64()
 
     val resEncode = base.encode(id.toString, isDeparture = true)
-    assert(resEncode.startsWith("/goto_"))
 
     val resDecode = base.decode(resEncode)
     assert(resDecode.get.id === id.toString)
@@ -24,7 +23,7 @@ class StationIdBase64Spec extends BaseTest {
     val base = new StationIdBase64()
 
     val resEncode = base.encode(id.toString, isDeparture = false)
-    assert(resEncode.startsWith("/goto_"))
+    assert(resEncode.startsWith("/to_"))
 
     val resDecode = base.decode(resEncode)
     assert(resDecode.get.id === id.toString)
