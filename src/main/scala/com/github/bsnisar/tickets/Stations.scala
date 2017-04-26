@@ -13,4 +13,7 @@ trait Stations {
     * @return list of stations
     */
   def stationsByName(name: String): Future[Iterable[Station]]
+
+  def findStationsByName(name: String): Future[(String, Iterable[Station])] =
+    Future.failed(new UnsupportedOperationException)
 }

@@ -1,10 +1,10 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.ActorSystem
-import akka.testkit.{ImplicitSender, TestActorRef}
+import akka.testkit.{ImplicitSender, TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.telegram.TelegramMessages
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
+import com.github.bsnisar.tickets.telegram.MsgFoundStations
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.{Reply, TgUpdate}
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations, Station, Stations}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -30,6 +30,7 @@ class StationsSearcherSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSend
     val mockery = newMockery()
     val mockStations = mockery.mock(classOf[Stations])
     val stationId = mockery.mock(classOf[StationId])
+    val tg = TestProbe()
     mockery.checking(new JMockExpectations {
       oneOf(mockStations).stationsByName("Dn")
       will(returnValue(Future.successful(Seq(Station("101", "Dn01")))))
@@ -38,10 +39,12 @@ class StationsSearcherSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSend
       will(returnValue("/from_from101"))
     })
 
-    val sut = TestActorRef(StationsSearcher.props(mockStations, stationId))
-    sut ! Update(1, "/from Dn", "a")
+    val sut = TestActorRef(StationsSearcher.props(mockStations, stationId, tg.ref))
+    sut ! TgUpdate(1, "/from Dn", "a")
 
-    expectMsgClass(classOf[TelegramMessages.MsgFoundStations])
+    tg.expectMsgPF() {
+      case Reply("a", _: MsgFoundStations) => true
+    }
     mockery.assertIsSatisfied()
   }
 
@@ -49,6 +52,7 @@ class StationsSearcherSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSend
     val mockery = newMockery()
     val mockStations = mockery.mock(classOf[Stations])
     val stationId = mockery.mock(classOf[StationId])
+    val tg = TestProbe()
     mockery.checking(new JMockExpectations {
       oneOf(mockStations).stationsByName("Dn")
       will(returnValue(Future.successful(Seq(Station("abcd1", "Dn01")))))
@@ -57,11 +61,13 @@ class StationsSearcherSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSend
       will(returnValue("/tp_to101"))
     })
 
-    val sut = TestActorRef(StationsSearcher.props(mockStations, stationId))
-    sut ! Update(1, "/to Dn", "1")
+    val sut = TestActorRef(StationsSearcher.props(mockStations, stationId, tg.ref))
+    sut ! TgUpdate(1, "/to Dn", "1")
 
     mockery.assertIsSatisfied()
-    expectMsgClass(classOf[TelegramMessages.MsgFoundStations])
+    tg.expectMsgPF() {
+      case Reply("1", _: MsgFoundStations) => true
+    }
   }
 
   it should "match commands correctly" in {

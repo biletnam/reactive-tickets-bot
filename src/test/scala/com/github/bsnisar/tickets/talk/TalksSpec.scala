@@ -4,7 +4,7 @@ import akka.actor.{ActorContext, ActorRef, ActorSystem}
 import akka.testkit.{TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations}
 import com.github.bsnisar.tickets.telegram.TelegramUpdates
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.{TgUpdate, Update}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -15,22 +15,24 @@ class TalksSpec extends AkkaBaseTest(ActorSystem()) {
     val mockery = newMockery()
     val f = mockery.mock(classOf[Talks.BotFactory])
     val prob = TestProbe()
+    val search = TestProbe()
     mockery.checking(new JMockExpectations {
       oneOf(f).create(any[String])(any[ActorContext])
       will(returnValue(prob.ref))
     })
 
-    val ref = TestActorRef(Talks.props(f))
-    val update1 = Update(1, "text", "abc")
-    val update2 = Update(2, "text", "abc")
-    val update3 = Update(3, "text", "abc")
-    ref ! TelegramUpdates.Updates(1, Seq(update1, update2, update3))
+    val ref = TestActorRef(Talks.props(f, search.ref))
+    val update1 = TgUpdate(1, "text", "abc")
+    ref ! update1
     prob.expectMsg(update1)
-    prob.expectMsg(update2)
-    prob.expectMsg(update3)
 
-    ref ! TelegramUpdates.Updates(1, Seq(update3))
-    prob.expectNoMsg()
+    val update2 = TgUpdate(2, "text", "abc")
+    ref ! update2
+    prob.expectMsg(update2)
+
+    val update3 = TgUpdate(3, "text", "abc")
+    ref ! update3
+    prob.expectMsg(update3)
 
     mockery.assertIsSatisfied()
   }

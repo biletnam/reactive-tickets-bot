@@ -1,37 +1,48 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
+import com.github.bsnisar.tickets.misc.StationId
 import com.github.bsnisar.tickets.telegram.actor.TelegramPush
-import com.github.bsnisar.tickets.telegram.TelegramMessages
 import com.typesafe.scalalogging.LazyLogging
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update._
 
+import scala.util.{Failure, Success}
 import scala.util.matching.Regex
 
 
 object Talk {
-  def props(charID: String,  stationsSearch: ActorRef, telegram: ActorRef): Props =
-    Props(classOf[Talk], charID, stationsSearch, telegram)
+  def props(charID: String,  stationId: StationId, telegram: ActorRef): Props =
+    Props(classOf[Talk], charID, stationId, telegram)
 
+  val ArrivalTime: Regex = "^/arrive\\s.*".r
+  val DepartureTime: Regex = "^/departure\\s.*".r
 
-
-  val StationsSearchCommands: Regex = "^(/from|/to)\\s.*".r
-  val StationsPointerCommands: Regex = "^(/from_|/to_)\\s.*".r
 
 }
 
-class Talk(val charID: String,
-           val stationsSearch: ActorRef,
-           val telegram: ActorRef) extends Actor with LazyLogging {
+class Talk(val chatID: String,
+           val stationId: StationId,
+           val notifyRef: ActorRef) extends Actor with LazyLogging {
 
-  import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update._
+  var talkEntity: TalkEntity = Default()
 
   override def receive: Receive = {
-    case update @ Text(Talk.StationsSearchCommands(_*)) =>
-      stationsSearch ! update
+    case update @ Text(StationId.StationsPointerCommands(_*)) =>
+      stationId.decode(update.text) match {
+        case Success(parsedID) =>
+          if (parsedID.from) {
+            talkEntity = talkEntity.withDepartureFrom(parsedID.id)
+          } else {
+            talkEntity = talkEntity.withArriveTo(parsedID.id)
+          }
 
-    case update @ Text(Talk.StationsPointerCommands(_*)) =>
+          notifyRef ! UpdatesNotifier.AcceptNotify(update.seqNum)
+        case Failure(ex) => logger.error("failed to parse id command", ex)
+      }
 
-    case send: TelegramMessages.Msg =>
-      telegram ! TelegramPush.PushMessage(charID, send)
+    case update @ Text(Talk.ArrivalTime()) =>
+      talkEntity = talkEntity.withArrive(update.text)
+    case update @ Text(Talk.DepartureTime()) =>
+      talkEntity = talkEntity.withDeparture(update.text)
   }
 }

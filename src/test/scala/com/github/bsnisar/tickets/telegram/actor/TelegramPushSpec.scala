@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Sink
 import akka.testkit.TestActorRef
 import com.github.bsnisar.tickets.AkkaBaseTest
 import com.github.bsnisar.tickets.misc.TemplatesFreemarker
-import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.telegram.{MsgSimple, TelegramUpdates}
 import com.github.bsnisar.tickets.wire.{MockWire, SpyWire}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -25,7 +25,7 @@ class TelegramPushSpec extends AkkaBaseTest(ActorSystem()) {
     val wire = new SpyWire(new MockWire(json))
 
     val ref = TestActorRef(TelegramPush.props(wire, tpl))
-    ref ! TelegramPush.PushMessage("41", TelegramMessages.MsgSimple('test, Map("name" -> "test_name")))
+    ref ! TelegramUpdates.Reply("41", MsgSimple('test, Map("name" -> "test_name")))
 
     wire.awaitTransmission(3.seconds)
     val (req, _) = wire.requests.get(0)

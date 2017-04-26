@@ -13,15 +13,27 @@ import org.json4s.{JValue, Reader}
 import scala.concurrent.{ExecutionContext, Future}
 
 object TelegramUpdates {
+
   case class Updates(lastSeq: Int, data: Iterable[Update])
 
+
+  case class Reply(chatID: String, msg: Msg)
+
+  trait Update {
+    def seqNum: Int
+    def text: String
+    def chat: String
+
+    def mkReply(msg: Msg): Reply = Reply(chat, msg)
+  }
+
   /**
-    * Telegram Update message.
+    * Simple Telegram Update message.
     * @param seqNum single update 'update_id' field
     * @param text update's 'text' field
     * @param chat update's chat id
     */
-  final case class Update(seqNum: Int, text: String, chat: String)
+  final case class TgUpdate(seqNum: Int, text: String, chat: String) extends Update
 
   object Update {
     implicit object Reader extends Reader[Update] with Json {
@@ -31,7 +43,7 @@ object TelegramUpdates {
         val text = msg \ "text"
         val chatID = "0"
 
-        Update(id, text.as[String], chatID)
+        TgUpdate(id, text.as[String], chatID)
       }
     }
 

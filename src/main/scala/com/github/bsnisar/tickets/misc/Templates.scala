@@ -3,7 +3,7 @@ package com.github.bsnisar.tickets.misc
 import java.io.StringWriter
 import java.util.Locale
 
-import com.github.bsnisar.tickets.telegram.TelegramMessages.Msg
+import com.github.bsnisar.tickets.telegram.Msg
 import com.typesafe.scalalogging.LazyLogging
 import freemarker.template.{Configuration, Version}
 

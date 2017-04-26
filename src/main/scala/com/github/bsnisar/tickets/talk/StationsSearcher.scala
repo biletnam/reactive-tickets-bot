@@ -1,23 +1,26 @@
 package com.github.bsnisar.tickets.talk
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.telegram._
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.{Station, Stations}
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.concurrent.Future
 import scala.util.matching.Regex
 
 
 object StationsSearcher {
   val StationsSearchCommands: Regex = "^(/from|/to)\\s.*".r
 
-  def props(stations: Stations, stationId: StationId): Props =
-    Props(classOf[StationsSearcher], stations, stationId)
+  def props(stations: Stations, stationId: StationId, telegram: ActorRef): Props =
+    Props(classOf[StationsSearcher], stations, stationId, telegram)
 }
 
-class StationsSearcher(val stations: Stations, val stationId: StationId) extends Actor with LazyLogging {
+class StationsSearcher(val stations: Stations,
+                       val stationId: StationId,
+                       val tg: ActorRef) extends Actor with LazyLogging {
 
   import akka.pattern.pipe
   import context.dispatcher
@@ -26,44 +29,48 @@ class StationsSearcher(val stations: Stations, val stationId: StationId) extends
     case update: Update =>
       logger.debug(s"try understand ( ${update.text} )")
       val words = update.text.split(" ").toList
-      val clientChat = sender()
 
-      words match {
-        case (cmd@"/from") :: name :: _ =>
+      val asyncCall = words match {
+        case "/from" :: name :: _ =>
           stations.stationsByName(name)
             .map(mkStationsResponse(_, 'from_stations_found, fromStation = true))
-            .recover {
-              case ex =>
-                logger.error(s"stations api call failed", ex)
-                TelegramMessages.MsgCommandFailed(cmd = cmd)
-            }.pipeTo(clientChat)
+            .recover(doRecover(name))
 
-
-        case (cmd@"/to") :: name :: _ =>
+        case "/to" :: name :: _ =>
           stations.stationsByName(name)
             .map(mkStationsResponse(_, 'to_stations_found, fromStation = false))
-            .recover {
-              case ex =>
-                logger.error(s"stations api call failed", ex)
-                TelegramMessages.MsgCommandFailed(cmd = cmd)
-            }.pipeTo(clientChat)
+            .recover(doRecover(name))
 
-        case someWords =>
-          logger.warn(s"unexpected words in TgUpdate.text: $someWords")
+        case _ =>
+          Future.successful(MsgCommandFailed('cmd_failed, update.text))
       }
+
+      asyncCall
+        .map(update.mkReply)
+        .pipeTo(self)
+
+    case msg: TelegramUpdates.Reply =>
+      tg ! msg
   }
 
-  private def mkStationsResponse
-  (hits: Iterable[Station], templateId: Symbol, fromStation: Boolean): TelegramMessages.Msg = hits match {
+  private def doRecover(cmd: String): PartialFunction[Throwable, Msg] = {
+    case ex =>
+      logger.error(s"exception from call", ex)
+      MsgCommandFailed('cmd_failed, cmd)
+  }
+
+  private def mkStationsResponse(hits: Iterable[Station],
+                                 templateId: Symbol,
+                                 fromStation: Boolean): Msg = hits match {
     case coll if coll.isEmpty =>
-      TelegramMessages.MsgSimple('stations_not_found)
+      MsgSimple('stations_not_found)
     case coll =>
       val preparedStations = coll.map { station =>
         val encodedId = stationId.encode(id = station.id, fromStation)
         station.copy(id = encodedId)
       }
 
-      TelegramMessages.MsgFoundStations(
+      MsgFoundStations(
         id = templateId,
         stations = preparedStations
       )
