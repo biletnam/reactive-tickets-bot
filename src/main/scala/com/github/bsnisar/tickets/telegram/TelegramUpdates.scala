@@ -17,7 +17,6 @@ object TelegramUpdates {
   case class Updates(lastSeq: Int, data: Iterable[Update])
 
 
-  case class Reply(chatID: String, msg: Msg)
 
   trait Update {
     def seqNum: Int
@@ -26,6 +25,13 @@ object TelegramUpdates {
 
     def mkReply(msg: Msg): Reply = Reply(chat, msg)
   }
+
+  /**
+    * Reply to message.
+    * @param chatID chat to write
+    * @param msg message
+    */
+  case class Reply(chatID: String, msg: Msg)
 
   /**
     * Simple Telegram Update message.

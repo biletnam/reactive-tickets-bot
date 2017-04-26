@@ -4,6 +4,7 @@ import java.util.Locale
 import java.{util => jUtil}
 
 import com.github.bsnisar.tickets.Station
+import com.github.bsnisar.tickets.talk.TalkEntity
 import com.google.common.collect.ImmutableMap
 
 /**
@@ -44,6 +45,14 @@ final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) exten
 
 
 final case class MsgCommandFailed(id: Symbol = 'cmd_failed, cmd: String) extends Msg {
+  override def params: jUtil.Map[String, Any] = ???
+}
+
+final case class MsgQueryUpdate(id: Symbol = 'query_updated, talkEntity: TalkEntity) extends Msg {
+  override def params: jUtil.Map[String, Any] = ???
+}
+
+final case class MsgQueryExecute(id: Symbol = 'query_executed, talkEntity: TalkEntity) extends Msg {
   override def params: jUtil.Map[String, Any] = ???
 }
 

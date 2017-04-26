@@ -2,6 +2,9 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
+import com.github.bsnisar.tickets.talk.UpdatesNotifier.AcceptNotify
+import com.github.bsnisar.tickets.telegram.{Msg, MsgCommandFailed, MsgQueryExecute, MsgQueryUpdate}
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.telegram.actor.TelegramPush
 import com.typesafe.scalalogging.LazyLogging
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update._
@@ -27,6 +30,25 @@ class Talk(val chatID: String,
   var talkEntity: TalkEntity = Default()
 
   override def receive: Receive = {
+    case update: Update =>
+      handleUpdate(update) match {
+        case Left(entity) if entity.complete =>
+          val msg = MsgQueryExecute(talkEntity = entity)
+          runQuery()
+          notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
+
+        case Left(entity) =>
+          val msg = MsgQueryUpdate(talkEntity = entity)
+          notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
+
+        case Right(_) =>
+          val msg = MsgCommandFailed(cmd = update.text)
+          notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
+      }
+
+  }
+
+  private def handleUpdate(update: Update): Either[TalkEntity, Throwable] = update match {
     case update @ Text(StationId.StationsPointerCommands(_*)) =>
       stationId.decode(update.text) match {
         case Success(parsedID) =>
@@ -36,13 +58,22 @@ class Talk(val chatID: String,
             talkEntity = talkEntity.withArriveTo(parsedID.id)
           }
 
-          notifyRef ! UpdatesNotifier.AcceptNotify(update.seqNum)
-        case Failure(ex) => logger.error("failed to parse id command", ex)
+          Left(talkEntity)
+        case Failure(ex) =>
+          logger.error("failed to parse id command", ex)
+          Right(ex)
       }
 
     case update @ Text(Talk.ArrivalTime()) =>
       talkEntity = talkEntity.withArrive(update.text)
+      Left(talkEntity)
     case update @ Text(Talk.DepartureTime()) =>
       talkEntity = talkEntity.withDeparture(update.text)
+      Left(talkEntity)
   }
+
+  private def runQuery(): Unit = {
+
+  }
+
 }

@@ -2,16 +2,17 @@ package com.github.bsnisar.tickets
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.github.bsnisar.tickets.talk.StationsSearcher
-import com.github.bsnisar.tickets.telegram.RgTelegramUpdates
-import com.github.bsnisar.tickets.telegram.actor.TelegramPull
+import com.github.bsnisar.tickets.misc.TemplatesFreemarker
+import com.github.bsnisar.tickets.talk.{StationsSearcher, UpdatesNotifier}
+import com.github.bsnisar.tickets.telegram.{RgTelegramUpdates, TelegramDefault}
+import com.github.bsnisar.tickets.telegram.actor.{TelegramPull, TelegramPush}
 import com.github.bsnisar.tickets.wire._
 import com.typesafe.config.ConfigFactory
 import org.json4s.JValue
 
 object Main extends App {
   implicit val system = ActorSystem()
-  implicit val am = ActorMaterializer()
+  implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
 
   val config = ConfigFactory.load()
@@ -29,7 +30,10 @@ object Main extends App {
 //  val stations: Stations = new StationsUz()
 //  val stationsSearch = system.actorOf(StationsSearch.props())
 
-  val updates = new RgTelegramUpdates(wire)
-  val puller = system.actorOf(TelegramPull.props(updates, null))
+  val push = system.actorOf(TelegramPush.props(wire, new TemplatesFreemarker))
+  val notifier = system.actorOf(UpdatesNotifier.props(push))
+
+  val updates = new TelegramDefault(wire)
+  val puller = system.actorOf(TelegramPull.props(updates, materializer, null))
 
 }
