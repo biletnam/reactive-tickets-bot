@@ -3,14 +3,13 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
 import com.github.bsnisar.tickets.talk.UpdatesNotifier.AcceptNotify
-import com.github.bsnisar.tickets.telegram.{Msg, MsgCommandFailed, MsgQueryExecute, MsgQueryUpdate}
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
-import com.github.bsnisar.tickets.telegram.actor.TelegramPush
-import com.typesafe.scalalogging.LazyLogging
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update._
+import com.github.bsnisar.tickets.telegram.{MsgCommandFailed, MsgQueryExecute, MsgQueryUpdate}
+import com.typesafe.scalalogging.LazyLogging
 
-import scala.util.{Failure, Success}
 import scala.util.matching.Regex
+import scala.util.{Failure, Success}
 
 
 object Talk {

@@ -13,8 +13,17 @@ import org.json4s.JValue
 import scala.concurrent.{ExecutionContext, Future}
 
 
-trait Telegram {
+trait TelegramPush {
 
+
+  /**
+    * Push message to Telegram.
+    * @param reply reply msg
+    */
+  def push(reply: Reply)(implicit m: Materializer, ex: ExecutionContext): Unit
+}
+
+trait TelegramPull {
 
   /**
     * Pull updates from Telegram.
@@ -22,12 +31,9 @@ trait Telegram {
     * @return updates.
     */
   def pull(offset: Int)(implicit m: Materializer, ex: ExecutionContext): Future[Iterable[Update]]
+}
 
-  /**
-    * Push message to Telegram.
-    * @param reply reply msg
-    */
-  def push(reply: Reply)(implicit m: Materializer, ex: ExecutionContext): Unit
+trait Telegram extends TelegramPush with TelegramPull {
 }
 
 class TelegramDefault(wire: Wire[Req, JValue]) extends Telegram with LazyLogging with Json {

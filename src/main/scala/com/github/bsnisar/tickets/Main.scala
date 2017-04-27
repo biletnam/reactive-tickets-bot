@@ -3,12 +3,14 @@ package com.github.bsnisar.tickets
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.github.bsnisar.tickets.misc.TemplatesFreemarker
-import com.github.bsnisar.tickets.talk.{StationsSearcher, UpdatesNotifier}
-import com.github.bsnisar.tickets.telegram.{RgTelegramUpdates, TelegramDefault}
-import com.github.bsnisar.tickets.telegram.actor.{TelegramPull, TelegramPush}
+import com.github.bsnisar.tickets.talk.UpdatesNotifier
+import com.github.bsnisar.tickets.telegram.TelegramDefault
+import com.github.bsnisar.tickets.telegram.actor.{PullActor, PushActor}
 import com.github.bsnisar.tickets.wire._
 import com.typesafe.config.ConfigFactory
 import org.json4s.JValue
+
+import scala.concurrent.duration._
 
 object Main extends App {
   implicit val system = ActorSystem()
@@ -28,10 +30,11 @@ object Main extends App {
   )
 
   val telegram = new TelegramDefault(wire)
-  val push = system.actorOf(TelegramPush.props(telegram, new TemplatesFreemarker))
+  val push = system.actorOf(PushActor.props(telegram, new TemplatesFreemarker))
 
 
-  val notifier = system.actorOf(UpdatesNotifier.props(push))
-  val puller = system.actorOf(TelegramPull.props(telegram, notifier, materializer))
+  val notifier = system.actorOf(UpdatesNotifier.props(telegram, push, null))
+  val puller = system.actorOf(PullActor.props(telegram, notifier, materializer))
 
+  system.scheduler.schedule(1.second, 4.seconds, puller, PullActor.Tick)
 }

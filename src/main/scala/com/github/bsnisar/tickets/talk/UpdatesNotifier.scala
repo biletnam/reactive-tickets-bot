@@ -1,14 +1,17 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
+import akka.stream.Materializer
 import com.github.bsnisar.tickets.talk.UpdatesNotifier.AcceptNotify
-import com.github.bsnisar.tickets.telegram.{Msg, TelegramUpdates}
+import com.github.bsnisar.tickets.telegram.{Msg, Telegram, TelegramPull, TelegramUpdates}
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.{Reply, Updates}
+import com.github.bsnisar.tickets.telegram.actor.PullActor
 import com.typesafe.scalalogging.LazyLogging
 
 object UpdatesNotifier {
 
-  def props(telegramRef: ActorRef): Props = Props(classOf[UpdatesNotifier], telegramRef)
+  def props(tg: TelegramPull, telegramRef: ActorRef, hub: ActorRef): Props =
+    Props(classOf[UpdatesNotifier], tg, telegramRef, hub)
 
   /**
     * Accept of an update.
@@ -18,10 +21,18 @@ object UpdatesNotifier {
   case class AcceptNotify(id: Int, msg: Option[Reply] = None)
 }
 
-class UpdatesNotifier(val telegramRef: ActorRef, val hub: ActorRef) extends Actor with LazyLogging {
-  private var lastSeqNum = Int.MinValue
+class UpdatesNotifier(tg: TelegramPull,
+                      telegramPush: ActorRef,
+                      hub: ActorRef)(implicit m: Materializer) extends Actor with LazyLogging {
+  import akka.pattern.pipe
+  import context.dispatcher
+  private var lastSeqNum = 0
 
   override def receive: Receive = {
+    case "tick" =>
+      tg.pull(lastSeqNum).pipeTo(self)
+
+
     case Updates(seq, messages) =>
       if (seq > lastSeqNum) {
         messages foreach {
@@ -40,7 +51,7 @@ class UpdatesNotifier(val telegramRef: ActorRef, val hub: ActorRef) extends Acto
     case AcceptNotify(seq, msg) =>
       lastSeqNum = math.max(lastSeqNum, seq)
       if (msg.isDefined) {
-        telegramRef ! msg.get
+        telegramPush ! msg.get
       }
   }
 
