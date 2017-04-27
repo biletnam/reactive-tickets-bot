@@ -27,13 +27,11 @@ object Main extends App {
     new TgProtocolBridge
   )
 
-//  val stations: Stations = new StationsUz()
-//  val stationsSearch = system.actorOf(StationsSearch.props())
+  val telegram = new TelegramDefault(wire)
+  val push = system.actorOf(TelegramPush.props(telegram, new TemplatesFreemarker))
 
-  val push = system.actorOf(TelegramPush.props(wire, new TemplatesFreemarker))
+
   val notifier = system.actorOf(UpdatesNotifier.props(push))
-
-  val updates = new TelegramDefault(wire)
-  val puller = system.actorOf(TelegramPull.props(updates, materializer, null))
+  val puller = system.actorOf(TelegramPull.props(telegram, notifier, materializer))
 
 }

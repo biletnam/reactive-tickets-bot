@@ -9,7 +9,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 object TelegramPull {
 
-  def props(tgUpdates: Telegram, materializer: Materializer,  hub: ActorRef): Props =
+  def props(tgUpdates: Telegram, hub: ActorRef, materializer: Materializer): Props =
     Props(classOf[TelegramPull], tgUpdates, hub, materializer)
 
   case object Tick
