@@ -49,7 +49,7 @@ class StationsSearcher(val stations: Stations,
         .map(update.mkReply)
         .pipeTo(self)
 
-    case msg: TelegramUpdates.Reply =>
+    case msg: TgResponses.Reply =>
       tg ! msg
   }
 

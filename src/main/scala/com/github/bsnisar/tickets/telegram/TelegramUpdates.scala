@@ -1,16 +1,11 @@
 package com.github.bsnisar.tickets.telegram
 
-import akka.http.scaladsl.client.RequestBuilding
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
-import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.Json
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.{Update, Updates}
-import com.github.bsnisar.tickets.wire.Wire
-import com.typesafe.scalalogging.LazyLogging
+import com.github.bsnisar.tickets.talk.TgResponses.Reply
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.Updates
 import org.json4s.{JValue, Reader}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 object TelegramUpdates {
 
@@ -26,12 +21,7 @@ object TelegramUpdates {
     def mkReply(msg: Msg): Reply = Reply(chat, msg)
   }
 
-  /**
-    * Reply to message.
-    * @param chatID chat to write
-    * @param msg message
-    */
-  case class Reply(chatID: String, msg: Msg)
+
 
   /**
     * Simple Telegram Update message.
@@ -71,31 +61,4 @@ trait TelegramUpdates {
     * @return updates.
     */
   def pull(offset: Int): Future[Updates]
-}
-
-
-class RgTelegramUpdates(val wire: Wire[Req, JValue])
-                       (implicit am: Materializer,
-                        ec: ExecutionContext) extends TelegramUpdates with LazyLogging with Json {
-
-
-  override def pull(offset: Int): Future[Updates] = {
-    import org.json4s.JsonDSL._
-
-    val reqBody: JValue = "offset" -> offset
-    val updatesReq = RequestBuilding.Post("getUpdates", reqBody)
-    logger.debug("#pull updates with offset {}", offset)
-
-    import Update.Reader
-    val updates: Future[Iterable[Update]] = Source.single(updatesReq -> offset)
-      .via(wire.flow)
-      .runWith(Sink.head)
-      .map(json => json.as[Iterable[Update]])
-
-
-    updates.map { data =>
-      val lastSeqNum = data.view.map(_.seqNum).max
-      Updates(lastSeqNum, data)
-    }
-  }
 }

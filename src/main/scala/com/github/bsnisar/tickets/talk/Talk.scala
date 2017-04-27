@@ -2,7 +2,7 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.talk.UpdatesNotifier.AcceptNotify
+import com.github.bsnisar.tickets.talk.TgUpdates.AcceptNotify
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
 import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update._
 import com.github.bsnisar.tickets.telegram.{MsgCommandFailed, MsgQueryExecute, MsgQueryUpdate}
@@ -29,22 +29,24 @@ class Talk(val chatID: String,
   var talkEntity: TalkEntity = Default()
 
   override def receive: Receive = {
-    case update: Update =>
-      handleUpdate(update) match {
-        case Left(entity) if entity.complete =>
-          val msg = MsgQueryExecute(talkEntity = entity)
-          runQuery()
-          notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
+    case update: Update => onUpdate(update)
+  }
 
-        case Left(entity) =>
-          val msg = MsgQueryUpdate(talkEntity = entity)
-          notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
+  private def onUpdate(update: Update) = {
+    handleUpdate(update) match {
+      case Left(entity) if entity.complete =>
+        val msg = MsgQueryExecute(talkEntity = entity)
+        runQuery()
+        notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
 
-        case Right(_) =>
-          val msg = MsgCommandFailed(cmd = update.text)
-          notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
-      }
+      case Left(entity) =>
+        val msg = MsgQueryUpdate(talkEntity = entity)
+        notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
 
+      case Right(_) =>
+        val msg = MsgCommandFailed(cmd = update.text)
+        notifyRef ! AcceptNotify(update.seqNum, Some(update.mkReply(msg)))
+    }
   }
 
   private def handleUpdate(update: Update): Either[TalkEntity, Throwable] = update match {

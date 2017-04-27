@@ -3,8 +3,9 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.misc.StationId
+import com.github.bsnisar.tickets.talk.TgResponses.Reply
 import com.github.bsnisar.tickets.telegram.MsgFoundStations
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.{Reply, TgUpdate}
+import com.github.bsnisar.tickets.telegram.TelegramUpdates.TgUpdate
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations, Station, Stations}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
