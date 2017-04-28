@@ -2,16 +2,9 @@ package com.github.bsnisar.tickets.telegram
 
 import com.github.bsnisar.tickets.misc.Json
 import com.github.bsnisar.tickets.talk.TgResponses.Reply
-import com.github.bsnisar.tickets.telegram.TelegramMessages.Updates
 import org.json4s.{JValue, Reader}
 
-import scala.concurrent.Future
-
 object TelegramMessages {
-
-  case class Updates(lastSeq: Int, data: Iterable[Update])
-
-
 
   trait Update {
     def seqNum: Int
@@ -30,6 +23,8 @@ object TelegramMessages {
     * @param chat update's chat id
     */
   final case class TgUpdate(seqNum: Int, text: String, chat: String) extends Update
+
+
 
   object Update {
     implicit object Reader extends Reader[Update] with Json {
@@ -51,14 +46,4 @@ object TelegramMessages {
     }
 
   }
-}
-
-trait TelegramMessages {
-
-  /**
-    * Pull updates from Telegram.
-    * @param offset offset
-    * @return updates.
-    */
-  def pull(offset: Int): Future[Updates]
 }
