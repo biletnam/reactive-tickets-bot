@@ -1,10 +1,12 @@
 package com.github.bsnisar.tickets.talk
 
-import akka.actor.Actor
+import akka.actor.{Actor, Props}
 import com.github.bsnisar.tickets.telegram.{Msg, TelegramPush}
 
 
 object TgResponses {
+
+  def props(tgPush: TelegramPush): Props = Props(classOf[TgResponses], tgPush)
 
   /**
     * Reply to message.

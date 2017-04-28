@@ -7,7 +7,7 @@ import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.Json
 import com.github.bsnisar.tickets.talk.TgResponses.Reply
 import com.github.bsnisar.tickets.telegram.TelegramPull.Event
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.Update
+import com.github.bsnisar.tickets.telegram.TelegramMessages.Update
 import com.github.bsnisar.tickets.wire.Wire
 import com.typesafe.scalalogging.LazyLogging
 import org.json4s.JValue

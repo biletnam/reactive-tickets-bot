@@ -3,23 +3,18 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorContext, ActorRef, Props}
 import com.github.bsnisar.tickets.talk.Talks.BotFactory
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.{Update, Updates}
+import com.github.bsnisar.tickets.telegram.TelegramMessages.{Update, Updates}
 import com.typesafe.scalalogging.LazyLogging
 
 object Talks {
   def props(factory: BotFactory, stationsSearcher: ActorRef): Props =
     Props(classOf[Talks], factory, stationsSearcher)
-  def props(props: Props, stationsSearcher: ActorRef): Props =
-    Props(classOf[Talks], ByContext(props), stationsSearcher)
 
   trait BotFactory {
-    def create(name: String)(implicit ac: ActorContext): ActorRef
+    def create(name: String, chatID: String)(implicit ac: ActorContext): ActorRef
   }
 
-  final case class ByContext(props: Props) extends BotFactory {
-    override def create(name: String)(implicit ac: ActorContext): ActorRef =
-      ac.actorOf(props, name)
-  }
+
 
 }
 
@@ -39,7 +34,7 @@ final class Talks(factory: BotFactory, val stationsSearcher: ActorRef) extends A
         case None =>
           val botName = s"chat::$chatID"
           logger.debug("new bot {} created", botName)
-          val ref = factory.create(botName)
+          val ref = factory.create(botName, chatID)
           chats = chats + (chatID -> ref)
           ref ! update
       }

@@ -3,7 +3,7 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.TgUpdate
+import com.github.bsnisar.tickets.telegram.TelegramMessages.TgUpdate
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -26,7 +26,7 @@ class TalkSpec extends AkkaBaseTest(ActorSystem()) {
 
     val ref = TestActorRef[Talk](Talk.props("1", stationId, nf.ref))
     ref ! TgUpdate(1, "/from_123", "1")
-    nf.expectMsgAnyClassOf(classOf[TgUpdates.AcceptNotify])
+    nf.expectMsgAnyClassOf(classOf[TgResponses.Reply])
   }
 
 }

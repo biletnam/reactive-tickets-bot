@@ -14,7 +14,7 @@ import com.github.bsnisar.tickets.Ws.{Req, Res}
   * @param url host url
   * @author bsnisar
   */
-class RqWire(private val url: String)(private implicit val as: ActorSystem,
+class RqWire(private val url: String, isHttps: Boolean = true)(private implicit val as: ActorSystem,
                                       private implicit val mt: Materializer) extends Wire[Req, Res] {
 
 

@@ -3,8 +3,8 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.{ActorContext, ActorRef, ActorSystem}
 import akka.testkit.{TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations}
-import com.github.bsnisar.tickets.telegram.TelegramUpdates
-import com.github.bsnisar.tickets.telegram.TelegramUpdates.{TgUpdate, Update}
+import com.github.bsnisar.tickets.telegram.TelegramMessages
+import com.github.bsnisar.tickets.telegram.TelegramMessages.{TgUpdate, Update}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -17,7 +17,7 @@ class TalksSpec extends AkkaBaseTest(ActorSystem()) {
     val prob = TestProbe()
     val search = TestProbe()
     mockery.checking(new JMockExpectations {
-      oneOf(f).create(any[String])(any[ActorContext])
+      oneOf(f).create(any[String], any[String])(any[ActorContext])
       will(returnValue(prob.ref))
     })
 
