@@ -1,5 +1,6 @@
 package com.github.bsnisar.tickets.talk
 
+import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorRef, Props}
 import akka.stream.Materializer
 import com.github.bsnisar.tickets.telegram.TelegramPull
@@ -8,7 +9,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 object TgUpdates {
 
-  def props(tg: TelegramPull, hub: ActorRef, mt: Materializer): Props =
+  def props(tg: TelegramPull, hub: ActorRef)(implicit mt: Materializer): Props =
     Props(classOf[TgUpdates], tg, hub, mt)
 
   case object Tick
@@ -21,9 +22,12 @@ class TgUpdates(tg: TelegramPull,
   private var lastSeqNum = 0
 
   override def receive: Receive = {
-    case "tick" =>
+    case TgUpdates.Tick =>
       tg.pull(lastSeqNum)
         .pipeTo(self)
+
+    case Failure(err) =>
+      logger.error("pull failed", err)
 
     case Event(messages) =>
         messages foreach {

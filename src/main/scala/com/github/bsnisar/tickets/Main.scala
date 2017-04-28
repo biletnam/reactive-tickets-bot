@@ -42,7 +42,6 @@ object Main extends App {
   val telegramPush = system.actorOf(TgResponses.props(telegram))
   val stationId: StationId = new StationIdBase64
 
-
   val talkFactory = new Talks.BotFactory {
     override def create(name: String, chatID: String)(implicit ac: ActorContext): ActorRef = {
       val props = Talk.props(chatID, stationId, telegramPush)
@@ -50,7 +49,11 @@ object Main extends App {
     }
   }
 
+  val talks = system.actorOf(Talks.props(talkFactory, null))
+  val pull = system.actorOf(TgUpdates.props(telegram, talks))
+
+  system.scheduler.schedule(1.second, 4.seconds, pull, TgUpdates.Tick)
+
 //  val stationsSearcher =
-//  val talks = system.actorOf(Talks.props())
 
 }
