@@ -1,10 +1,9 @@
 package com.github.bsnisar.tickets.talk
 
-import akka.actor.{ActorContext, ActorRef, ActorSystem}
+import akka.actor.{ActorContext, ActorSystem}
 import akka.testkit.{TestActorRef, TestProbe}
+import com.github.bsnisar.tickets.telegram.TgUpdate
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations}
-import com.github.bsnisar.tickets.telegram.TelegramMessages
-import com.github.bsnisar.tickets.telegram.TelegramMessages.{TgUpdate, Update}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -21,7 +20,7 @@ class TalksSpec extends AkkaBaseTest(ActorSystem()) {
       will(returnValue(prob.ref))
     })
 
-    val ref = TestActorRef(Talks.props(f, search.ref))
+    val ref = TestActorRef(Talks.props(f))
     val update1 = TgUpdate(1, "text", "abc")
     ref ! update1
     prob.expectMsg(update1)

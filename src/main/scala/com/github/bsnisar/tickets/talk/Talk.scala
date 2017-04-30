@@ -2,9 +2,9 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.telegram.TelegramMessages.Update
-import com.github.bsnisar.tickets.telegram.TelegramMessages.Update._
-import com.github.bsnisar.tickets.telegram.{MsgCommandFailed, MsgQueryExecute, MsgQueryUpdate}
+import com.github.bsnisar.tickets.telegram.Update
+import com.github.bsnisar.tickets.telegram.Update._
+import com.github.bsnisar.tickets.telegram.{MsgCommandFailed, MsgHello, MsgQueryExecute, MsgQueryUpdate}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.matching.Regex
@@ -27,7 +27,18 @@ class Talk(val chatID: String,
   var talkEntity: TalkEntity = Default()
 
   override def receive: Receive = {
-    case update: Update => onUpdate(update)
+    case update @ Text(StationId.StationsPointerCommands(_*)) =>
+      logger.debug(s"on station pointer command ${update.text}")
+      val entity = stationId.decode(update.text) map { parsedID =>
+          if (parsedID.from) {
+            talkEntity.withDepartureFrom(parsedID.id)
+          } else {
+            talkEntity.withArriveTo(parsedID.id)
+          }
+      }
+
+    case update @ Text(text) if text.startsWith("/start") =>
+      notifyRef ! update.mkReply(MsgHello)
   }
 
   private def onUpdate(update: Update) = {

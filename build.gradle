@@ -43,6 +43,7 @@ dependencies {
 
     compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: akkaVersion
     compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.12', version: akkaVersion
+    compile group: 'com.typesafe.akka', name: 'akka-persistence_2.12', version: akkaVersion
     compile group: 'com.typesafe.akka', name: 'akka-http_2.12', version: akkaHttVersion
     compile group: 'com.google.guava', name: 'guava', version: '20.0'
     compile group: 'org.json4s', name: 'json4s-jackson_2.12', version: '3.5.0'
@@ -55,7 +56,10 @@ dependencies {
 
     compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
     compile group: 'net.codingwell', name: 'scala-guice_2.12', version: '4.1.0'
-
+    compile('com.sandinh:akka-guice_2.11:2.0.0') {
+        exclude group: 'com.typesafe.akka'
+        exclude group: 'com.google.inject'
+    }
 
     compile group: 'com.h2database', name: 'h2', version: '1.4.192'
     compile group: 'com.typesafe.slick', name: 'slick_2.12', version: '3.2.0-M2'

@@ -3,7 +3,7 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
 import com.github.bsnisar.tickets.telegram._
-import com.github.bsnisar.tickets.telegram.TelegramMessages.Update
+import com.github.bsnisar.tickets.telegram.Update
 import com.github.bsnisar.tickets.{Station, Stations}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -49,7 +49,7 @@ class StationsSearcher(val stations: Stations,
         .map(update.mkReply)
         .pipeTo(self)
 
-    case msg: TgResponses.Reply =>
+    case msg: TgReplies.Reply =>
       tg ! msg
   }
 

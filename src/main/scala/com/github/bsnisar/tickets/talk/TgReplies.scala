@@ -1,13 +1,13 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, Props}
-import com.github.bsnisar.tickets.talk.TgResponses.Reply
+import com.github.bsnisar.tickets.talk.TgReplies.Reply
 import com.github.bsnisar.tickets.telegram.{Msg, TelegramPush}
 
 
-object TgResponses {
+object TgReplies {
 
-  def props(tgPush: TelegramPush): Props = Props(classOf[TgResponses], tgPush)
+  def props(tgPush: TelegramPush): Props = Props(classOf[TgReplies], tgPush)
 
   /**
     * Reply to message.
@@ -17,8 +17,8 @@ object TgResponses {
   case class Reply(chatID: String, msg: Msg)
 }
 
-class TgResponses(val tgPush: TelegramPush) extends Actor {
+class TgReplies(val tgPush: TelegramPush) extends Actor {
   override def receive: Receive = {
-    case reply: Reply => ???
+    case reply: Reply => tgPush.push(reply)
   }
 }

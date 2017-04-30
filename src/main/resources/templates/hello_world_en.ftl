@@ -1,0 +1,1 @@
+Hello from Bot useful for tracing tickets! Start searching you tickets.

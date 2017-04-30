@@ -3,17 +3,19 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorContext, ActorRef, Props}
 import com.github.bsnisar.tickets.talk.Talks.BotFactory
-import com.github.bsnisar.tickets.telegram.TelegramMessages.{Update, Updates}
+import com.github.bsnisar.tickets.telegram.Update
+import com.github.bsnisar.tickets.telegram.Update.Text
+import com.google.inject.Injector
+import com.sandinh.akuice.ActorInject
 import com.typesafe.scalalogging.LazyLogging
 
 object Talks {
-  def props(factory: BotFactory, stationsSearcher: ActorRef): Props =
-    Props(classOf[Talks], factory, stationsSearcher)
+  def props(factory: BotFactory): Props =
+    Props(classOf[Talks], factory, null)
 
   trait BotFactory {
     def create(name: String, chatID: String)(implicit ac: ActorContext): ActorRef
   }
-
 
 
 }
@@ -22,10 +24,13 @@ object Talks {
   * Chats router. Delegate each message separate handler.
   * If there is no available bot for given chat, create new one.
   */
-final class Talks(factory: BotFactory, val stationsSearcher: ActorRef) extends Actor with LazyLogging {
+class Talks(factory: BotFactory, stations: ActorRef) extends Actor with LazyLogging {
   private var chats = Map.empty[String, ActorRef]
 
   override def receive: Receive = {
+    case up @ Text(StationsSearcher.StationsSearchCommands(_*)) =>
+      stations ! up
+
     case update: Update =>
       val chatID = update.chat
       chats.get(chatID) match {

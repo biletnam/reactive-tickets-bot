@@ -31,6 +31,15 @@ sealed trait Msg {
   def params: jUtil.Map[String, Any]
 }
 
+object Msg {
+  val Hello = 'hello_world
+  val Failure = 'cmd_failed
+  val QueryUpdated = 'query_updated
+  val QueryExecuted = 'query_executed
+  val StationsFoundFrom = 'stations_found_from
+  val StationsFoundTo = 'stations_found_to
+}
+
 final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) extends Msg {
   override def params: jUtil.Map[String, Any] = {
     import scala.collection.JavaConverters._
@@ -44,16 +53,21 @@ final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) exten
 }
 
 
-final case class MsgCommandFailed(id: Symbol = 'cmd_failed, cmd: String) extends Msg {
+final case class MsgCommandFailed(id: Symbol = Msg.Failure, cmd: String) extends Msg {
   override def params: jUtil.Map[String, Any] = ???
 }
 
-final case class MsgQueryUpdate(id: Symbol = 'query_updated, talkEntity: TalkEntity) extends Msg {
+final case class MsgQueryUpdate(id: Symbol = Msg.QueryUpdated, talkEntity: TalkEntity) extends Msg {
   override def params: jUtil.Map[String, Any] = ???
 }
 
-final case class MsgQueryExecute(id: Symbol = 'query_executed, talkEntity: TalkEntity) extends Msg {
+final case class MsgQueryExecute(id: Symbol = Msg.QueryExecuted, talkEntity: TalkEntity) extends Msg {
   override def params: jUtil.Map[String, Any] = ???
+}
+
+final case object MsgHello extends Msg {
+  override def id: Symbol = Msg.Hello
+  override def params: jUtil.Map[String, Any] = ImmutableMap.of()
 }
 
 /**
