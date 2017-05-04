@@ -4,9 +4,6 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.{Actor, ActorContext, ActorRef, Props}
 import com.github.bsnisar.tickets.talk.Talks.BotFactory
 import com.github.bsnisar.tickets.telegram.Update
-import com.github.bsnisar.tickets.telegram.Update.Text
-import com.google.inject.Injector
-import com.sandinh.akuice.ActorInject
 import com.typesafe.scalalogging.LazyLogging
 
 object Talks {
@@ -28,8 +25,6 @@ class Talks(factory: BotFactory, stations: ActorRef) extends Actor with LazyLogg
   private var chats = Map.empty[String, ActorRef]
 
   override def receive: Receive = {
-    case up @ Text(StationsSearcher.StationsSearchCommands(_*)) =>
-      stations ! up
 
     case update: Update =>
       val chatID = update.chat

@@ -1,7 +1,7 @@
 package com.github.bsnisar.tickets.telegram
 
 import com.github.bsnisar.tickets.misc.Json
-import com.github.bsnisar.tickets.talk.TgReplies.Reply
+import com.github.bsnisar.tickets.talk.Answers.Reply
 import org.json4s.{JValue, Reader}
 
 trait Update {

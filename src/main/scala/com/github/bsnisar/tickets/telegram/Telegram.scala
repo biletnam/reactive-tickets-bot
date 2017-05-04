@@ -6,7 +6,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.{Json, Templates}
-import com.github.bsnisar.tickets.talk.TgReplies.Reply
+import com.github.bsnisar.tickets.talk.Answers.Reply
 import com.github.bsnisar.tickets.telegram.TelegramPull.Event
 import com.github.bsnisar.tickets.wire.Wire
 import com.typesafe.scalalogging.LazyLogging
@@ -40,7 +40,8 @@ trait TelegramPull {
 }
 
 
-class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)(implicit m: Materializer, ex: ExecutionContext)
+class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
+                     (implicit m: Materializer, ex: ExecutionContext)
   extends TelegramPush with TelegramPull with LazyLogging with Json {
 
   override def pull(offset: Int): Future[Event] = {

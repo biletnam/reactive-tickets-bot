@@ -7,23 +7,23 @@ import com.github.bsnisar.tickets.telegram.TelegramPull
 import com.github.bsnisar.tickets.telegram.TelegramPull.Event
 import com.typesafe.scalalogging.LazyLogging
 
-object TgUpdates {
+object Updates {
 
   def props(tg: TelegramPull, hub: ActorRef)(implicit mt: Materializer): Props =
-    Props(classOf[TgUpdates], tg, hub, mt)
+    Props(classOf[Updates], tg, hub, mt)
 
   case object Tick
 }
 
-class TgUpdates(tg: TelegramPull,
-                hub: ActorRef)(implicit m: Materializer) extends Actor with LazyLogging {
+class Updates(telegramPull: TelegramPull,
+              hub: ActorRef)(implicit m: Materializer) extends Actor with LazyLogging {
   import akka.pattern.pipe
   import context.dispatcher
   private var lastSeqNum = 0
 
   override def receive: Receive = {
-    case TgUpdates.Tick =>
-      tg.pull(lastSeqNum)
+    case Updates.Tick =>
+      telegramPull.pull(lastSeqNum)
         .pipeTo(self)
 
     case Failure(err) =>

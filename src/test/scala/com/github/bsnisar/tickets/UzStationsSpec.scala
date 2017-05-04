@@ -3,14 +3,16 @@ package com.github.bsnisar.tickets
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
+import com.github.bsnisar.tickets.provider.StationsUz
 import com.github.bsnisar.tickets.wire.MockWire
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{Assertions, BeforeAndAfterAll, FlatSpecLike}
+import org.scalatest.{Assertions, BeforeAndAfterAll, FlatSpecLike, Ignore}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
+@Ignore
 @RunWith(classOf[JUnitRunner])
 class UzStationsSpec extends TestKit(ActorSystem()) with BaseTest {
 
