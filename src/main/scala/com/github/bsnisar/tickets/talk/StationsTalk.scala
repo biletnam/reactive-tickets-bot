@@ -50,7 +50,7 @@ class StationsTalk(val stations: Stations, val stationId: StationId,
     case UpdateEvent(update, Some(FindDeparture(name))) =>
       logger.debug(s"on FindDeparture($name)")
       stations.stationsByName(name)
-        .map(mkStationsResponse(_, 'from_stations_found, fromStation = true))
+        .map(mkStationsResponse(_, Msg.StationsFoundFrom, name, fromStation = true))
         .recover(doRecover(name))
         .map(update.mkReply)
         .pipeTo(self)
@@ -58,12 +58,12 @@ class StationsTalk(val stations: Stations, val stationId: StationId,
     case UpdateEvent(update, Some(FindArrival(name))) =>
       logger.debug(s"on FindArrival($name)")
       stations.stationsByName(name)
-        .map(mkStationsResponse(_, 'to_stations_found, fromStation = false))
+        .map(mkStationsResponse(_, Msg.StationsFoundTo, name, fromStation = false))
         .recover(doRecover(name))
         .map(update.mkReply)
         .pipeTo(self)
 
-    case msg: Answers.Reply =>
+    case msg: TelegramReplies.Reply =>
       telegram ! msg
   }
 
@@ -73,20 +73,20 @@ class StationsTalk(val stations: Stations, val stationId: StationId,
       MsgCommandFailed('cmd_failed, cmd)
   }
 
-  private def mkStationsResponse(hits: Iterable[Station],
-                                 templateId: Symbol,
-                                 fromStation: Boolean): Msg = hits match {
-    case coll if coll.isEmpty =>
-      MsgSimple('stations_not_found)
-    case coll =>
-      val preparedStations = coll.map { station =>
-        val encodedId = stationId.encode(id = station.id, fromStation)
-        station.copy(id = encodedId)
-      }
+  private
+  def mkStationsResponse(hits: Iterable[Station], templateId: Symbol, byName: String, fromStation: Boolean): Msg =
+    hits match {
+      case coll if coll.isEmpty => MsgStationsNotFound
+      case coll =>
+        val preparedStations = coll.map { station =>
+          val encodedId = stationId.encode(id = station.id, fromStation)
+          station.copy(id = encodedId)
+        }
 
-      MsgFoundStations(
-        id = templateId,
-        stations = preparedStations
-      )
-  }
+        MsgStationsFound(
+          id = templateId,
+          stations = preparedStations,
+          byName = byName
+        )
+    }
 }

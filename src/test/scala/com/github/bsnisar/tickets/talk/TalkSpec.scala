@@ -28,7 +28,7 @@ class TalkSpec extends AkkaBaseTest(ActorSystem()) {
 
     val ref = TestActorRef[Talk](Talk.props("1", stationId, nf.ref))
     ref ! TgUpdate(1, "/from_123", "1")
-    nf.expectMsgAnyClassOf(classOf[Answers.Reply])
+    nf.expectMsgAnyClassOf(classOf[TelegramReplies.Reply])
   }
 
 }

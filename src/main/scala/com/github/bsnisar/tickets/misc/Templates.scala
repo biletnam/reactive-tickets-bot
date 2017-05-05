@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import freemarker.template.{Configuration, Version}
 
 trait Templates {
-  def eval(msg: Msg): String
+  def renderMsg(msg: Msg): String
 }
 
 class TemplatesFreemarker extends Templates  with LazyLogging {
@@ -20,7 +20,7 @@ class TemplatesFreemarker extends Templates  with LazyLogging {
   cfg.setDefaultEncoding("UTF-8")
   cfg.setLocale(Locale.US)
 
-  override def eval(msg: Msg): String = {
+  override def renderMsg(msg: Msg): String = {
     logger.debug(s"getting template ${msg.id}, local ${msg.local}, params ${msg.params}")
     val template = cfg.getTemplate(s"${msg.id.name}.ftl", msg.local)
     val writer = new StringWriter()

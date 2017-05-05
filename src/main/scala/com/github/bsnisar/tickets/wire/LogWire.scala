@@ -10,11 +10,16 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 
-class LogWire(private val origin: Wire[Req, Res])(implicit m: Materializer, ex: ExecutionContext)
+class LogWire(val origin: Wire[Req, Res], val prefix: String = "")(implicit m: Materializer, ex: ExecutionContext)
   extends Wire[Req, Res] with LazyLogging {
   override def flow: Flow[Req, Res, _] = loggerFlow
 
-  private lazy val loggerFlow: Flow[Req, Res, _] = Flow[Req].via(loggerReq).via(origin.flow).map { resp =>
+  private lazy val loggerFlow: Flow[Req, Res, _] = Flow[Req]
+    .via(loggingRequestFlow)
+    .via(origin.flow)
+    .via(loggingResponseFlow)
+
+  private lazy val loggingResponseFlow = Flow[Res].map { resp =>
     if (logger.underlying.isDebugEnabled) {
       logResponse(resp._1)
     }
@@ -22,7 +27,7 @@ class LogWire(private val origin: Wire[Req, Res])(implicit m: Materializer, ex: 
     resp
   }
 
-  private lazy val loggerReq = Flow[Req].map { req =>
+  private lazy val loggingRequestFlow = Flow[Req].map { req =>
     if (logger.underlying.isDebugEnabled) {
       logRequest(req._1)
     }
@@ -32,8 +37,8 @@ class LogWire(private val origin: Wire[Req, Res])(implicit m: Materializer, ex: 
 
   private def logResponse(maybeResponse: Try[HttpResponse])
                     (implicit m: Materializer, ex: ExecutionContext): Unit = maybeResponse match {
-    case Success(response) =>
-      val entity = response.entity
+    case Success(resp) =>
+      val entity = resp.entity
       val charsetValue = entity.contentType
         .charsetOption
         .getOrElse(HttpCharsets.`UTF-8`)
@@ -45,16 +50,16 @@ class LogWire(private val origin: Wire[Req, Res])(implicit m: Materializer, ex: 
 
       asyncContent.onComplete {
         case Success(body) =>
-          logger.debug(s"Status: ${response.status}, Headers ${response.headers}, Content: $body")
+          logger.debug(s"[$prefix] [RESP] Status: ${resp.status}, Headers ${resp.headers}, Content: $body")
         case Failure(error) =>
-          logger.error(s"Status: ${response.status}, Headers ${response.headers}, Content failed", error)
+          logger.error(s"[$prefix] [RESP] Status: ${resp.status}, Headers ${resp.headers}, Content failed", error)
       }
 
     case Failure(error) =>
-      logger.error("HttpResponse failed", error)
+      logger.error(s"$prefix [RESP] HttpResponse failed", error)
   }
 
   private def logRequest(req: HttpRequest): Unit = {
-    logger.debug(s"Method: ${req.method}, Uri: ${req.uri}, Headers: ${req.headers}")
+    logger.debug(s"[$prefix] [REQ] Method: ${req.method}, Uri: ${req.uri}, Headers: ${req.headers}")
   }
 }

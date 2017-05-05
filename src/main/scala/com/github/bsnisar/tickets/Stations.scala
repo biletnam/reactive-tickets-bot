@@ -14,6 +14,6 @@ trait Stations {
     */
   def stationsByName(name: String): Future[Iterable[Station]]
 
-  def findStationsByName(name: String): Future[(String, Iterable[Station])] =
+  def findStationsByName(name: Event[String]): Future[(String, Iterable[Station])] =
     Future.failed(new UnsupportedOperationException)
 }

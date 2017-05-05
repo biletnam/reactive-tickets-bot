@@ -1,12 +1,26 @@
 package com.github.bsnisar.tickets.telegram
 
 import com.github.bsnisar.tickets.misc.Json
-import com.github.bsnisar.tickets.talk.Answers.Reply
+import com.github.bsnisar.tickets.talk.TelegramReplies.Reply
 import org.json4s.{JValue, Reader}
 
 trait Update {
+  /**
+    * update_id field from <a href="https://core.telegram.org/bots/api#update">Update</a> object.
+    * @return
+    */
   def seqNum: Int
+
+  /**
+    * text field from <a href="https://core.telegram.org/bots/api#message">Message</a> object.
+    * @return
+    */
   def text: String
+
+  /**
+    * id field from <a href="https://core.telegram.org/bots/api#chat">Chat</a> object.
+    * @return
+    */
   def chat: String
 
   def mkReply(msg: Msg): Reply = Reply(chat, msg)
@@ -24,11 +38,14 @@ object Update {
   implicit object Reader extends Reader[Update] with Json {
     override def read(value: JValue): Update = {
       val id = (value \ "update_id").as[Int]
-      val msg = value \ "message"
-      val text = msg \ "text"
-      val chatID = "0"
 
-      TgUpdate(id, text.as[String], chatID)
+      val msgJson = value \ "message"
+      val chatJson = msgJson \ "chat"
+
+      val text = (msgJson \ "text").as[String]
+      val chatID = (chatJson \ "id").as[String]
+
+      TgUpdate(id, text, chatID)
     }
   }
 

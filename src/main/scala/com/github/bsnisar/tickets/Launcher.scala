@@ -2,7 +2,7 @@ package com.github.bsnisar.tickets
 
 import akka.actor.{ActorContext, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
-import com.github.bsnisar.tickets.misc.{StationId, StationIdBase64, TemplatesFreemarker}
+import com.github.bsnisar.tickets.misc.{StationId, StationIdBase64, StationIdHashids, TemplatesFreemarker}
 import com.github.bsnisar.tickets.provider.StationsUz
 import com.github.bsnisar.tickets.talk._
 import com.github.bsnisar.tickets.telegram.TelegramDefault
@@ -23,49 +23,43 @@ object Launcher extends App {
     new JsonWire(
       new TgUriWire(
         config.getString("bot.token"),
-        new RqWire(config.getString("bot.host"))
+        new LogWire(
+          new RqWire(config.getString("bot.host")),
+          "telegram"
+        )
       )
     ),
     new TgProtocolBridge
   )
-
-//  val uzWire: Wire[Ws.Req, JValue] = new ProtWire(
-//    new JsonWire(
-//      new RqWire(
-//        "booking.uz.gov.ua",
-//        isHttps = false
-//      )
-//    ),
-//    new UzProtocolBridge
-//  )
-
+  
   val uzWire: Wire[Ws.Req, JValue] = new JsonWire(
     new LogWire(
       new RqWire(
         "booking.uz.gov.ua",
         isHttps = false
-      )
+      ),
+      "uz"
     )
   )
 
   val templates = new TemplatesFreemarker()
   val telegram = new TelegramDefault(telegramWire, templates)
-  val telegramPushRef = system.actorOf(Answers.props(telegram))
+  val telegramPushRef = system.actorOf(TelegramReplies.props(telegram))
 
 
   val uzStations = new StationsUz(uzWire)
-  val stationId: StationId = new StationIdBase64
+  val stationId: StationId = new StationIdHashids
   val stationsTalkRef = system.actorOf(StationsTalk.props(uzStations, stationId, telegramPushRef))
 
-  val routesProps = Routes.props(
+  val routesProps = TalksRoutee.props(
     new StationsTalkRoute(stationsTalkRef)
   )
 
   val routesRef = system.actorOf(routesProps)
 
 
-  val pullRef = system.actorOf(Updates.props(telegram, routesRef))
-  system.scheduler.schedule(1.second, 4.seconds, pullRef, Updates.Tick)
+  val pullRef = system.actorOf(TelegramUpdates.props(telegram, routesRef))
+  system.scheduler.schedule(1.second, 4.seconds, pullRef, TelegramUpdates.Tick)
 
 
 /*

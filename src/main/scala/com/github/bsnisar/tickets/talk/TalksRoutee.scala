@@ -7,36 +7,24 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.annotation.tailrec
 
 
-object Routes {
-  def props(routes: List[RouteLogic[Update]]): Props = Props(classOf[Routes], routes)
-  def props(routes: RouteLogic[Update]*): Props = Props(classOf[Routes], routes.toList)
+object TalksRoutee {
+  def props(routes: List[RouteLogic[Update]]): Props = Props(classOf[TalksRoutee], routes)
+  def props(routes: RouteLogic[Update]*): Props = Props(classOf[TalksRoutee], routes.toList)
 }
 
-class Routes(routes: List[RouteLogic[Update]]) extends Actor with LazyLogging {
-
+class TalksRoutee(routes: List[RouteLogic[Update]]) extends Actor with LazyLogging {
 
   override def receive: Receive = {
     case update: Update =>
-      try {
-        deliver(update, routes.head, routes.tail)
+      val maybeRoute = routes.find(_.specify.isDefinedAt(update))
+      if (maybeRoute.isDefined) {
+        val logic = maybeRoute.get
+        val event = logic.specify(update)
+        logger.debug(s"deliver by route $logic")
+        logic.send(event)
+      } else {
+        logger.error(s"route not found for $update")
       }
-      catch {
-        case ex: Throwable => logger.error(s"failed to deliver update", ex)
-      }
-  }
-
-
-  @tailrec
-  private def deliver(update: Update, logic: RouteLogic[Update], routes: List[RouteLogic[Update]]): Unit = {
-    val specificEvent = logic.specify
-    if (specificEvent.isDefinedAt(update)) {
-      logger.debug(s"deliver by route $logic")
-      logic.send(specificEvent(update))
-    } else if (routes.nonEmpty) {
-      deliver(update, routes.head, routes.tail)
-    } else {
-      throw new IllegalStateException("route not found for " + update)
-    }
   }
 }
 
@@ -59,7 +47,7 @@ object UpdateEvent {
   * Logic for picking right dessication.
   */
 trait RouteLogic[A] {
-  def specify: PartialFunction[Update, RouteEvent[A]]
+  val specify: PartialFunction[Update, RouteEvent[A]]
   def send(event: RouteEvent[A]): Unit
 }
 

@@ -1,12 +1,13 @@
 package com.github.bsnisar.tickets.telegram
 
 import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.Uri.Query
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.{Json, Templates}
-import com.github.bsnisar.tickets.talk.Answers.Reply
+import com.github.bsnisar.tickets.talk.TelegramReplies.Reply
 import com.github.bsnisar.tickets.telegram.TelegramPull.UpdatesEvent
 import com.github.bsnisar.tickets.wire.Wire
 import com.typesafe.scalalogging.LazyLogging
@@ -45,11 +46,9 @@ class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
   extends TelegramPush with TelegramPull with LazyLogging with Json {
 
   override def pull(offset: Int): Future[UpdatesEvent] = {
-    import org.json4s.JValue
-    import org.json4s.JsonDSL._
 
-    val reqBody: JValue = "offset" -> offset
-    val updatesReq = RequestBuilding.Post("getUpdates", reqBody)
+    val uri = Uri("getUpdates").withQuery(Query("offset" -> String.valueOf(offset)))
+    val updatesReq = RequestBuilding.Get(uri)
     logger.debug("#pull updates with offset {}", offset)
     val updates = Source.single(updatesReq -> offset)
       .via(wire.flow)
@@ -63,9 +62,9 @@ class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
     import org.json4s.JsonDSL._
 
     val chat = reply.chatID
-    val payload = templates.eval(reply.msg)
+    val payload = templates.renderMsg(reply.msg)
     val json =
-      ("chat_id" -> chat) ~
+        ("chat_id" -> chat) ~
         ("text" -> payload)
 
     val req: HttpRequest = RequestBuilding.Post("/sendMessage", json)

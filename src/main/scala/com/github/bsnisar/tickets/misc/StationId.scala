@@ -4,6 +4,7 @@ import java.util.Base64
 
 import com.github.bsnisar.tickets.misc.StationId.Id
 import com.google.common.base.Charsets
+import org.hashids.Hashids
 
 import scala.util.Try
 import scala.util.matching.Regex
@@ -27,6 +28,30 @@ trait StationId {
   def decode(id: String): Try[Id]
 
 }
+
+class StationIdHashids extends StationId {
+  private val hashids = new Hashids
+
+  override def encode(id: String, isDeparture: Boolean): String = {
+    val cmdPrefix = if (isDeparture) StationId.FromKey else StationId.ToKey
+    val encoded = hashids.encode(id.toLong)
+    s"$cmdPrefix$encoded"
+  }
+
+  override def decode(id: String): Try[Id] = Try {
+    def transform(data: String): String = {
+      val raw = hashids.decode(data)
+      String.valueOf(raw(0))
+    }
+
+    id match {
+      case StationId.ToKeyPattern(toDecode) =>
+        Id(transform(toDecode), from = false)
+      case StationId.FromKeyPattern(toDecode) =>
+        Id(transform(toDecode), from = true)
+      case _ => throw new IllegalArgumentException(s"unexpected encoded id format [$id]")
+    }
+  }}
 
 /**
   * Base64 encoder.

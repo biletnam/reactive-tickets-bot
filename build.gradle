@@ -48,6 +48,7 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '20.0'
     compile group: 'org.json4s', name: 'json4s-jackson_2.12', version: '3.5.0'
     compile group: 'org.freemarker', name: 'freemarker', version: '2.3.26-incubating'
+    compile group: 'org.hashids', name: 'hashids', version: '1.0.1'
 
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.7'

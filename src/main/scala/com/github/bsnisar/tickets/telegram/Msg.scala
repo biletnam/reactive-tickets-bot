@@ -38,9 +38,10 @@ object Msg {
   val QueryExecuted = 'query_executed
   val StationsFoundFrom = 'stations_found_from
   val StationsFoundTo = 'stations_found_to
+  val StationsNotFound = 'stations_not_found
 }
 
-final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) extends Msg {
+final case class MsgStationsFound(id: Symbol, stations: Iterable[Station], byName: String) extends Msg {
   override def params: jUtil.Map[String, Any] = {
     import scala.collection.JavaConverters._
     val params = stations.map(station => ImmutableMap.of(
@@ -48,10 +49,14 @@ final case class MsgFoundStations(id: Symbol, stations: Iterable[Station]) exten
       "name", station.name)
     ).asJava
 
-    ImmutableMap.of("stations", params)
+    ImmutableMap.of("stations", params, "keyword", byName)
   }
 }
 
+case object MsgStationsNotFound extends Msg {
+  override def id: Symbol = Msg.StationsNotFound
+  override def params: jUtil.Map[String, Any] = ImmutableMap.of()
+}
 
 final case class MsgCommandFailed(id: Symbol = Msg.Failure, cmd: String) extends Msg {
   override def params: jUtil.Map[String, Any] = ???
@@ -65,7 +70,7 @@ final case class MsgQueryExecute(id: Symbol = Msg.QueryExecuted, talkEntity: Tal
   override def params: jUtil.Map[String, Any] = ???
 }
 
-final case object MsgHello extends Msg {
+case object MsgHello extends Msg {
   override def id: Symbol = Msg.Hello
   override def params: jUtil.Map[String, Any] = ImmutableMap.of()
 }
