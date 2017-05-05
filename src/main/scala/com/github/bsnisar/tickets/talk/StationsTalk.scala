@@ -69,7 +69,7 @@ class StationsTalk(val stations: Stations, val stationId: StationId,
 
   private def doRecover(cmd: String): PartialFunction[Throwable, Msg] = {
     case ex =>
-      logger.error(s"recover exception from call", ex)
+      logger.error("recover exception from call", ex)
       MsgCommandFailed('cmd_failed, cmd)
   }
 

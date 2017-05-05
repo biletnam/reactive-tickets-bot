@@ -40,10 +40,12 @@ object Launcher extends App {
 //  )
 
   val uzWire: Wire[Ws.Req, JValue] = new JsonWire(
+    new LogWire(
       new RqWire(
         "booking.uz.gov.ua",
         isHttps = false
       )
+    )
   )
 
   val templates = new TemplatesFreemarker()

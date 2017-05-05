@@ -4,7 +4,8 @@ import java.net.URLEncoder
 
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.model.{HttpRequest, Uri}
+import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
@@ -36,8 +37,10 @@ class StationsUz(private val wire: Wire[Req, JValue])(implicit mt: Materializer)
   override def stationsByName(name: String): Future[Iterable[Station]] = {
     logger.debug("call #stationsByName({})", name)
     val encName = URLEncoder.encode(name, Charsets.UTF_8.name())
-    val params = Map("term" -> encName)
-    val uri = Uri("/ru/purchase/station").withQuery(Query(params))
+
+    val uri = Uri("/ru/purchase/station/")
+      .withQuery(Query("term" -> encName))
+
     val req: HttpRequest = RequestBuilding.Get(uri)
     val stations: Future[Seq[Station]] = Source.single(req -> name)
       .via(wire.flow)

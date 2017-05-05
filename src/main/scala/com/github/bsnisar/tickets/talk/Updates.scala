@@ -4,7 +4,7 @@ import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorRef, Props}
 import akka.stream.Materializer
 import com.github.bsnisar.tickets.telegram.TelegramPull
-import com.github.bsnisar.tickets.telegram.TelegramPull.Event
+import com.github.bsnisar.tickets.telegram.TelegramPull.UpdatesEvent
 import com.typesafe.scalalogging.LazyLogging
 
 object Updates {
@@ -27,16 +27,16 @@ class Updates(telegramPull: TelegramPull,
         .pipeTo(self)
 
     case Failure(err) =>
-      logger.error("pull failed", err)
+      logger.error(s"#pull failed", err)
 
-    case Event(messages) =>
+    case UpdatesEvent(messages) =>
         messages foreach {
           case msg if msg.seqNum > lastSeqNum =>
-            logger.trace(s"dispatch: offset = $lastSeqNum, msg = $msg")
-            hub ! msg
+            logger.debug(s"dispatch: offset = $lastSeqNum, msg = $msg")
             lastSeqNum = math.max(lastSeqNum, msg.seqNum)
+            hub ! msg
           case msg =>
-            logger.trace(s"skip, offset [$lastSeqNum] > message sequence ${msg.seqNum}")
+            logger.debug(s"skip: offset $lastSeqNum > message sequence ${msg.seqNum}")
         }
   }
 }

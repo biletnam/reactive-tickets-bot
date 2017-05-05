@@ -21,7 +21,7 @@ class Routes(routes: List[RouteLogic[Update]]) extends Actor with LazyLogging {
         deliver(update, routes.head, routes.tail)
       }
       catch {
-        case ex: Throwable => logger.error("failed to deliver update", ex)
+        case ex: Throwable => logger.error(s"failed to deliver update", ex)
       }
   }
 
@@ -30,6 +30,7 @@ class Routes(routes: List[RouteLogic[Update]]) extends Actor with LazyLogging {
   private def deliver(update: Update, logic: RouteLogic[Update], routes: List[RouteLogic[Update]]): Unit = {
     val specificEvent = logic.specify
     if (specificEvent.isDefinedAt(update)) {
+      logger.debug(s"deliver by route $logic")
       logic.send(specificEvent(update))
     } else if (routes.nonEmpty) {
       deliver(update, routes.head, routes.tail)

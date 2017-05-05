@@ -7,7 +7,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.{Json, Templates}
 import com.github.bsnisar.tickets.talk.Answers.Reply
-import com.github.bsnisar.tickets.telegram.TelegramPull.Event
+import com.github.bsnisar.tickets.telegram.TelegramPull.UpdatesEvent
 import com.github.bsnisar.tickets.wire.Wire
 import com.typesafe.scalalogging.LazyLogging
 import org.json4s.JValue
@@ -26,7 +26,7 @@ trait TelegramPush {
 }
 
 object TelegramPull {
-  case class Event(updates: Iterable[Update])
+  case class UpdatesEvent(updates: Iterable[Update])
 }
 
 trait TelegramPull {
@@ -36,7 +36,7 @@ trait TelegramPull {
     * @param offset offset
     * @return updates.
     */
-  def pull(offset: Int): Future[Event]
+  def pull(offset: Int): Future[UpdatesEvent]
 }
 
 
@@ -44,7 +44,7 @@ class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
                      (implicit m: Materializer, ex: ExecutionContext)
   extends TelegramPush with TelegramPull with LazyLogging with Json {
 
-  override def pull(offset: Int): Future[Event] = {
+  override def pull(offset: Int): Future[UpdatesEvent] = {
     import org.json4s.JValue
     import org.json4s.JsonDSL._
 
@@ -54,7 +54,7 @@ class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
     val updates = Source.single(updatesReq -> offset)
       .via(wire.flow)
       .runWith(Sink.head)
-      .map(json => Event(updates = json.as[Iterable[Update]]))
+      .map(json => UpdatesEvent(updates = json.as[Iterable[Update]]))
 
     updates
   }
