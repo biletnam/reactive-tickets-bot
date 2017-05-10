@@ -1,7 +1,5 @@
 package com.github.bsnisar.tickets
 
-import java.util.Locale
-
 import scala.concurrent.Future
 
 trait Stations {

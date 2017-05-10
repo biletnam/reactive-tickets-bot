@@ -3,8 +3,8 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.talk.TelegramReplies.Reply
-import com.github.bsnisar.tickets.talk.StationsTalk.{FindArrival, FindDeparture}
+import com.github.bsnisar.tickets.talk.ResponsesSender.Reply
+import com.github.bsnisar.tickets.talk.StationsSearchTalk.{FindArrival, FindDeparture}
 import com.github.bsnisar.tickets.telegram.{MsgStationsFound, TgUpdate}
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations, Station, Stations}
 import org.junit.runner.RunWith
@@ -13,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.Future
 
 @RunWith(classOf[JUnitRunner])
-class StationsTalkSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender {
+class StationsSearchTalkSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender {
   import org.scalatest.prop.TableDrivenPropertyChecks._
 
   val commands = Table(
@@ -42,7 +42,7 @@ class StationsTalkSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender {
       will(returnValue("/from_from101"))
     })
 
-    val sut = TestActorRef(StationsTalk.props(mockStations, stationId, tg.ref))
+    val sut = TestActorRef(StationsSearchTalk.props(mockStations, stationId, tg.ref))
     val update = TgUpdate(1, "/from Dn", "a")
     sut ! UpdateEvent(update, FindDeparture("Dn"))
 
@@ -65,7 +65,7 @@ class StationsTalkSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSender {
       will(returnValue("/to_to101"))
     })
 
-    val sut = TestActorRef(StationsTalk.props(mockStations, stationId, tg.ref))
+    val sut = TestActorRef(StationsSearchTalk.props(mockStations, stationId, tg.ref))
     val update = TgUpdate(1, "/to Dn", "a")
     sut ! UpdateEvent(update, FindArrival("Dn"))
 

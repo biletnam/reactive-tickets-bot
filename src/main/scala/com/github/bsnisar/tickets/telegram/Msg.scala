@@ -1,10 +1,11 @@
 package com.github.bsnisar.tickets.telegram
 
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.{util => jUtil}
 
 import com.github.bsnisar.tickets.Station
-import com.github.bsnisar.tickets.talk.TalkEntity
+import com.github.bsnisar.tickets.talk.SearchBean
 import com.google.common.collect.ImmutableMap
 
 /**
@@ -32,6 +33,7 @@ sealed trait Msg {
 }
 
 object Msg {
+  val WrongTimeFormat = 'wrong_time_format
   val Hello = 'hello_world
   val Failure = 'cmd_failed
   val QueryUpdated = 'query_updated
@@ -53,6 +55,11 @@ final case class MsgStationsFound(id: Symbol, stations: Iterable[Station], byNam
   }
 }
 
+final case class MsgWrongTimeFormat(timeStr: String) extends Msg {
+  override def id: Symbol = Msg.WrongTimeFormat
+  override def params: jUtil.Map[String, Any] = ImmutableMap.of("time", timeStr)
+}
+
 case object MsgStationsNotFound extends Msg {
   override def id: Symbol = Msg.StationsNotFound
   override def params: jUtil.Map[String, Any] = ImmutableMap.of()
@@ -62,11 +69,31 @@ final case class MsgCommandFailed(id: Symbol = Msg.Failure, cmd: String) extends
   override def params: jUtil.Map[String, Any] = ???
 }
 
-final case class MsgQueryUpdate(id: Symbol = Msg.QueryUpdated, talkEntity: TalkEntity) extends Msg {
-  override def params: jUtil.Map[String, Any] = ???
+final case class MsgQueryUpdate(bean: SearchBean) extends Msg {
+  override val id: Symbol = Msg.QueryUpdated
+  override def params: jUtil.Map[String, Any] = {
+    val dep = if (bean.departure.nonEmpty) {
+      bean.departure.head.format(DateTimeFormatter.ISO_DATE_TIME)
+    } else {
+      "please specify by '/departureAt YYYY-MM-DD'"
+    }
+
+    val arr = if (bean.arrive.nonEmpty) {
+      bean.departure.head.format(DateTimeFormatter.ISO_DATE_TIME)
+    } else {
+      "please specify by '/arriveAt YYYY-MM-DD'"
+    }
+
+    ImmutableMap.of(
+      "departureAt", dep,
+      "arriveAt", arr,
+      "departure", "not define",
+      "arrive", "not define"
+    )
+  }
 }
 
-final case class MsgQueryExecute(id: Symbol = Msg.QueryExecuted, talkEntity: TalkEntity) extends Msg {
+final case class MsgQueryExecute(id: Symbol = Msg.QueryExecuted, talkEntity: SearchBean) extends Msg {
   override def params: jUtil.Map[String, Any] = ???
 }
 

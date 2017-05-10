@@ -19,10 +19,6 @@ trait Json extends DefaultReaders {
     */
   implicit val serialization = org.json4s.jackson.Serialization
 
-  /**
-    * Default readers (primitives, collections)
-    */
-//  implicit val defaults = org.json4s.DefaultReaders
 
 
   /**

@@ -2,12 +2,12 @@ package com.github.bsnisar.tickets.talk
 
 
 import akka.actor.{Actor, ActorContext, ActorRef, Props}
-import com.github.bsnisar.tickets.talk.Talks.BotFactory
+import com.github.bsnisar.tickets.talk.TalksHub.BotFactory
 import com.github.bsnisar.tickets.telegram.Update
 import com.typesafe.scalalogging.LazyLogging
 
-object Talks {
-  def props(factory: BotFactory): Props = Props(classOf[Talks], factory)
+object TalksHub {
+  def props(factory: BotFactory): Props = Props(classOf[TalksHub], factory)
 
   trait BotFactory {
     def create(name: String, chatID: String)(implicit ac: ActorContext): ActorRef
@@ -18,7 +18,7 @@ object Talks {
   * Chats router. Delegate each message separate handler.
   * If there is no available bot for given chat, create new one.
   */
-class Talks(factory: BotFactory) extends Actor with LazyLogging {
+class TalksHub(factory: BotFactory) extends Actor with LazyLogging {
   private var chats = Map.empty[String, ActorRef]
 
   override def receive: Receive = {

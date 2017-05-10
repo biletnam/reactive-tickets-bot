@@ -8,11 +8,11 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class TalksSpec extends AkkaBaseTest(ActorSystem()) {
+class TalksHubSpec extends AkkaBaseTest(ActorSystem()) {
 
   "A Talks" should "create rooms for new comers" in {
     val mockery = newMockery()
-    val f = mockery.mock(classOf[Talks.BotFactory])
+    val f = mockery.mock(classOf[TalksHub.BotFactory])
     val prob = TestProbe()
     val search = TestProbe()
     mockery.checking(new JMockExpectations {
@@ -20,7 +20,7 @@ class TalksSpec extends AkkaBaseTest(ActorSystem()) {
       will(returnValue(prob.ref))
     })
 
-    val ref = TestActorRef(Talks.props(f))
+    val ref = TestActorRef(TalksHub.props(f))
     val update1 = TgUpdate(1, "text", "abc")
     ref ! update1
     prob.expectMsg(update1)

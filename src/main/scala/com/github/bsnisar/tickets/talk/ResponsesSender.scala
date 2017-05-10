@@ -1,14 +1,14 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, Props}
-import com.github.bsnisar.tickets.talk.TelegramReplies.Reply
+import com.github.bsnisar.tickets.talk.ResponsesSender.Reply
 import com.github.bsnisar.tickets.telegram.{Msg, TelegramPush}
 import com.typesafe.scalalogging.LazyLogging
 
 
-object TelegramReplies {
+object ResponsesSender {
 
-  def props(tgPush: TelegramPush): Props = Props(classOf[TelegramReplies], tgPush)
+  def props(tgPush: TelegramPush): Props = Props(classOf[ResponsesSender], tgPush)
 
   /**
     * Reply to message.
@@ -18,7 +18,7 @@ object TelegramReplies {
   case class Reply(chatID: String, msg: Msg)
 }
 
-class TelegramReplies(val tgPush: TelegramPush) extends Actor with LazyLogging {
+class ResponsesSender(val tgPush: TelegramPush) extends Actor with LazyLogging {
   override def receive: Receive = {
     case reply: Reply =>
       logger.debug(s"push $reply message")

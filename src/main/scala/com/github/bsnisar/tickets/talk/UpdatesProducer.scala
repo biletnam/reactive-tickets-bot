@@ -3,19 +3,33 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorRef, Props}
 import akka.stream.Materializer
-import com.github.bsnisar.tickets.telegram.TelegramPull
-import com.github.bsnisar.tickets.telegram.TelegramPull.UpdatesEvent
+import com.github.bsnisar.tickets.talk.UpdatesProducer.{Continue, PollTick}
+import com.github.bsnisar.tickets.telegram.UpdatesSource
+import com.github.bsnisar.tickets.telegram.UpdatesSource.UpdatesEvent
 import com.typesafe.scalalogging.LazyLogging
 
-object TelegramUpdates {
+object UpdatesProducer {
 
-  def props(tg: TelegramPull, hub: ActorRef)(implicit mt: Materializer): Props =
-    Props(classOf[TelegramUpdates], tg, hub, mt)
+  def props(tg: UpdatesSource, hub: ActorRef)(implicit mt: Materializer): Props =
+    Props(classOf[UpdatesProducer], tg, hub, mt)
 
   case object Tick
+
+
+  /**
+    * Message signifying acknowledgement that upstream can send the next
+    * item.
+    */
+  case object Continue
+
+  /**
+    * Message used by the producer for continuously polling the
+    * data-source, while in the polling state.
+    */
+  case object PollTick
 }
 
-class TelegramUpdates(telegramPull: TelegramPull,
+class UpdatesProducer(updatesSource: UpdatesSource,
                       hub: ActorRef)(implicit m: Materializer) extends Actor with LazyLogging {
   import akka.pattern.pipe
   import context.dispatcher
@@ -23,8 +37,8 @@ class TelegramUpdates(telegramPull: TelegramPull,
   private var lastSeqNum = 0
 
   override def receive: Receive = {
-    case TelegramUpdates.Tick =>
-      telegramPull.pull(lastSeqNum)
+    case UpdatesProducer.Tick =>
+      updatesSource.pull(lastSeqNum)
         .pipeTo(self)
 
     case Failure(err) =>

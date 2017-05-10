@@ -1,18 +1,17 @@
 package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
+import com.github.bsnisar.tickets.talk.UpdatesProducer.Continue
 import com.github.bsnisar.tickets.telegram.Update
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.annotation.tailrec
-
-
-object TalksRoutee {
-  def props(routes: List[RouteLogic[Update]]): Props = Props(classOf[TalksRoutee], routes)
-  def props(routes: RouteLogic[Update]*): Props = Props(classOf[TalksRoutee], routes.toList)
+object UpdatesRouter {
+  def props(routes: List[RouteLogic[Update]]): Props = Props(classOf[UpdatesRouter], routes)
+  def props(routes: RouteLogic[Update]*): Props = Props(classOf[UpdatesRouter], routes.toList)
 }
 
-class TalksRoutee(routes: List[RouteLogic[Update]]) extends Actor with LazyLogging {
+class UpdatesRouter(routes: List[RouteLogic[Update]]) extends Actor with LazyLogging {
+
 
   override def receive: Receive = {
     case update: Update =>
@@ -43,19 +42,10 @@ object UpdateEvent {
   def apply(update: Update): UpdateEvent = UpdateEvent(update, None)
 }
 
-/**
-  * Logic for picking right dessication.
-  */
 trait RouteLogic[A] {
-  val specify: PartialFunction[Update, RouteEvent[A]]
-  def send(event: RouteEvent[A]): Unit
-}
+  final type Routee = PartialFunction[Update, RouteEvent[A]]
 
-/**
-  * Decorator that send event by specified actor ref.
-  */
-trait RefRouteLogic[A] extends RouteLogic[A] {
   val specify: PartialFunction[Update, RouteEvent[A]]
   def ref: ActorRef
-  override def send(event: RouteEvent[A]): Unit = ref ! event
+  def send(event: RouteEvent[A]): Unit = ref ! event
 }

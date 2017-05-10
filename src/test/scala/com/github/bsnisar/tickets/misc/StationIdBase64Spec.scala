@@ -13,7 +13,7 @@ class StationIdBase64Spec extends BaseTest {
 
     val resEncode = base.encode(id.toString, isDeparture = true)
 
-    val resDecode = base.decode(resEncode)
+    val resDecode = base.decoder(resEncode)
     assert(resDecode.get.id === id.toString)
     assert(resDecode.get.from === true)
   }
@@ -25,7 +25,7 @@ class StationIdBase64Spec extends BaseTest {
     val resEncode = base.encode(id.toString, isDeparture = false)
     assert(resEncode.startsWith("/to_"))
 
-    val resDecode = base.decode(resEncode)
+    val resDecode = base.decoder(resEncode)
     assert(resDecode.get.id === id.toString)
     assert(resDecode.get.from === false)
   }

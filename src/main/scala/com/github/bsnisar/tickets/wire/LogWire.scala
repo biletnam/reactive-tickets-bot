@@ -56,7 +56,7 @@ class LogWire(val origin: Wire[Req, Res], val prefix: String = "")(implicit m: M
       }
 
     case Failure(error) =>
-      logger.error(s"$prefix [RESP] HttpResponse failed", error)
+      logger.error(s"[$prefix] [RESP] HttpResponse failed", error)
   }
 
   private def logRequest(req: HttpRequest): Unit = {

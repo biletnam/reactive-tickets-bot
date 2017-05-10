@@ -21,7 +21,7 @@ class TgUriWire[A](private val token: String, origin: Wire[Req, A]) extends Wire
 
   private lazy val suffix = / (s"bot$token")
 
-  override def flow: Flow[Req, A, _] =
+  override val flow: Flow[Req, A, _] =
     Flow[Req].map {
       case (request, param) =>
         val path = request.uri.path

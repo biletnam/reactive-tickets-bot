@@ -1,8 +1,8 @@
 package com.github.bsnisar.tickets
 
-import akka.actor.{ActorContext, ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.github.bsnisar.tickets.misc.{StationId, StationIdBase64, StationIdHashids, TemplatesFreemarker}
+import com.github.bsnisar.tickets.misc.{StationId, StationIdHashids, TemplatesFreemarker}
 import com.github.bsnisar.tickets.provider.StationsUz
 import com.github.bsnisar.tickets.talk._
 import com.github.bsnisar.tickets.telegram.TelegramDefault
@@ -44,22 +44,21 @@ object Launcher extends App {
 
   val templates = new TemplatesFreemarker()
   val telegram = new TelegramDefault(telegramWire, templates)
-  val telegramPushRef = system.actorOf(TelegramReplies.props(telegram))
+  val telegramPushRef = system.actorOf(ResponsesSender.props(telegram))
 
 
   val uzStations = new StationsUz(uzWire)
   val stationId: StationId = new StationIdHashids
-  val stationsTalkRef = system.actorOf(StationsTalk.props(uzStations, stationId, telegramPushRef))
+  val stationsTalkRef = system.actorOf(StationsSearchTalk.props(uzStations, stationId, telegramPushRef))
 
-  val routesProps = TalksRoutee.props(
+  val routesProps = UpdatesRouter.props(
     new StationsTalkRoute(stationsTalkRef)
   )
 
   val routesRef = system.actorOf(routesProps)
 
-
-  val pullRef = system.actorOf(TelegramUpdates.props(telegram, routesRef))
-  system.scheduler.schedule(1.second, 4.seconds, pullRef, TelegramUpdates.Tick)
+  val pullRef = system.actorOf(UpdatesProducer.props(telegram, routesRef))
+  system.scheduler.schedule(1.second, 4.seconds, pullRef, UpdatesProducer.PollTick)
 
 
 /*

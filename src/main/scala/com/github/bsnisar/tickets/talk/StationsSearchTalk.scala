@@ -2,7 +2,7 @@ package com.github.bsnisar.tickets.talk
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.talk.StationsTalk.{FindArrival, FindDeparture}
+import com.github.bsnisar.tickets.talk.StationsSearchTalk.{FindArrival, FindDeparture}
 import com.github.bsnisar.tickets.telegram._
 import com.github.bsnisar.tickets.telegram.Update
 import com.github.bsnisar.tickets.telegram.Update.Text
@@ -17,7 +17,7 @@ object StationsTalkRoute {
 }
 
 
-case class StationsTalkRoute(ref: ActorRef) extends RefRouteLogic[Update] {
+case class StationsTalkRoute(ref: ActorRef) extends RouteLogic[Update] {
 
   lazy val specify: PartialFunction[Update, RouteEvent[Update]] = {
     case update@Text(StationsTalkRoute.StationsSearchFrom(name)) =>
@@ -30,17 +30,17 @@ case class StationsTalkRoute(ref: ActorRef) extends RefRouteLogic[Update] {
 
 
 
-object StationsTalk {
+object StationsSearchTalk {
   def props(stations: Stations, stationId: StationId, telegram: ActorRef): Props =
-    Props(classOf[StationsTalk], stations, stationId, telegram)
+    Props(classOf[StationsSearchTalk], stations, stationId, telegram)
 
 
   final case class FindDeparture(name: String)
   final case class FindArrival(name: String)
 }
 
-class StationsTalk(val stations: Stations, val stationId: StationId,
-                   val telegram: ActorRef) extends Actor with LazyLogging {
+class StationsSearchTalk(val stations: Stations, val stationId: StationId,
+                         val telegram: ActorRef) extends Actor with LazyLogging {
 
   import akka.pattern.pipe
   import context.dispatcher
@@ -63,7 +63,7 @@ class StationsTalk(val stations: Stations, val stationId: StationId,
         .map(update.mkReply)
         .pipeTo(self)
 
-    case msg: TelegramReplies.Reply =>
+    case msg: ResponsesSender.Reply =>
       telegram ! msg
   }
 

@@ -16,19 +16,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @param origin original wire
   * @author bsnisar
   */
-class JsonWire(private val origin: Wire[Req, Res])(private implicit val mt: Materializer)
+class JsonWire(private val origin: Wire[Req, Res])(implicit val mt: Materializer)
   extends Wire[Req, JValue]  with Json {
 
+  override val flow: Flow[Req, JValue, _] = Flow[Req].via(origin.flow).via(asJsonFlow)
 
-  private lazy val _flow =
-    Flow[Req].via(origin.flow).via(asJsonFlow)
 
-  override def flow: Flow[Req, JValue, _] = _flow
-
-  /**
-    * Parse response as json.
-    * @return new flow.
-    */
   private def asJsonFlow(implicit mt: Materializer): Flow[Res, JValue, Any]  = Flow[Res].mapAsync(1) {
     case (Success(httpResp), _) if httpResp.status.isSuccess() =>
       Unmarshal(httpResp.entity).to[JValue]

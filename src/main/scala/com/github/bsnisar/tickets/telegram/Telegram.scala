@@ -7,8 +7,8 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.{Json, Templates}
-import com.github.bsnisar.tickets.talk.TelegramReplies.Reply
-import com.github.bsnisar.tickets.telegram.TelegramPull.UpdatesEvent
+import com.github.bsnisar.tickets.talk.ResponsesSender.Reply
+import com.github.bsnisar.tickets.telegram.UpdatesSource.UpdatesEvent
 import com.github.bsnisar.tickets.wire.Wire
 import com.typesafe.scalalogging.LazyLogging
 import org.json4s.JValue
@@ -26,11 +26,11 @@ trait TelegramPush {
   def push(reply: Reply): Unit
 }
 
-object TelegramPull {
+object UpdatesSource {
   case class UpdatesEvent(updates: Iterable[Update])
 }
 
-trait TelegramPull {
+trait UpdatesSource {
 
   /**
     * Pull updates from Telegram.
@@ -43,7 +43,7 @@ trait TelegramPull {
 
 class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
                      (implicit m: Materializer, ex: ExecutionContext)
-  extends TelegramPush with TelegramPull with LazyLogging with Json {
+  extends TelegramPush with UpdatesSource with LazyLogging with Json {
 
   override def pull(offset: Int): Future[UpdatesEvent] = {
 

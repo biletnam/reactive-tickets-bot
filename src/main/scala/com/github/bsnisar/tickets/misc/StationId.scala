@@ -6,7 +6,7 @@ import com.github.bsnisar.tickets.misc.StationId.Id
 import com.google.common.base.Charsets
 import org.hashids.Hashids
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 import scala.util.matching.Regex
 
 object StationId {
@@ -25,8 +25,8 @@ object StationId {
   */
 trait StationId {
   def encode(id: String, from: Boolean): String
-  def decode(id: String): Try[Id]
-
+//  def decode(id: String): Try[Id]
+  def decoder: PartialFunction[String, Try[Id]]
 }
 
 class StationIdHashids extends StationId {
@@ -38,20 +38,31 @@ class StationIdHashids extends StationId {
     s"$cmdPrefix$encoded"
   }
 
-  override def decode(id: String): Try[Id] = Try {
-    def transform(data: String): String = {
-      val raw = hashids.decode(data)
-      String.valueOf(raw(0))
-    }
-
+  /*override def decode(id: String): Try[Id] = Try {
     id match {
       case StationId.ToKeyPattern(toDecode) =>
         Id(transform(toDecode), from = false)
       case StationId.FromKeyPattern(toDecode) =>
         Id(transform(toDecode), from = true)
-      case _ => throw new IllegalArgumentException(s"unexpected encoded id format [$id]")
+      case _ =>
+        throw new IllegalArgumentException(s"unexpected encoded id format [$id]")
     }
-  }}
+  }*/
+
+  private def transform(data: String): String = {
+    val raw = hashids.decode(data)
+    String.valueOf(raw(0))
+  }
+
+  override val decoder: PartialFunction[String, Try[Id]] = {
+    case StationId.ToKeyPattern(toDecode) =>
+      Try { Id(transform(toDecode), from = false) }
+    case StationId.FromKeyPattern(toDecode) =>
+      Try { Id(transform(toDecode), from = true) }
+    case id =>
+      Failure(new IllegalArgumentException(s"unexpected encoded id format [$id]"))
+  }
+}
 
 /**
   * Base64 encoder.
@@ -63,18 +74,18 @@ class StationIdBase64() extends StationId {
     s"$cmdPrefix$encoded"
   }
 
-  override def decode(id: String): Try[Id] = Try {
-    def transform(data: String): String = {
-      val raw = Base64.getDecoder.decode(data)
-      new String(raw, Charsets.UTF_8)
-    }
-
-    id match {
-      case StationId.ToKeyPattern(toDecode) =>
-        Id(transform(toDecode), from = false)
-      case StationId.FromKeyPattern(toDecode) =>
-        Id(transform(toDecode), from = true)
-      case _ => throw new IllegalArgumentException(s"unexpected encoded id format [$id]")
-    }
+  override val decoder: PartialFunction[String, Try[Id]] = {
+    case StationId.ToKeyPattern(toDecode) =>
+      Try { Id(transform(toDecode), from = false) }
+    case StationId.FromKeyPattern(toDecode) =>
+      Try { Id(transform(toDecode), from = true) }
+    case id =>
+      Failure(new IllegalArgumentException(s"unexpected encoded id format [$id]"))
   }
+
+  private def transform(data: String): String = {
+    val raw = Base64.getDecoder.decode(data)
+    new String(raw, Charsets.UTF_8)
+  }
+
 }
