@@ -1,6 +1,6 @@
 package com.github.bsnisar.tickets.talk
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 
 
 
@@ -9,13 +9,13 @@ trait SearchBean {
     * Time to arrive.
     * @return arrivals
     */
-  def arrive: List[LocalDateTime]
+  def arrive: List[LocalDate]
 
   /**
     * Times to departure.
     * @return departures
     */
-  def departure: List[LocalDateTime]
+  def departure: List[LocalDate]
 
   /**
     * Id of the arrival station.
@@ -32,37 +32,37 @@ trait SearchBean {
 
   def define: Boolean = arrive.nonEmpty && departure.nonEmpty && arriveTo.isDefined && departureFrom.isDefined
 
-  def withArrive(time: LocalDateTime): Bean
-  def withArriveTo(time: String): Bean
-  def withDeparture(time: LocalDateTime): Bean
-  def withDepartureFrom(time: String): Bean
+  def withArrive(time: LocalDate): SearchBeanUpdate
+  def withArriveTo(time: String): SearchBeanUpdate
+  def withDeparture(time: LocalDate): SearchBeanUpdate
+  def withDepartureFrom(time: String): SearchBeanUpdate
 }
 
-sealed trait Bean
-case class Modified(bean: SearchBean) extends Bean
-case class Req(bean: SearchBean) extends Bean
+sealed trait SearchBeanUpdate
+case class Modified(bean: SearchBean) extends SearchBeanUpdate
+case class Req(bean: SearchBean) extends SearchBeanUpdate
 
-case class Default(arrive: List[LocalDateTime] = Nil,
-                   departure: List[LocalDateTime] = Nil,
+case class Default(arrive: List[LocalDate] = Nil,
+                   departure: List[LocalDate] = Nil,
                    arriveTo: Option[String] = None,
                    departureFrom: Option[String] = None) extends SearchBean {
 
-  override def withArrive(time: LocalDateTime): Bean = {
+  override def withArrive(time: LocalDate): SearchBeanUpdate = {
     toResultingBean(copy(arrive = List(time)))
   }
 
-  override def withArriveTo(id: String): Bean =
+  override def withArriveTo(id: String): SearchBeanUpdate =
     toResultingBean(copy(arriveTo = Option(id)))
 
-  override def withDeparture(time: LocalDateTime): Bean = {
+  override def withDeparture(time: LocalDate): SearchBeanUpdate = {
     toResultingBean(copy(departure = List(time)))
   }
 
-  override def withDepartureFrom(id: String): Bean =
+  override def withDepartureFrom(id: String): SearchBeanUpdate =
     toResultingBean(copy(departureFrom = Option(id)))
 
 
-  private def toResultingBean(res: SearchBean): Bean = {
+  private def toResultingBean(res: SearchBean): SearchBeanUpdate = {
     if (res.define) Req(res) else Modified(res)
   }
 }

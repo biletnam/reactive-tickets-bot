@@ -52,7 +52,7 @@ class StationsSearchTalk(val stations: Stations, val stationId: StationId,
       stations.stationsByName(name)
         .map(mkStationsResponse(_, Msg.StationsFoundFrom, name, fromStation = true))
         .recover(doRecover(name))
-        .map(update.mkReply)
+        .map(update.createAnswer)
         .pipeTo(self)
 
     case UpdateEvent(update, Some(FindArrival(name))) =>
@@ -60,10 +60,10 @@ class StationsSearchTalk(val stations: Stations, val stationId: StationId,
       stations.stationsByName(name)
         .map(mkStationsResponse(_, Msg.StationsFoundTo, name, fromStation = false))
         .recover(doRecover(name))
-        .map(update.mkReply)
+        .map(update.createAnswer)
         .pipeTo(self)
 
-    case msg: ResponsesSender.Reply =>
+    case msg: Answers.Answer =>
       telegram ! msg
   }
 

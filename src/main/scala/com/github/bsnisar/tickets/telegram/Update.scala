@@ -1,7 +1,7 @@
 package com.github.bsnisar.tickets.telegram
 
 import com.github.bsnisar.tickets.misc.Json
-import com.github.bsnisar.tickets.talk.ResponsesSender.Reply
+import com.github.bsnisar.tickets.talk.Answers.{Answer, AnswerBean}
 import org.json4s.{JValue, Reader}
 
 trait Update {
@@ -23,7 +23,7 @@ trait Update {
     */
   def chat: String
 
-  def mkReply(msg: Msg): Reply = Reply(chat, msg)
+  def createAnswer(msg: Msg): Answer = AnswerBean(chat, msg)
 }
 
 /**

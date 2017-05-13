@@ -7,7 +7,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.bsnisar.tickets.Ws.Req
 import com.github.bsnisar.tickets.misc.{Json, Templates}
-import com.github.bsnisar.tickets.talk.ResponsesSender.Reply
+import com.github.bsnisar.tickets.talk.Answers.Answer
 import com.github.bsnisar.tickets.telegram.UpdatesSource.UpdatesEvent
 import com.github.bsnisar.tickets.wire.Wire
 import com.typesafe.scalalogging.LazyLogging
@@ -23,7 +23,7 @@ trait TelegramPush {
     * Push message to Telegram.
     * @param reply reply msg
     */
-  def push(reply: Reply): Unit
+  def push(reply: Answer): Unit
 }
 
 object UpdatesSource {
@@ -58,7 +58,7 @@ class TelegramDefault(wire: Wire[Req, JValue], val templates: Templates)
     updates
   }
 
-  override def push(reply: Reply): Unit = {
+  override def push(reply: Answer): Unit = {
     import org.json4s.JsonDSL._
 
     val chat = reply.chatID

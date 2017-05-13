@@ -1,6 +1,6 @@
 package com.github.bsnisar.tickets.talk
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 
 import akka.actor.{Actor, ActorRef, Props}
@@ -19,11 +19,32 @@ object TalkRoute {
   private val DepartureTime: Regex = "^/departure\\s+(.*?)".r
 
   sealed trait Cmd
+
+  /**
+    * ID of a station.
+    * @param parsedId parsed id
+    * @see [[StationId]]
+    */
   case class StationPointCmd(parsedId: Try[StationId.Id]) extends Cmd
+
+  /**
+    * Command for arrival time.
+    * @param time time in YYYY-MM-DD
+    */
   case class ArrivalTimeCmd(time: String) extends Cmd
+
+  /**
+    * Command for departure time.
+    * @param time YYYY-MM-DD
+    */
   case class DepartureTimeCmd(time: String) extends Cmd
 }
 
+/**
+  * Route logic for current actor.
+  * @param ref destination actor
+  * @param stationId station id parser
+  */
 case class TalkRoute(ref: ActorRef, stationId: StationId) extends RouteLogic[Update] {
   override val specify: Routee = {
     case update @ Text(TalkRoute.ArrivalTime(timeStr)) =>
@@ -39,6 +60,7 @@ case class TalkRoute(ref: ActorRef, stationId: StationId) extends RouteLogic[Upd
 
 object SearchingRequestTalk {
   def props(chatID: String, telegram: ActorRef): Props = Props(classOf[SearchingRequestTalk], chatID, telegram)
+  val CmdTimeFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 }
 
 class SearchingRequestTalk(val chatID: String, val notifyRef: ActorRef) extends Actor with LazyLogging {
@@ -46,28 +68,33 @@ class SearchingRequestTalk(val chatID: String, val notifyRef: ActorRef) extends 
 
 
   override def receive: Receive = {
+    case e@UpdateEvent(update, Some(ArrivalTimeCmd(time))) =>
+      logger.debug(s"receive update event $e")
+      modifyTimeSlot(update, time, dateTime => searchBean.withArrive(dateTime))
 
-    case UpdateEvent(update, Some(cmd@ArrivalTimeCmd(time))) =>
-      logger.debug(s"on $cmd")
-      try {
-        val ldt = LocalDateTime.parse(time, DateTimeFormatter.ISO_DATE)
-        searchBean.withArrive(ldt) match {
-          case Req(reqBean) =>
-            searchBean = reqBean
-            runQuery(reqBean)
-
-          case Modified(bean) =>
-            searchBean = bean
-            notifyRef ! update.mkReply(MsgQueryUpdate(searchBean))
-        }
-      } catch {
-        case ex: DateTimeParseException =>
-          logger.warn(s"wrong time format ArrivalTimeCmd($time)", ex)
-          notifyRef ! update.mkReply(MsgWrongTimeFormat(time))
-      }
-
+    case e@UpdateEvent(update, Some(DepartureTimeCmd(time))) =>
+      logger.debug(s"receive update event $e")
+      modifyTimeSlot(update, time, dateTime => searchBean.withDeparture(dateTime))
   }
 
+  private def modifyTimeSlot(update: Update, time: String, f: LocalDate => SearchBeanUpdate): Unit = {
+    try {
+      val dateTime = LocalDate.parse(time, SearchingRequestTalk.CmdTimeFormat)
+      f(dateTime) match {
+        case Req(bean) =>
+          searchBean = bean
+          runQuery(bean)
+
+        case Modified(bean) =>
+          searchBean = bean
+          notifyRef ! update.createAnswer(MsgQueryUpdate(searchBean))
+      }
+    } catch {
+      case ex: DateTimeParseException =>
+        logger.warn(s"wrong time format $time, update: $update", ex)
+        notifyRef ! update.createAnswer(MsgWrongTimeFormat(time))
+    }
+  }
 
   private def runQuery(reqBean: SearchBean): Unit = ???
 

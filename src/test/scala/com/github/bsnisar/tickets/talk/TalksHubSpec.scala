@@ -8,13 +8,13 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
+// scalastyle:off magic.number
 class TalksHubSpec extends AkkaBaseTest(ActorSystem()) {
 
   "A Talks" should "create rooms for new comers" in {
     val mockery = newMockery()
     val f = mockery.mock(classOf[TalksHub.BotFactory])
     val prob = TestProbe()
-    val search = TestProbe()
     mockery.checking(new JMockExpectations {
       oneOf(f).create(any[String], any[String])(any[ActorContext])
       will(returnValue(prob.ref))

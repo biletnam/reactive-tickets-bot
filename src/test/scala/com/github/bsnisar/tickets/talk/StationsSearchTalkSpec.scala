@@ -3,7 +3,7 @@ package com.github.bsnisar.tickets.talk
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestProbe}
 import com.github.bsnisar.tickets.misc.StationId
-import com.github.bsnisar.tickets.talk.ResponsesSender.Reply
+import com.github.bsnisar.tickets.talk.Answers.{Answer, AnswerBean}
 import com.github.bsnisar.tickets.talk.StationsSearchTalk.{FindArrival, FindDeparture}
 import com.github.bsnisar.tickets.telegram.{MsgStationsFound, TgUpdate}
 import com.github.bsnisar.tickets.{AkkaBaseTest, JMockExpectations, Station, Stations}
@@ -47,7 +47,7 @@ class StationsSearchTalkSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSe
     sut ! UpdateEvent(update, FindDeparture("Dn"))
 
     tg.expectMsgPF() {
-      case Reply("a", _: MsgStationsFound) => true
+      case AnswerBean("a", _: MsgStationsFound) => true
     }
     mockery.assertIsSatisfied()
   }
@@ -70,7 +70,7 @@ class StationsSearchTalkSpec extends AkkaBaseTest(ActorSystem()) with ImplicitSe
     sut ! UpdateEvent(update, FindArrival("Dn"))
 
     tg.expectMsgPF() {
-      case Reply("a", _: MsgStationsFound) => true
+      case AnswerBean("a", _: MsgStationsFound) => true
     }
 
     mockery.assertIsSatisfied()

@@ -44,7 +44,7 @@ object Launcher extends App {
 
   val templates = new TemplatesFreemarker()
   val telegram = new TelegramDefault(telegramWire, templates)
-  val telegramPushRef = system.actorOf(ResponsesSender.props(telegram))
+  val telegramPushRef = system.actorOf(Answers.props(telegram))
 
 
   val uzStations = new StationsUz(uzWire)
@@ -73,5 +73,4 @@ object Launcher extends App {
   system.scheduler.schedule(1.second, 4.seconds, pull, Updates.Tick)
 
 */
-
 }
